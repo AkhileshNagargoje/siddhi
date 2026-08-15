@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "drishti-engine",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+  "triggers": {
+    // every 5 minutes: run detection scan (PROJECT.md spec)
+    // every minute: generate a slice of live clinic traffic so the demo is always alive
+    "crons": ["*/5 * * * *", "* * * * *"]
+  },
+  "vars": {
+    "SUPABASE_URL": "https://ommnjuedmzffiawhkdqi.supabase.co",
+    // Publishable (anon) key — public by design, already shipped in the frontend bundle.
+    // Kept as a var, not a secret, so any teammate can redeploy reproducibly.
+    "SUPABASE_KEY": "sb_publishable_P2D7fSeuoaqc1tgURDXeoA_dDfff-Dk",
+    "GENERATE_TRAFFIC": "true"
+  },
+  "routes": [
+    { "pattern": "drishti-engine.akhileshnagargoje.in", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

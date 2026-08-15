@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "drishti",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "D:/hackathon/app"
+      ],
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}

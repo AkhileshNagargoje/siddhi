@@ -1,0 +1,134 @@
+/* Drishti design tokens.
+   Palette from the validated reference instance. Dark mode is *selected* —
+   its own steps against the dark surface, not an automatic inversion. */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --surface-0: #f9f9f7;   /* page plane */
+  --surface-1: #fcfcfb;   /* card / chart surface */
+  --surface-2: #ffffff;   /* raised */
+  --surface-sunk: #f2f1ed;
+
+  /* ink */
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+
+  /* lines */
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --border-strong: rgba(11, 11, 11, 0.20);
+
+  /* series (chart) */
+  --series-1: #2a78d6;
+  --series-1-fill: rgba(42, 120, 214, 0.14);
+
+  /* sequential blue — magnitude ramp for the sector heatmap */
+  --seq-0: #f2f1ed;
+  --seq-1: #cde2fb;
+  --seq-2: #9ec5f4;
+  --seq-3: #6da7ec;
+  --seq-4: #3987e5;
+  --seq-5: #256abf;
+  --seq-6: #184f95;
+
+  /* status — reserved, never reused as a series.
+     warning/serious are sub-3:1 on light BY DESIGN: always ship icon + label. */
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --good-ink: #006300;
+  --critical-ink: #a32020;
+  --warning-ink: #7a5200;
+  --good-wash: #e8f6e8;
+  --warning-wash: #fdf1d9;
+  --critical-wash: #fbeaea;
+
+  /* type scale */
+  --t-hero: 44px;
+  --t-xl: 26px;
+  --t-lg: 19px;
+  --t-md: 15px;
+  --t-sm: 13px;
+  --t-xs: 11px;
+
+  /* space scale */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(11, 11, 11, 0.05);
+  --shadow-2: 0 4px 16px rgba(11, 11, 11, 0.10);
+
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
+
+    --surface-0: #0d0d0d;
+    --surface-1: #1a1a19;
+    --surface-2: #232322;
+    --surface-sunk: #141413;
+
+    --ink-1: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #898781;
+
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.22);
+
+    --series-1: #3987e5;
+    --series-1-fill: rgba(57, 135, 229, 0.20);
+
+    --seq-0: #232322;
+    --seq-1: #184f95;
+    --seq-2: #1c5cab;
+    --seq-3: #256abf;
+    --seq-4: #2a78d6;
+    --seq-5: #3987e5;
+    --seq-6: #5598e7;
+
+    --good-ink: #0ca30c;
+    --critical-ink: #e66767;
+    --warning-ink: #fab219;
+    --good-wash: rgba(12, 163, 12, 0.14);
+    --warning-wash: rgba(250, 178, 25, 0.14);
+    --critical-wash: rgba(208, 59, 59, 0.16);
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: var(--t-md);
+  line-height: 1.5;
+  background: var(--surface-0);
+  color: var(--ink-1);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; }
