@@ -1,279 +1,210 @@
 # Team coding tasks
 
-Four tasks. Each one is self-contained — you cannot break the main app by doing them.
+Six tasks. Each is one file. None of them can break the main app.
 
-**Rules for everyone:**
-- Build only the file listed in your task. Don't edit anything else.
-- Use the existing CSS variables (listed in each task). Don't invent new colours.
-- Ask questions in the group. Answers at **2pm and 8pm** daily.
-- When done, send your file back — main dev merges it.
+Work out how to build it yourself — the points below are the requirements, not the instructions.
 
-**How to run the project on your computer:**
+---
+
+## Setup
+
 ```bash
 git clone https://github.com/AkhileshNagargoje/drishti.git
 cd drishti/app
 npm install
 npm run dev
 ```
-Then open http://localhost:5173
 
-*(You need the `.env` file — ask the main dev for it. Copy `app/.env.example` to `app/.env` and paste the two values in.)*
+Ask the main dev for the `.env` file. Copy `app/.env.example` to `app/.env` and fill in the two values.
+
+## Rules for everyone
+
+- Create only the file listed in your task. Do not edit any other file.
+- No new npm packages.
+- No hardcoded colours. Use the CSS variables below — they handle dark mode for you.
+- No `<style>` blocks. Use inline `style={{}}` or the existing classes.
+- JSX, not TypeScript.
+- Check it in light mode AND dark mode. Check it in a narrow window.
+- Send the file to the main dev when done. Don't push to GitHub yourself.
+
+## What you can style with
+
+**Existing classes:** `shell` `panel` `btn` `btn-accent` `btn-good` `btn-quiet` `btn-wide` `chart` `chart-head` `chart-sub` `tile` `tile-label` `tile-value` `badge` `badge-good` `badge-warning` `badge-critical` `sheet` `sheet-inner` `source-chip` `live` `empty`
+
+**CSS variables:**
+- Text — `--ink-1` main, `--ink-2` grey, `--ink-3` light grey
+- Backgrounds — `--surface-1` card, `--surface-2` raised, `--surface-sunk` sunken
+- Lines — `--border`, `--border-strong`, `--axis`
+- Meaning — `--series-1` chart blue, `--good-ink` green, `--warning-ink` orange, `--critical-ink` red
+- Text sizes — `--t-hero` `--t-xl` `--t-lg` `--t-md` `--t-sm` `--t-xs`
+- Spacing — `--s-1` to `--s-7`
+- Corners — `--r-sm` `--r-md` `--r-lg` `--r-pill`
+
+Look at `src/pages/CrewPage.jsx` for an example of how existing pages are written.
 
 ---
 
 # TASK 1 — Demo control page
 
-**Who:** whoever is most comfortable with code
-**Difficulty:** medium
-**Why it matters:** Right now, to demo an outbreak we have to open a terminal and type commands. On stage that is slow and looks unprofessional. This page turns it into buttons.
+**File:** `src/pages/DemoPage.jsx`
+**Why:** Right now we trigger the demo by typing terminal commands. On stage that's slow and looks amateur. This makes it buttons.
 
-## What to build
+- Three buttons, each calls a web address and shows the result
+- **Add traffic** → `https://drishti-engine.akhileshnagargoje.in/traffic`
+- **Run detection** → `https://drishti-engine.akhileshnagargoje.in/scan`
+- **Inject outbreak** → `https://drishti-engine.akhileshnagargoje.in/outbreak?sector=5&n=25`
+- For inject: two dropdowns, sector (1–12) and cases (10/25/50), feeding into the address
+- Call the addresses yourself in the browser first to see what comes back
+- While a request runs: disable that button, show "Working…", never allow two at once
+- Show the last 5 actions with timestamps, newest first, in plain English — not raw JSON
+- A failed request shows a red log entry. The page must never crash
+- Heading "Demo controls" plus a warning line that this creates real data
 
-A new page at `/demo` with four buttons. Each button calls a web address and shows the result.
-
-**File to create:** `app/src/pages/DemoPage.jsx`
-
-**The four buttons:**
-
-| Button | Web address to call | What it does |
-|---|---|---|
-| Add traffic | `https://drishti-engine.akhileshnagargoje.in/traffic` | Adds a few normal patients |
-| Run detection | `https://drishti-engine.akhileshnagargoje.in/scan` | Checks every sector for outbreaks now |
-| Inject outbreak | `https://drishti-engine.akhileshnagargoje.in/outbreak?sector=5&n=25` | Creates a fake outbreak |
-| Reset | *(leave this one out for now)* | — |
-
-For **Inject outbreak**, add a dropdown so the user can pick the sector (1 to 12) and the number of cases (10, 25, 50). Put those numbers into the web address.
-
-## What the answers look like
-
-When you call `/scan` you get back:
-```json
-{ "examined": 4268, "newAlerts": [] }
-```
-
-When you call `/outbreak?sector=9&n=5` you get back:
-```json
-{ "injected": 5, "sector": 9, "scan": { "examined": 4273, "newAlerts": [ ... ] } }
-```
-
-Show this on screen in a simple way, for example:
-- *"Injected 25 cases into Sector 5 — 1 new alert created"*
-- *"Checked 4,268 patients — no new alerts"*
-
-## Rules
-
-- While a button is loading, **disable it and show "Working…"** so nobody double-clicks.
-- If it fails, show the error in red. Do not let the page crash.
-- Show the last 5 actions as a list with times, so the presenter can see what they already did.
-
-## Done looks like this
-
-A clean page with a title "Demo controls", a warning line saying *"This creates real data in the live system"*, the four buttons in a row, and a list of recent actions underneath.
-
-## Starter code
-
-```jsx
-import { useState } from 'react'
-
-const ENGINE = 'https://drishti-engine.akhileshnagargoje.in'
-
-export default function DemoPage() {
-  const [busy, setBusy] = useState(null)
-  const [log, setLog] = useState([])
-
-  async function call(name, path) {
-    setBusy(name)
-    try {
-      const res = await fetch(`${ENGINE}${path}`)
-      const data = await res.json()
-      setLog(l => [{ name, data, time: new Date().toLocaleTimeString() }, ...l].slice(0, 5))
-    } catch (e) {
-      setLog(l => [{ name, error: e.message, time: new Date().toLocaleTimeString() }, ...l].slice(0, 5))
-    }
-    setBusy(null)
-  }
-
-  return (
-    <div className="shell">
-      {/* your buttons and log go here */}
-    </div>
-  )
-}
-```
-
-**CSS classes you can reuse:** `shell`, `panel`, `btn`, `btn-accent`, `chart-head`, `chart-sub`
-
-**Last step:** tell the main dev, who adds one line to `App.jsx` to make `/demo` work.
+**Done when:** someone who has never seen a terminal can run the whole demo from this page.
 
 ---
 
 # TASK 2 — About page
 
-**Who:** the person doing slides
-**Difficulty:** easy
-**Why it matters:** Judges click around. A finished-looking About page makes the project feel real instead of half-built.
+**File:** `src/pages/AboutPage.jsx`
+**Why:** Judges click around. This makes the project feel finished.
 
-## What to build
+- Title "Drishti", one line under it: "Outbreak early warning for mass gatherings"
+- **The problem** — three lines:
+  - Fourteen people in one sector fall ill from the same water tap
+  - They go to four different clinics. Each doctor sees three or four cases — a normal day
+  - Nobody sees fourteen, because nobody is adding them up
+- **What it does** — four points: 10-second offline entry · pools all clinics live · detects clusters and shows its maths · turns alerts into jobs a crew must close
+- **Three big numbers**, side by side on desktop, stacked on mobile:
+  - **31%** antibiotics prescribed at the 2015 Kumbh, recorded and never acted on
+  - **30,000** patient visits proving health workers will enter data
+  - **600 → 35** cases, when the tap is closed on day 1 instead of day 4
+- **Team** — four names and roles
+- **Links** — live app, and the GitHub repo
+- Centred, max width about 720px
+- No images
 
-**File to create:** `app/src/pages/AboutPage.jsx`
-
-A single page with these sections, in this order:
-
-**1. The problem — three short lines**
-> Fourteen people in one sector fall ill from the same water tap.
-> They go to four different clinics. Each doctor sees three or four cases — a normal day.
-> Nobody sees fourteen, because nobody is adding them up.
-
-**2. What Drishti does — four short points**
-- Records a patient in 10 seconds, works with no internet
-- Pools every clinic into one live picture
-- Detects a cluster automatically and shows its own maths
-- Turns the alert into a job a crew must close
-
-**3. The numbers**
-Show three big numbers with labels underneath:
-- **31%** — antibiotics prescribed at the 2015 Kumbh, recorded and never acted on
-- **30,000** — patient visits the 2015 project proved health workers will enter
-- **600 → 35** — cases when the water tap is closed on day 1 instead of day 4
-
-**4. The team**
-Four names with roles. Get the names from the group.
-
-**5. Links**
-- Live app → `/`
-- GitHub → https://github.com/AkhileshNagargoje/drishti
-
-## Rules
-
-- **No new colours.** Use only these: `var(--ink-1)` (main text), `var(--ink-2)` (grey text), `var(--ink-3)` (light grey), `var(--surface-1)` (card background), `var(--border)` (lines).
-- Must look correct on a phone as well as a laptop.
-- Do not use `position: fixed`.
-
-## Done looks like this
-
-Reads like a clean one-page website. Big numbers stand out. Everything centred, max width about 720px.
-
-## Starter code
-
-```jsx
-export default function AboutPage() {
-  return (
-    <div className="shell" style={{ maxWidth: 720 }}>
-      <h1>Drishti</h1>
-      <p className="chart-sub">Outbreak early warning for mass gatherings</p>
-      {/* sections go here */}
-    </div>
-  )
-}
-```
-
-**CSS classes you can reuse:** `shell`, `panel`, `tile`, `tile-label`, `tile-value`, `chart-head`, `chart-sub`
+**Done when:** it reads like a real product page, not a school project.
 
 ---
 
-# TASK 3 — Morning card for doctors
+# TASK 3 — Morning card
 
-**Who:** anyone
-**Difficulty:** medium
-**Why it matters:** Right now the doctor enters 180 patients and learns nothing back. Over six weeks that is how people stop caring about data entry. This gives them something in return.
+**File:** `src/components/MorningCard.jsx`
+**Why:** A doctor enters 180 patients a day and gets nothing back. Over six weeks that's how people stop caring. This gives something in return.
 
-## What to build
-
-**File to create:** `app/src/components/MorningCard.jsx`
-
-A card the doctor sees once, before their first patient of the day.
-
-**It receives this information (already worked out for you):**
+Props it receives (already calculated — fetch nothing):
 
 ```js
-{
-  clinicName: 'Sadhugram East PHC',
-  yesterdayPatients: 182,
-  sectorEvent: 'Water contamination found and fixed at W-7',  // or null if nothing happened
-  myAntibioticRate: 0.18,        // 18%
-  festivalMedianRate: 0.24,      // 24%
-}
+{ clinicName, yesterdayPatients, sectorEvent, myAntibioticRate, festivalMedianRate, onClose }
+// sectorEvent is a string or null. Rates are decimals: 0.18 = 18%
 ```
 
-**What to show:**
+- "Good morning" + clinic name
+- How many patients they recorded yesterday, number emphasised
+- If `sectorEvent` exists, show it with a small tick icon (write the SVG yourself, no icon library, no emoji)
+- Their antibiotic rate next to the festival median, side by side
+- Lower or equal to median → green. Higher → orange
+- A full-width "Start the day" button calling `onClose`
+- Card about 380px wide on a dark overlay — use `sheet` and `sheet-inner`
 
-- Title: "Good morning" + the clinic name
-- "You recorded **182** patients yesterday"
-- If `sectorEvent` is not null: show it with a small tick icon — *"In your sector: Water contamination found and fixed at W-7"*
-- A comparison: "Your antibiotic use: **18%** · Festival median: **24%**"
-  - If the doctor's rate is **lower** than the median, show it in green (`var(--good-ink)`)
-  - If **higher**, show it in orange (`var(--warning-ink)`) — but **never** write anything blaming or scolding. Just the number.
-- A "Start the day" button that closes the card
+**The rule that matters most:** never scold or judge the doctor. Show the two numbers, never a verdict. No "you are prescribing too many" or "please reduce". The doctor draws their own conclusion. Judging language means the task is wrong.
 
-## Rules
-
-- Must be readable in **ten seconds**. No paragraphs.
-- **Never scold the doctor.** Show the number, not a judgement. This is the most important rule in the task.
-- Build it as a component that takes the data above as props. Do not fetch anything from the database — someone else will connect it.
-
-## Done looks like this
-
-A single card, about 380px wide, that a tired person can read in one glance while holding a cup of tea.
-
-## Starter code
-
-```jsx
-export function MorningCard({ clinicName, yesterdayPatients, sectorEvent, myAntibioticRate, festivalMedianRate, onClose }) {
-  const better = myAntibioticRate <= festivalMedianRate
-  return (
-    <div className="sheet">
-      <div className="sheet-inner">
-        {/* your card goes here */}
-        <button className="btn btn-accent" onClick={onClose}>Start the day</button>
-      </div>
-    </div>
-  )
-}
-```
-
-**CSS classes you can reuse:** `sheet`, `sheet-inner`, `panel`, `btn`, `btn-accent`, `badge`, `badge-good`, `badge-warning`
+**Done when:** a tired person can read it in ten seconds holding a cup of tea.
 
 ---
 
-# TASK 4 — Test the printed referral card
+# TASK 4 — Sector detail panel
 
-**Who:** whoever has access to a printer
-**Difficulty:** easy, but needs a real printer
-**Why it matters:** The referral card is meant to be printed on paper and given to a patient. **Nobody has ever printed one.** The code has never been tested on a real printer.
+**File:** `src/components/SectorDetail.jsx`
+**Why:** Clicking a sector on the map currently does almost nothing.
 
-## What to do
+Props it receives (fetch nothing):
 
-1. Open the app: https://drishti.akhileshnagargoje.in/entry
-2. Sign in with PIN `1111`
-3. Enter a patient: age `60+`, sex `M`, diagnosis **High blood pressure**
-4. Tap **"+ Add BP / sugar reading"** and enter `150` and `95`
-5. Tap **Save & print referral** — a card appears
-6. Tap **Print card**
-7. **Print it on real paper**
+```js
+{ sector, totalCases, bySyndrome, clinics, onClose }
+// sector: { id, name, waterPoints: [], kitchens: [] }
+// bySyndrome: [{ syndrome, count }] already sorted biggest first
+// clinics: [{ id, name, cases }]
+```
 
-## Then check and report
+- Header: sector name, with "Sector 5" small and grey above it, close button on the right
+- Total cases in the last 6 hours, number large
+- **A horizontal bar chart** of `bySyndrome` — label left, bar middle, number right
+- Build the bars with plain `<div>`s and percentage widths. No charting library
+- **All bars the same colour** (`--series-1`). Colour carries no meaning here, only length does
+- List of clinics with their case counts
+- Water points and kitchens as chips (`source-chip`). If empty, say "none mapped"
+- Numbers should line up on the right
 
-- Does the whole card fit on one page?
-- Is the QR code big enough to scan? **Try scanning the printed paper with a phone camera** — does it open the record?
-- Are the buttons and the rest of the app hidden when printing, or do they appear?
-- Is any text cut off at the edges?
-- Try printing on a phone as well as a laptop — is it different?
-
-## Report back
-
-Take a photo of the printed card, and write down anything wrong. Send both to the main dev.
-
-If everything works — say so clearly. "It works" is a valid and useful result.
+**Done when:** an official can glance at it and immediately know what's wrong in that sector.
 
 ---
 
-# Summary
+# TASK 5 — Alert sound and notification
 
-| Task | Who | Difficulty | Creates file |
-|---|---|---|---|
-| 1. Demo controls | most confident coder | medium | `app/src/pages/DemoPage.jsx` |
-| 2. About page | slides person | easy | `app/src/pages/AboutPage.jsx` |
-| 3. Morning card | anyone | medium | `app/src/components/MorningCard.jsx` |
-| 4. Print test | whoever has a printer | easy | *(no file — a report)* |
+**File:** `src/lib/useAlertSound.js`
+**Why:** The operator may be looking away when an alert fires. Also — during the demo, when the sector turns red *and the room hears it*, that's a moment.
 
-Nothing here can break the main app. If a task is not finished, we simply ship without it.
+- A React hook: `useAlertSound(alerts, { enabled })`
+- `alerts` is an array of `{ id, sector, syndrome, tier }`
+- When an alert appears with an id it hasn't seen: play a chime and show a browser notification
+- **On first render, record all existing ids without playing anything** — otherwise it fires a burst on page load
+- Generate the sound with the Web Audio API. No audio files, no packages
+- Two short sine notes, roughly 880Hz then 1175Hz, ~0.12s each, fade the volume out so it doesn't click. Gentle — this is a chime, not an alarm
+- Create the AudioContext lazily on first sound. Browsers block audio before user interaction
+- Ask notification permission only when `enabled` turns true, never on page load
+- If notifications are denied or unsupported: skip silently, still play the sound, never throw
+- Also export `AlertSoundToggle({ enabled, onChange })` — a small button with an inline SVG speaker icon, using `className="live"`
+- Clean up on unmount
+
+**Done when:** it works, and it doesn't make a sound the moment you open the page.
+
+---
+
+# TASK 6 — Cases by age chart
+
+**File:** `src/components/AgeChart.jsx`
+**Why:** Which age groups are affected is a real clinical signal — some outbreaks hit the elderly hardest.
+
+Props it receives (fetch nothing):
+
+```js
+{ data, title, subtitle }
+// data: [{ band: '0-5', count: 12 }, ...] — five bands
+```
+
+- Vertical bar chart drawn as an inline `<svg>`. **No charting library**
+- Height proportional to the largest count
+- **All bars the same colour** (`--series-1`). Do not give each bar its own colour — height carries the meaning, not colour
+- Rounded top corners (~4px), square where they meet the baseline
+- Age band label under each bar, count above it
+- Thin baseline in `--axis`
+- On hover, darken the bar using `opacity` — don't change its colour
+- Must resize with its container: use `viewBox` and `width="100%"`
+- SVG text: `fill="var(--ink-3)"` for labels, `fill="var(--ink-2)"` for counts, font size 11 minimum
+- Wrap it in `<div className="chart">` with a `chart-head` containing the title and `chart-sub` subtitle
+
+**Done when:** it sits next to the existing dashboard charts and looks like it belongs.
+
+---
+
+# Before you send it back
+
+1. `npm run dev` — does the app still load?
+2. Switch your system to dark mode — still readable?
+3. Narrow the window to phone width — does anything overflow sideways?
+4. Send the file to the main dev
+
+If your AI tool gives you broken code, paste the error back and ask it to fix it. Two or three rounds is normal.
+
+| Task | File | Difficulty |
+|---|---|---|
+| 1. Demo controls | `src/pages/DemoPage.jsx` | medium |
+| 2. About page | `src/pages/AboutPage.jsx` | easy |
+| 3. Morning card | `src/components/MorningCard.jsx` | medium |
+| 4. Sector detail | `src/components/SectorDetail.jsx` | medium |
+| 5. Alert sound | `src/lib/useAlertSound.js` | hard |
+| 6. Age chart | `src/components/AgeChart.jsx` | medium |
+
+There is also a non-coding task: **print a referral card on real paper and check the QR still scans.** Nobody has ever tested this. Details from the main dev.
