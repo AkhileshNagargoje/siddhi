@@ -1,0 +1,311 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { supabase, isConfigured } from '../lib/supabase'
+import { CLINICS, USERS } from '../config/festival'
+import { AGE_BANDS, SEXES, SEVERITIES, SYMPTOMS, DIAGNOSES, DRUGS, ANTIBIOTIC_RULES } from '../config/medical'
+import { riskFlags, makeToken } from '../lib/referral'
+import { ReferralCard } from '../components/ReferralCard'
+
+// Offline-first: every record lands in localStorage first, a background loop
+// pushes it up. Client-generated UUIDs make retries duplicate-proof.
+const QUEUE_KEY = 'drishti_queue'
+const loadQueue = () => { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') } catch { return [] } }
+const saveQueue = q => localStorage.setItem(QUEUE_KEY, JSON.stringify(q))
+
+/* Referrals ride their own queue. The card itself never needs the server — the
+   QR carries everything — but the health system still wants a record that one
+   was issued, so it syncs whenever the network allows. */
+const REF_KEY = 'drishti_ref_queue'
+const loadRefs = () => { try { return JSON.parse(localStorage.getItem(REF_KEY) ?? '[]') } catch { return [] } }
+const saveRefs = q => localStorage.setItem(REF_KEY, JSON.stringify(q))
+
+const EMPTY = { age_band: null, sex: null, symptoms: [], diagnosis: null, drugs: [], severity: 'mild' }
+
+function Field({ label, required, onClear, children }) {
+  return (
+    <div className="field">
+      <label>
+        {label}{required && <em> *</em>}
+        {/* Only offered once something is selected — an always-visible Clear
+            on an empty list is noise on a screen that must stay scannable. */}
+        {onClear && <button className="clear" onClick={onClear}>Clear</button>}
+      </label>
+      <div className="chips">{children}</div>
+    </div>
+  )
+}
+
+export default function EntryPage() {
+  const [user, setUser] = useState(null)
+  const [pin, setPin] = useState('')
+  const [form, setForm] = useState(EMPTY)
+  const [flash, setFlash] = useState(false)
+  const [kept, setKept] = useState(false) // doctor dismissed the antibiotic prompt
+  const [vitals, setVitals] = useState({ sys: '', dia: '', sugar: '' })
+  const [showVitals, setShowVitals] = useState(false)
+  const [referral, setReferral] = useState(null)
+  const [queue, setQueue] = useState(loadQueue)
+  const [synced, setSynced] = useState(() => Number(localStorage.getItem('drishti_synced') ?? 0))
+  const busy = useRef(false)
+
+  const clinic = user ? CLINICS.find(c => c.id === user.clinicId) : null
+
+  /* Push whatever is queued. Called right after a save (so an online clinic
+     appears on the dashboard immediately), on a 5s timer, and when the network
+     comes back. The queue stays the source of truth either way — an immediate
+     push that fails is just a no-op that the timer retries. */
+  const flush = useCallback(async () => {
+    if (busy.current || !isConfigured()) return
+    const batch = loadQueue()
+    const refs = loadRefs()
+    if (!batch.length && !refs.length) return
+    busy.current = true
+    try {
+      if (batch.length) {
+        const { error } = await supabase.from('encounters').insert(batch)
+        // 23505 = already there from a retry; the row is safe either way.
+        if (!error || error.code === '23505') {
+          // Drop only what we actually sent — a patient saved while this
+          // request was in flight must not be wiped with the batch.
+          const sent = new Set(batch.map(r => r.id))
+          const rest = loadQueue().filter(r => !sent.has(r.id))
+          const n = Number(localStorage.getItem('drishti_synced') ?? 0) + batch.length
+          localStorage.setItem('drishti_synced', String(n))
+          setSynced(n); saveQueue(rest); setQueue(rest)
+        } else {
+          // Referrals point at encounters — never send them ahead of the rows
+          // they reference, or the foreign key rejects them.
+          return
+        }
+      }
+      if (refs.length) {
+        const { error } = await supabase.from('referrals').insert(refs)
+        if (!error || error.code === '23505') {
+          const sent = new Set(refs.map(r => r.id))
+          saveRefs(loadRefs().filter(r => !sent.has(r.id)))
+        }
+      }
+    } catch {
+      // Network dropped mid-request: keep the queue, retry on the next tick.
+    } finally {
+      // Without this, one thrown request would deadlock sync forever.
+      busy.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const t = setInterval(flush, 5000)
+    window.addEventListener('online', flush)
+    return () => { clearInterval(t); window.removeEventListener('online', flush) }
+  }, [flush])
+
+  function login() {
+    const u = USERS.find(u => u.pin === pin && u.role === 'worker')
+    u ? setUser(u) : setPin('')
+  }
+
+  function toggle(field, value) {
+    // Changing the diagnosis or the drug list re-opens the question.
+    if (field === 'diagnosis' || field === 'drugs') setKept(false)
+    setForm(f => {
+      const cur = f[field]
+      if (Array.isArray(cur)) return { ...f, [field]: cur.includes(value) ? cur.filter(v => v !== value) : [...cur, value] }
+      return { ...f, [field]: cur === value ? null : value }
+    })
+  }
+
+  const ready = form.age_band && form.sex && form.diagnosis
+  const willRefer = ready && riskFlags({ diagnosis: form.diagnosis, symptoms: form.symptoms, vitals }).length > 0
+
+  /* Stewardship prompt: an antibiotic chosen for a diagnosis that usually
+     doesn't need one. It is a question, never a gate — saving is always
+     available and one tap dismisses it (PROJECT.md design rule 1). */
+  const abxChosen = form.drugs.filter(id => DRUGS.find(d => d.id === id)?.antibiotic)
+  const rule = form.diagnosis ? ANTIBIOTIC_RULES[form.diagnosis] : null
+  const offGuideline = abxChosen.length > 0 && rule && !rule.usuallyNeeded
+  const showPrompt = offGuideline && !kept
+
+  function dropAntibiotics() {
+    setForm(f => ({ ...f, drugs: f.drugs.filter(id => !DRUGS.find(d => d.id === id)?.antibiotic) }))
+    setKept(false)
+  }
+
+  function save() {
+    if (!ready) return
+    const dx = DIAGNOSES.find(d => d.id === form.diagnosis)
+    const flags = riskFlags({ diagnosis: form.diagnosis, symptoms: form.symptoms, vitals })
+    const rec = {
+      id: crypto.randomUUID(),
+      ts: new Date().toISOString(),
+      clinic_id: user.clinicId,
+      sector: clinic.sector,
+      age_band: form.age_band,
+      sex: form.sex,
+      symptoms: form.symptoms,
+      diagnosis: form.diagnosis,
+      syndrome: dx?.syndrome ?? 'other',
+      drugs: form.drugs,
+      severity: form.severity,
+      // Recorded, not blocked — this is what the stewardship panel counts.
+      risk_flags: [...flags, ...(offGuideline ? ['abx_off_guideline'] : [])],
+      simulated: false,
+    }
+    const q = [...loadQueue(), rec]
+    saveQueue(q); setQueue(q)
+
+    // A flagged patient leaves with a card; everyone else just gets the tick.
+    if (flags.length) {
+      const token = makeToken()
+      // The card works without this row — the QR is self-contained. The row is
+      // the health system's own record that a referral was handed over.
+      saveRefs([...loadRefs(), {
+        id: crypto.randomUUID(),
+        encounter_id: rec.id,
+        risk_type: flags.join(','),
+        qr_token: token,
+      }])
+      setReferral({
+        token,
+        ageBand: form.age_band,
+        sex: form.sex,
+        clinic: clinic.name,
+        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        flags,
+        vitals: {
+          ...(vitals.sys && vitals.dia ? { bp: `${vitals.sys}/${vitals.dia}` } : {}),
+          ...(vitals.sugar ? { sugar: vitals.sugar } : {}),
+        },
+      })
+    } else {
+      setFlash(true); setTimeout(() => setFlash(false), 1100)
+    }
+
+    flush() // online: lands on the dashboard now, not on the next 5s tick
+    setForm(EMPTY); setKept(false); setVitals({ sys: '', dia: '', sugar: '' }); setShowVitals(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (!user) {
+    return (
+      <div className="login">
+        <div className="login-card">
+          <h2>Clinic sign in</h2>
+          <p>Enter your 4-digit PIN</p>
+          <input type="password" inputMode="numeric" maxLength={4} value={pin} autoFocus
+                 onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+                 onKeyDown={e => e.key === 'Enter' && login()} />
+          <button className="btn btn-wide" onClick={login} disabled={pin.length !== 4}>Enter</button>
+          <p>Demo PIN 1111</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="entry">
+      <div className="entry-bar">
+        <div>
+          <b>{clinic?.name}</b>
+          <small>{user.name}</small>
+        </div>
+        <span className={queue.length ? 'sync pending' : 'sync'}>
+          <i />{synced + queue.length} today · {queue.length ? `${queue.length} pending` : 'synced'}
+        </span>
+      </div>
+
+      <Field label="Age" required>
+        {AGE_BANDS.map(a => (
+          <button key={a} className={form.age_band === a ? 'chip on' : 'chip'} onClick={() => toggle('age_band', a)}>{a}</button>
+        ))}
+      </Field>
+
+      <Field label="Sex" required>
+        {SEXES.map(s => (
+          <button key={s} className={form.sex === s ? 'chip on' : 'chip'} onClick={() => toggle('sex', s)}>{s}</button>
+        ))}
+      </Field>
+
+      <Field label="Symptoms" onClear={form.symptoms.length ? () => setForm(f => ({ ...f, symptoms: [] })) : null}>
+        {SYMPTOMS.map(s => (
+          <button key={s.id} className={form.symptoms.includes(s.id) ? 'chip on' : 'chip'} onClick={() => toggle('symptoms', s.id)}>
+            {s.en}<small>{s.hi}</small>
+          </button>
+        ))}
+      </Field>
+
+      <Field label="Diagnosis" required>
+        {DIAGNOSES.map(d => (
+          <button key={d.id} className={form.diagnosis === d.id ? 'chip on' : 'chip'} onClick={() => toggle('diagnosis', d.id)}>{d.en}</button>
+        ))}
+      </Field>
+
+      <Field label="Medicines given"
+             onClear={form.drugs.length ? () => { setForm(f => ({ ...f, drugs: [] })); setKept(false) } : null}>
+        {DRUGS.map(d => (
+          <button key={d.id}
+                  className={`chip${d.antibiotic ? ' abx' : ''}${form.drugs.includes(d.id) ? ' on' : ''}`}
+                  onClick={() => toggle('drugs', d.id)}>
+            {d.name}{d.antibiotic && <small>antibiotic</small>}
+          </button>
+        ))}
+      </Field>
+
+      {showPrompt && (
+        <div className="nudge" role="status">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.4" fill="none" strokeWidth="1.6" />
+            <path d="M8 4.4v4.2M8 11v.6" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <p>{rule.note}</p>
+          <div className="nudge-acts">
+            <button className="btn btn-quiet" onClick={dropAntibiotics}>Remove it</button>
+            <button className="btn" onClick={() => setKept(true)}>Keep — my call</button>
+          </div>
+        </div>
+      )}
+
+      {offGuideline && kept && (
+        <p className="nudge-kept">Antibiotic kept against guidance — recorded, not blocked.</p>
+      )}
+
+      <Field label="Severity">
+        {SEVERITIES.map(s => (
+          <button key={s} className={form.severity === s ? 'chip on' : 'chip'} onClick={() => setForm(f => ({ ...f, severity: s }))}>{s}</button>
+        ))}
+      </Field>
+
+      {/* Optional and collapsed by default — the ten-second path never sees it. */}
+      <div className="field">
+        {!showVitals ? (
+          <button className="add-vitals" onClick={() => setShowVitals(true)}>+ Add BP / sugar reading</button>
+        ) : (
+          <>
+            <label>Vitals <span className="opt">optional</span></label>
+            <div className="vitals">
+              <input inputMode="numeric" placeholder="BP sys" value={vitals.sys}
+                     onChange={e => setVitals(v => ({ ...v, sys: e.target.value.replace(/\D/g, '').slice(0, 3) }))} />
+              <span>/</span>
+              <input inputMode="numeric" placeholder="dia" value={vitals.dia}
+                     onChange={e => setVitals(v => ({ ...v, dia: e.target.value.replace(/\D/g, '').slice(0, 3) }))} />
+              <input inputMode="numeric" placeholder="Sugar mg/dL" value={vitals.sugar}
+                     onChange={e => setVitals(v => ({ ...v, sugar: e.target.value.replace(/\D/g, '').slice(0, 3) }))} />
+            </div>
+          </>
+        )}
+      </div>
+
+      {willRefer && (
+        <p className="refer-hint">
+          Referral card will print — {riskFlags({ diagnosis: form.diagnosis, symptoms: form.symptoms, vitals }).map(f => f === 'bp' ? 'high BP' : f === 'sugar' ? 'high sugar' : 'TB symptoms').join(', ')}
+        </p>
+      )}
+
+      <div className="savebar">
+        <button className={`btn btn-wide${flash ? ' btn-good' : ''}`} disabled={!ready} onClick={save}>
+          {flash ? '✓ Saved' : willRefer ? 'Save & print referral' : 'Save patient'}
+        </button>
+      </div>
+
+      {referral && <ReferralCard referral={referral} onClose={() => setReferral(null)} />}
+    </div>
+  )
+}
