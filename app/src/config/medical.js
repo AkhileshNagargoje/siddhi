@@ -60,8 +60,11 @@ export const DRUGS = [
 // Tier 2: antibiotic stewardship rules. Drafted from WHO/ICMR general guidance;
 // Person A verifies each row. usuallyNeeded=false triggers the nudge.
 export const ANTIBIOTIC_RULES = {
-  age:    { usuallyNeeded: false, note: 'Most acute gastroenteritis is viral or self-limiting; ORS + zinc first.' },
-  ari:    { usuallyNeeded: false, note: 'Most upper respiratory infections are viral.' },
+  // ICMR: antimicrobial therapy is not typically indicated for acute watery
+  // diarrhoea in adults — ORS first. The exceptions are named in the prompt so
+  // a clinician treating dysentery or cholera isn't second-guessed wrongly.
+  age:    { usuallyNeeded: false, note: 'Acute watery diarrhoea: ORS and zinc first — antibiotics are not routinely indicated. Exceptions: bloody stool, or suspected cholera.' },
+  ari:    { usuallyNeeded: false, note: 'Most upper respiratory infections are viral. Antibiotics do not shorten them.' },
   heat:   { usuallyNeeded: false, note: 'Heat illness needs cooling and fluids, not antibiotics.' },
   injury: { usuallyNeeded: false, note: 'Clean minor wounds need dressing; antibiotics only if infected.' },
   skin:   { usuallyNeeded: true,  note: 'Bacterial skin infections often need antibiotics.' },
@@ -71,9 +74,16 @@ export const ANTIBIOTIC_RULES = {
   other:  { usuallyNeeded: true,  note: 'Unknown — no nudge.' },
 }
 
-// Tier 2: risk flag thresholds for referrals
+/* Referral thresholds — verified against Indian national guidance, Aug 2026.
+   BP 140/90 is the diagnostic and referral cut-off used by India's national
+   guideline and the India Hypertension Control Initiative (WHO HEARTS package).
+   160/100 is a different thing — the level at which a second reading is taken
+   the same day — and using it here would have silently missed everyone between
+   140/90 and 160/100, which is the bulk of undiagnosed hypertension.
+   Random blood glucose ≥200 mg/dL is the standard community screening cut-off
+   (NPCDCS / WHO), so that one stands. */
 export const RISK_RULES = {
-  bpSystolicHigh: 160,
-  bpDiastolicHigh: 100,
+  bpSystolicHigh: 140,
+  bpDiastolicHigh: 90,
   sugarHighMgDl: 200,
 }
