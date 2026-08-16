@@ -104,7 +104,10 @@ function pickAge() {
 
 // Festival day rhythm, in IST (the festival's local time), not UTC.
 function hourFactorIST(d) {
-  const h = (d.getUTCHours() + 5.5 + 24) % 24
+  // Include minutes before adding the half-hour offset — using whole hours
+  // quantised the clock before the +5:30, so every rhythm change ran up to
+  // 30 minutes late.
+  const h = (d.getUTCHours() + d.getUTCMinutes() / 60 + 5.5) % 24
   if (h >= 8 && h < 12) return 1
   if (h >= 16 && h < 20) return 0.9
   if (h >= 12 && h < 16) return 0.6
@@ -171,8 +174,12 @@ async function fetchRecent(env, sinceIso) {
   const out = []
   let offset = 0
   for (;;) {
+    // order is load-bearing: without it Postgres gives no ordering guarantee
+    // across separate limit/offset pages, and the traffic cron inserts while we
+    // paginate — so rows could be counted twice or skipped, making two scans a
+    // second apart disagree on the same data.
     const page = await sbGet(env,
-      `encounters?select=ts,sector,syndrome&ts=gte.${sinceIso}&limit=1000&offset=${offset}`)
+      `encounters?select=ts,sector,syndrome&ts=gte.${sinceIso}&order=ts.asc&limit=1000&offset=${offset}`)
     out.push(...page)
     if (page.length < 1000) return out
     offset += 1000
@@ -205,12 +212,24 @@ async function scan(env) {
   // still inside the 6-hour window, so without this the very next scan raises
   // a fresh alert seconds after the source was fixed — which reads as the
   // system ignoring the response. Suppress until those cases age out.
+  //
+  // Anchored to when the crew CLOSED the job (tasks.resolved_at), not to
+  // alerts.ts — that column is when the alert was RAISED. A crew taking longer
+  // than the window to find and fix a source would have put the raise time
+  // outside the cooldown, so the alert re-fired the moment it was resolved:
+  // exactly the failure this guard exists to prevent, and it got worse the
+  // slower the response.
   const cooldownFrom = new Date(now - WINDOW_H * 3600_000).toISOString()
-  const recentlyResolved = await sbGet(
-    env,
-    `alerts?select=sector,syndrome&status=eq.resolved&ts=gte.${cooldownFrom}`,
-  )
-  const inCooldown = new Set(recentlyResolved.map(a => `${a.sector}|${a.syndrome}`))
+  const closedTasks = await sbGet(env, `tasks?select=alert_id&resolved_at=gte.${cooldownFrom}`)
+  const closedIds = [...new Set(closedTasks.map(t => t.alert_id).filter(Boolean))]
+  const inCooldown = new Set()
+  if (closedIds.length) {
+    const closedAlerts = await sbGet(
+      env,
+      `alerts?select=sector,syndrome&id=in.(${closedIds.join(',')})`,
+    )
+    for (const a of closedAlerts) inCooldown.add(`${a.sector}|${a.syndrome}`)
+  }
   const baselines = []
   const fired = []
 

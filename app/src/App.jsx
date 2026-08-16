@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage'
 import CrewPage from './pages/CrewPage'
 import ReferralPage from './pages/ReferralPage'
 import ReplayPage from './pages/ReplayPage'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import './styles/tokens.css'
 import './App.css'
 
@@ -11,7 +12,9 @@ const ROLES = [
   { to: '/entry', name: 'Health worker', desc: 'Record a patient in ten seconds', pin: 'PIN 1111' },
   { to: '/dashboard', name: 'Health official', desc: 'Live map, alerts, dispatch', pin: 'no PIN' },
   { to: '/crew', name: 'Field crew', desc: 'Accept and close jobs', pin: 'PIN 3333' },
-  { to: '/replay', name: 'Replay an incident', desc: 'Watch a real outbreak caught and closed', pin: '60 sec' },
+  // "real" would be a false claim — the replay is a scripted scenario running
+  // the live detection rule, and says so in its own footer.
+  { to: '/replay', name: 'Replay an incident', desc: 'See an outbreak caught and closed', pin: '60 sec' },
 ]
 
 function Home() {
@@ -38,6 +41,7 @@ function Home() {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -49,5 +53,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
+    </ErrorBoundary>
   )
 }

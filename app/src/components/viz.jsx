@@ -123,7 +123,7 @@ export function EpiCurve({ points, baseline, title, subtitle, height = 210 }) {
                 <line x1={padL} x2={width - padR} y1={y(baseline)} y2={y(baseline)}
                       stroke="var(--ink-3)" strokeWidth="1.5" strokeDasharray="5 4" />
                 <text x={width - padR} y={y(baseline) - 6} textAnchor="end" className="axis-text">
-                  expected {baseline.toFixed(1)}
+                  expected {baseline.toFixed(1)}/hr
                 </text>
               </>
             )}

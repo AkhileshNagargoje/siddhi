@@ -3,6 +3,7 @@ import { supabase, isConfigured } from '../lib/supabase'
 import { CLINICS, USERS } from '../config/festival'
 import { AGE_BANDS, SEXES, SEVERITIES, SYMPTOMS, DIAGNOSES, DRUGS, ANTIBIOTIC_RULES } from '../config/medical'
 import { riskFlags, makeToken } from '../lib/referral'
+import { uuid } from '../lib/uuid'
 import { ReferralCard } from '../components/ReferralCard'
 
 // Offline-first: every record lands in localStorage first, a background loop
@@ -17,6 +18,19 @@ const saveQueue = q => localStorage.setItem(QUEUE_KEY, JSON.stringify(q))
 const REF_KEY = 'drishti_ref_queue'
 const loadRefs = () => { try { return JSON.parse(localStorage.getItem(REF_KEY) ?? '[]') } catch { return [] } }
 const saveRefs = q => localStorage.setItem(REF_KEY, JSON.stringify(q))
+
+// Counter is scoped to the local calendar day and rolls over on its own.
+const today = () => new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local
+function readSyncedToday() {
+  if (localStorage.getItem('drishti_synced_day') !== today()) return 0
+  return Number(localStorage.getItem('drishti_synced') ?? 0)
+}
+function bumpSyncedToday(by) {
+  const n = readSyncedToday() + by
+  localStorage.setItem('drishti_synced_day', today())
+  localStorage.setItem('drishti_synced', String(n))
+  return n
+}
 
 const EMPTY = { age_band: null, sex: null, symptoms: [], diagnosis: null, drugs: [], severity: 'mild' }
 
@@ -44,7 +58,10 @@ export default function EntryPage() {
   const [showVitals, setShowVitals] = useState(false)
   const [referral, setReferral] = useState(null)
   const [queue, setQueue] = useState(loadQueue)
-  const [synced, setSynced] = useState(() => Number(localStorage.getItem('drishti_synced') ?? 0))
+  /* The counter is labelled "today", so it has to mean today. It used to be a
+     lifetime total in localStorage, which after a few rehearsals had the phone
+     opening on "218 today" for a clinic that had seen three patients. */
+  const [synced, setSynced] = useState(readSyncedToday)
   const busy = useRef(false)
 
   const clinic = user ? CLINICS.find(c => c.id === user.clinicId) : null
@@ -61,16 +78,19 @@ export default function EntryPage() {
     busy.current = true
     try {
       if (batch.length) {
-        const { error } = await supabase.from('encounters').insert(batch)
-        // 23505 = already there from a retry; the row is safe either way.
+        // upsert, not insert: a multi-row insert is atomic, so ONE duplicate
+        // left over from a half-delivered attempt rolled the whole statement
+        // back with 23505 — which the branch below treated as success and
+        // cleared the queue, silently losing every other patient in the batch.
+        const { error } = await supabase
+          .from('encounters')
+          .upsert(batch, { onConflict: 'id', ignoreDuplicates: true })
         if (!error || error.code === '23505') {
           // Drop only what we actually sent — a patient saved while this
           // request was in flight must not be wiped with the batch.
           const sent = new Set(batch.map(r => r.id))
           const rest = loadQueue().filter(r => !sent.has(r.id))
-          const n = Number(localStorage.getItem('drishti_synced') ?? 0) + batch.length
-          localStorage.setItem('drishti_synced', String(n))
-          setSynced(n); saveQueue(rest); setQueue(rest)
+          setSynced(bumpSyncedToday(batch.length)); saveQueue(rest); setQueue(rest)
         } else {
           // Referrals point at encounters — never send them ahead of the rows
           // they reference, or the foreign key rejects them.
@@ -134,7 +154,7 @@ export default function EntryPage() {
     const dx = DIAGNOSES.find(d => d.id === form.diagnosis)
     const flags = riskFlags({ diagnosis: form.diagnosis, symptoms: form.symptoms, vitals })
     const rec = {
-      id: crypto.randomUUID(),
+      id: uuid(),
       ts: new Date().toISOString(),
       clinic_id: user.clinicId,
       sector: clinic.sector,
@@ -158,7 +178,7 @@ export default function EntryPage() {
       // The card works without this row — the QR is self-contained. The row is
       // the health system's own record that a referral was handed over.
       saveRefs([...loadRefs(), {
-        id: crypto.randomUUID(),
+        id: uuid(),
         encounter_id: rec.id,
         risk_type: flags.join(','),
         qr_token: token,
