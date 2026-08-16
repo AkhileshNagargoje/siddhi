@@ -195,7 +195,22 @@ async function scan(env) {
     m.set(win, (m.get(win) ?? 0) + 1)
   }
 
-  const openAlerts = await sbGet(env, 'alerts?select=id,sector,syndrome,observed&status=eq.open')
+  // Any UNRESOLVED alert counts as already-raised — not just an open one.
+  // Matching on status=open alone meant that dispatching a crew (open ->
+  // assigned) hid the alert from the next scan, which then raised a duplicate
+  // for the same sector and syndrome every five minutes until it was resolved.
+  const openAlerts = await sbGet(env, 'alerts?select=id,sector,syndrome,observed&status=neq.resolved')
+
+  // Cooldown after a crew closes an alert. The cases that triggered it are
+  // still inside the 6-hour window, so without this the very next scan raises
+  // a fresh alert seconds after the source was fixed — which reads as the
+  // system ignoring the response. Suppress until those cases age out.
+  const cooldownFrom = new Date(now - WINDOW_H * 3600_000).toISOString()
+  const recentlyResolved = await sbGet(
+    env,
+    `alerts?select=sector,syndrome&status=eq.resolved&ts=gte.${cooldownFrom}`,
+  )
+  const inCooldown = new Set(recentlyResolved.map(a => `${a.sector}|${a.syndrome}`))
   const baselines = []
   const fired = []
 
@@ -214,6 +229,7 @@ async function scan(env) {
       baselines.push({ sector, syndrome, mean_6h: mean, stddev_6h: stddev, updated_at: new Date().toISOString() })
 
       const existing = openAlerts.find(a => a.sector === sector && a.syndrome === syndrome)
+      if (!existing && inCooldown.has(`${sector}|${syndrome}`)) continue
       if (z >= Z_WATCH && observed >= MIN_COUNT) {
         const tier = z >= Z_ACT ? 'act' : 'watch'
         if (existing) {
