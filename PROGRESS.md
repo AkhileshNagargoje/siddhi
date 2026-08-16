@@ -8,10 +8,11 @@
 - **What runs right now:** Tier 1 and Tier 2 complete and deployed — entry form (offline queue), dashboard (realtime), detection, crew app. Full demo loop verified end to end locally.
 - **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>|reset` · detection: `node detect.js once|watch`
 - **Known broken:** —
+- **Database:** hardened. Public key can SELECT/INSERT/UPDATE only; DELETE is blocked (db/harden.sql). Cleanup therefore runs from the Supabase SQL Editor via db/cleanup.sql, not from a script.
 - **Live URL:** https://drishti.akhileshnagargoje.in (deploy: cd app && npm run build && npx wrangler deploy)
 - **Engine (cloud):** https://drishti-engine.akhileshnagargoje.in — Cloudflare Worker, 2 crons: detection every 5 min, live traffic every 1 min. Endpoints: /scan, /traffic, /outbreak?sector=5&n=25
 - **Deploy commands:** app: `cd app && npm run build && npx wrangler deploy` · engine: `cd worker && npx wrangler deploy`
-- **Next up:** Tier 2 complete. Remaining: rehearse demo, teammate components, optional polish.
+- **Next up:** run db/cleanup.sql right before presenting. Then: rehearse, teammate components, add a source for the 31% / 30,000 figures before the About page ships.
 
 ## Tier 1 — Essential (the demo path)
 
