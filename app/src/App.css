@@ -488,3 +488,11 @@
   letter-spacing: 0.08em; padding: 4px 6px; margin: -4px -6px; border-radius: var(--r-sm);
 }
 .clear:hover { color: var(--ink-1); background: var(--surface-sunk); }
+
+/* ---------- clinic reporting health (design rule 5) ---------- */
+.sector-silent { border: 1px dashed var(--border-stronger, var(--border-strong)); }
+.clinic-health {
+  display: flex; align-items: center; gap: 6px; margin-top: var(--s-3);
+  font-size: var(--t-xs); color: var(--good-ink);
+}
+.clinic-health.is-quiet { color: var(--warning-ink); }
