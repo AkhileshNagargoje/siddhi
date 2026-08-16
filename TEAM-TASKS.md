@@ -92,6 +92,29 @@ Patients with dangerous readings get a referral card with a QR code, meant to be
 
 ---
 
+---
+
+# Small pieces — remake something that already exists
+
+If the problems above feel too open, start here. Each of these is a small piece of the product that already works — so nothing depends on you, and nothing can break. Build **your own version** in a new file (`src/mine/<yourname>/...`). When it's ready we put the two side by side and keep the better one. If yours wins, it ships, and it's yours.
+
+Look at the current one first, then close it and design your own. Don't copy — the point is your take on it.
+
+| Piece | What it must do | Current version lives in |
+|---|---|---|
+| PIN sign-in screen | 4-digit PIN, big touch targets, obvious error on wrong PIN | `src/pages/EntryPage.jsx` (bottom) |
+| Referral card | Printable card: QR, patient facts, bilingual instruction — must look right on paper | `src/components/ReferralCard.jsx` |
+| Alert row | One alert in a list: sector, illness, the numbers, a status that reads at a glance | `src/pages/DashboardPage.jsx` (alert-card) |
+| "Why this fired" box | Explain observed vs expected so a non-statistician trusts it in five seconds | `src/pages/DashboardPage.jsx` (detail) |
+| Sector tile | One map tile: id, name, count, alert state — legible from across a room | `src/components/viz.jsx` (SectorGrid) |
+| KPI tile | A number with a label and a tiny trend — the calmest thing on the screen | `src/components/viz.jsx` (StatTile) |
+| Home page | The role picker — first thing every judge sees | `src/App.jsx` (Home) |
+| Empty & error states | What screens show when there's no data, no alerts, no network | scattered — find them |
+
+These are real: every one of them is on screen during the demo. A better sector tile or a better home page is a visible contribution with your name on it.
+
+---
+
 ## When you've built something
 
 1. It runs (`npm run dev`) and doesn't break anything that already works
