@@ -1,10 +1,8 @@
-# Team coding tasks
+# Team tasks — problem statements
 
-Six tasks. Each is one file. None of them can break the main app.
+You get a **problem**, not a spec. Understanding the user and deciding what to build is your job — that's the actual work, and you'll be the one explaining it to judges.
 
-**Your file already exists as a stub, and it is already wired into the live app.** Replace the stub, run `npm run dev`, and your work appears inside the real product — the age chart on the control-room dashboard, the sector panel when a tile is clicked, the morning card after a doctor signs in, /demo and /about as live routes. Send the finished file back; after merge it deploys to drishti.akhileshnagargoje.in with your name on it.
-
-Work out how to build it yourself — the points below are the requirements, not the instructions.
+**Your file already exists as a stub, wired into the live app.** Replace the stub, run `npm run dev`, and whatever you build appears inside the real product. Send the file back when it works; after merge it deploys to drishti.akhileshnagargoje.in.
 
 ---
 
@@ -17,196 +15,133 @@ npm install
 npm run dev
 ```
 
-Ask the main dev for the `.env` file. Copy `app/.env.example` to `app/.env` and fill in the two values.
+Ask the main dev for the `.env` values (copy `app/.env.example` to `app/.env`).
 
-## Rules for everyone
+**Context you should read first:** `EXPLAINER.md` in the repo root — the whole project in plain language. Ten minutes, and every design decision you'll make gets easier.
 
-- Create only the file listed in your task. Do not edit any other file.
-- No new npm packages.
-- No hardcoded colours. Use the CSS variables below — they handle dark mode for you.
-- No `<style>` blocks. Use inline `style={{}}` or the existing classes.
-- JSX, not TypeScript.
-- Check it in light mode AND dark mode. Check it in a narrow window.
-- Send the file to the main dev when done. Don't push to GitHub yourself.
+## The rules (few, but firm)
 
-## What you can style with
+- Touch only your own file. The interface (props / route) is fixed — the app already calls it.
+- No new npm packages. No `<style>` blocks (inline `style={{}}` or existing classes). JSX, not TypeScript.
+- No hardcoded colours — use the CSS variables below; they handle dark mode for you.
+- Check your work in light AND dark mode, and in a phone-width window.
+- Look at `src/pages/CrewPage.jsx` to see how existing screens are written.
 
-**Existing classes:** `shell` `panel` `btn` `btn-accent` `btn-good` `btn-quiet` `btn-wide` `chart` `chart-head` `chart-sub` `tile` `tile-label` `tile-value` `badge` `badge-good` `badge-warning` `badge-critical` `sheet` `sheet-inner` `source-chip` `live` `empty`
-
-**CSS variables:**
-- Text — `--ink-1` main, `--ink-2` grey, `--ink-3` light grey
-- Backgrounds — `--surface-1` card, `--surface-2` raised, `--surface-sunk` sunken
-- Lines — `--border`, `--border-strong`, `--axis`
-- Meaning — `--series-1` chart blue, `--good-ink` green, `--warning-ink` orange, `--critical-ink` red
-- Text sizes — `--t-hero` `--t-xl` `--t-lg` `--t-md` `--t-sm` `--t-xs`
-- Spacing — `--s-1` to `--s-7`
-- Corners — `--r-sm` `--r-md` `--r-lg` `--r-pill`
-
-Look at `src/pages/CrewPage.jsx` for an example of how existing pages are written.
+**Palette:** classes `shell panel btn btn-accent btn-good btn-quiet btn-wide chart chart-head chart-sub tile tile-label tile-value badge badge-good badge-warning badge-critical sheet sheet-inner source-chip live empty` · text `--ink-1/2/3` · surfaces `--surface-1/2/-sunk` · lines `--border --border-strong --axis` · meaning `--series-1` (chart blue) `--good-ink --warning-ink --critical-ink` · sizes `--t-hero/xl/lg/md/sm/xs` · spacing `--s-1..7` · corners `--r-sm/md/lg/pill`
 
 ---
 
-# TASK 1 — Demo control page
+# TASK 1 — `src/pages/DemoPage.jsx` (route: /demo)
 
-**File:** `src/pages/DemoPage.jsx`
-**Why:** Right now we trigger the demo by typing terminal commands. On stage that's slow and looks amateur. This makes it buttons.
+**The problem.** In five days we present this system live on stage. Triggering the demo currently means typing commands into a terminal — slow, error-prone, and it looks amateur in front of judges. The presenter may not be the person who knows the commands.
 
-- Three buttons, each calls a web address and shows the result
-- **Add traffic** → `https://drishti-engine.akhileshnagargoje.in/traffic`
-- **Run detection** → `https://drishti-engine.akhileshnagargoje.in/scan`
-- **Inject outbreak** → `https://drishti-engine.akhileshnagargoje.in/outbreak?sector=5&n=25`
-- For inject: two dropdowns, sector (1–12) and cases (10/25/50), feeding into the address
-- Call the addresses yourself in the browser first to see what comes back
-- While a request runs: disable that button, show "Working…", never allow two at once
-- Show the last 5 actions with timestamps, newest first, in plain English — not raw JSON
-- A failed request shows a red log entry. The page must never crash
-- Heading "Demo controls" plus a warning line that this creates real data
+The backend already exposes three actions as plain web addresses (open them in a browser to see what they return):
 
-**Done when:** someone who has never seen a terminal can run the whole demo from this page.
+- `https://drishti-engine.akhileshnagargoje.in/traffic` — adds a few normal patients
+- `https://drishti-engine.akhileshnagargoje.in/scan` — runs outbreak detection now
+- `https://drishti-engine.akhileshnagargoje.in/outbreak?sector=5&n=25` — creates a fake outbreak (sector 1–12, n up to 100)
+
+**Design for this person:** someone nervous, on stage, projector mirrored, who has never seen a terminal. What do they need to see, press, and trust? What must never happen (double-fires, silent failures, raw JSON on screen)?
+
+**Done when** the least technical person on the team can run the entire outbreak demo alone from this page, and nothing they can press twice breaks it.
 
 ---
 
-# TASK 2 — About page
+# TASK 2 — `src/pages/AboutPage.jsx` (route: /about)
 
-**File:** `src/pages/AboutPage.jsx`
-**Why:** Judges click around. This makes the project feel finished.
+**The problem.** Judges click around an app for two minutes and decide whether it's a product or a school project. Right now there is nowhere that tells them what this is, who made it, and why the problem is real.
 
-- Title "Drishti", one line under it: "Outbreak early warning for mass gatherings"
-- **The problem** — three lines:
-  - Fourteen people in one sector fall ill from the same water tap
-  - They go to four different clinics. Each doctor sees three or four cases — a normal day
-  - Nobody sees fourteen, because nobody is adding them up
-- **What it does** — four points: 10-second offline entry · pools all clinics live · detects clusters and shows its maths · turns alerts into jobs a crew must close
-- **Three big numbers**, side by side on desktop, stacked on mobile:
-  - **31%** antibiotics prescribed at the 2015 Kumbh, recorded and never acted on — link the source: https://publichealth.jmir.org/2023/1/e45121
-  - **2,000+ visits on day one, 30+ clinics** — health workers really will enter data on tablets — link the source: https://mittalsouthasiainstitute.harvard.edu/2018/05/the-jana-swasthya-project-at-the-2015-kumbh-mela/
-  - **600 → 35** cases, when the tap is closed on day 1 instead of day 4
-- **Team** — four names and roles
-- **Links** — live app, and the GitHub repo
-- Centred, max width about 720px
-- No images
+Raw material — `EXPLAINER.md` has the story; these numbers are verified with sources you should link:
 
-**Done when:** it reads like a real product page, not a school project.
+- **31%** — antibiotic prescribing rate at the 2013/2015 Kumbh Melas, recorded and never acted on → https://publichealth.jmir.org/2023/1/e45121
+- **2,000+ visits on day one, 30+ clinics** — proof health workers will enter data on tablets → https://mittalsouthasiainstitute.harvard.edu/2018/05/the-jana-swasthya-project-at-the-2015-kumbh-mela/
+- **600 → 35** — modelled cases when the contaminated tap closes on day 1 instead of day 4
+
+**Design for this person:** a judge with 90 seconds and thirty tabs open. What earns the next thirty seconds of their attention?
+
+**Done when** a stranger reads it and can retell the problem to someone else — and the team's names are on it.
 
 ---
 
-# TASK 3 — Morning card
+# TASK 3 — `src/components/MorningCard.jsx`
 
-**File:** `src/components/MorningCard.jsx`
-**Why:** A doctor enters 180 patients a day and gets nothing back. Over six weeks that's how people stop caring. This gives something in return.
+**The problem.** A doctor at a festival clinic enters 180 patients a day into our system and gets *nothing back*. Data entry feels like a one-way street, and over weeks that is exactly how surveillance systems die — quality rots because nobody sees the point. We want the doctor to get something back, once, at the start of each day.
 
-Props it receives (already calculated — fetch nothing):
+Your component receives (already wired — it mounts after clinic sign-in, once per day):
 
 ```js
 { clinicName, yesterdayPatients, sectorEvent, myAntibioticRate, festivalMedianRate, onClose }
-// sectorEvent is a string or null. Rates are decimals: 0.18 = 18%
+// sectorEvent: string or null. Rates are decimals: 0.18 = 18%.
 ```
 
-- "Good morning" + clinic name
-- How many patients they recorded yesterday, number emphasised
-- If `sectorEvent` exists, show it with a small tick icon (write the SVG yourself, no icon library, no emoji)
-- Their antibiotic rate next to the festival median, side by side
-- Lower or equal to median → green. Higher → orange
-- A full-width "Start the day" button calling `onClose`
-- Card about 380px wide on a dark overlay — use `sheet` and `sheet-inner`
+**Design for this person:** a doctor at 7am, tea in one hand, queue already forming, who will give this card *ten seconds at most*. What's worth their glance? What would make them dismiss it forever?
 
-**The rule that matters most:** never scold or judge the doctor. Show the two numbers, never a verdict. No "you are prescribing too many" or "please reduce". The doctor draws their own conclusion. Judging language means the task is wrong.
+**One value that is not negotiable:** this card must never scold or judge. If their antibiotic rate is high, show the number beside the festival's — the doctor draws the conclusion. The instant this card feels like surveillance *of them*, they stop trusting the whole system.
 
-**Done when:** a tired person can read it in ten seconds holding a cup of tea.
+**Done when** it's readable in ten seconds and the doctor would actually want tomorrow's.
 
 ---
 
-# TASK 4 — Sector detail panel
+# TASK 4 — `src/components/SectorDetail.jsx`
 
-**File:** `src/components/SectorDetail.jsx`
-**Why:** Clicking a sector on the map currently does almost nothing.
+**The problem.** The control-room dashboard shows twelve sector tiles. An official sees Sector 5 running hot and clicks it — and today, nothing useful happens. In that moment they have exactly one question: *what is going on in there, and where do I look first?*
 
-Props it receives (fetch nothing):
+Your component receives (already wired — it mounts when a tile is clicked):
 
 ```js
 { sector, totalCases, bySyndrome, clinics, onClose }
 // sector: { id, name, waterPoints: [], kitchens: [] }
-// bySyndrome: [{ syndrome, count }] already sorted biggest first
+// bySyndrome: [{ syndrome, count }] sorted biggest first
 // clinics: [{ id, name, cases }]
 ```
 
-- Header: sector name, with "Sector 5" small and grey above it, close button on the right
-- Total cases in the last 6 hours, number large
-- **A horizontal bar chart** of `bySyndrome` — label left, bar middle, number right
-- Build the bars with plain `<div>`s and percentage widths. No charting library
-- **All bars the same colour** (`--series-1`). Colour carries no meaning here, only length does
-- List of clinics with their case counts
-- Water points and kitchens as chips (`source-chip`). If empty, say "none mapped"
-- Numbers should line up on the right
+**Design for this person:** a district health officer glancing between three screens in a control room. They need the shape of the problem in five seconds — which illness dominates, which clinics are seeing it, what physical sources (taps, kitchens) sit in that sector.
 
-**Done when:** an official can glance at it and immediately know what's wrong in that sector.
+One convention this project holds: in a chart where only *size* carries meaning, everything is one colour (`--series-1`). Colour is reserved for meaning.
+
+**Done when** an official can glance at it and know what's wrong in that sector without reading anything twice.
 
 ---
 
-# TASK 5 — Alert sound and notification
+# TASK 5 — `src/lib/useAlertSound.js`
 
-**File:** `src/lib/useAlertSound.js`
-**Why:** The operator may be looking away when an alert fires. Also — during the demo, when the sector turns red *and the room hears it*, that's a moment.
+**The problem.** An outbreak alert lands on the dashboard — and the operator is looking at another screen. Nothing sounds, nothing stirs; the alert waits silently to be noticed, which defeats its purpose. (And on demo day: the moment the room *hears* the alert land is the moment the audience feels it.)
 
-- A React hook: `useAlertSound(alerts, { enabled })`
-- `alerts` is an array of `{ id, sector, syndrome, tier }`
-- When an alert appears with an id it hasn't seen: play a chime and show a browser notification
-- **On first render, record all existing ids without playing anything** — otherwise it fires a burst on page load
-- Generate the sound with the Web Audio API. No audio files, no packages
-- Two short sine notes, roughly 880Hz then 1175Hz, ~0.12s each, fade the volume out so it doesn't click. Gentle — this is a chime, not an alarm
-- Create the AudioContext lazily on first sound. Browsers block audio before user interaction
-- Ask notification permission only when `enabled` turns true, never on page load
-- If notifications are denied or unsupported: skip silently, still play the sound, never throw
-- Also export `AlertSoundToggle({ enabled, onChange })` — a small button with an inline SVG speaker icon, using `className="live"`
-- Clean up on unmount
+What's wanted is a React hook, signature `useAlertSound(alerts, { enabled })` where `alerts` is `[{ id, sector, syndrome, tier }]`, plus a small exported toggle component `AlertSoundToggle({ enabled, onChange })` so the operator stays in control.
 
-**Done when:** it works, and it doesn't make a sound the moment you open the page.
+**Constraints that come from how browsers work, not from us:** audio must be generated with the Web Audio API (no files, no packages, and browsers block sound before the user's first interaction — create the context lazily). Notification permission must be requested only when the user enables the feature, never on page load. And think about the first render: the page loads with alerts already present — what must *not* happen?
+
+**Design for this room:** a control room, hours of quiet. The sound should be a polite tap on the shoulder, not a fire alarm — and it must never, ever crash the dashboard, whatever the browser supports or denies.
+
+**Done when** a new alert is heard and seen once, existing alerts stay silent on load, and the dashboard survives every permission the browser can refuse.
 
 ---
 
-# TASK 6 — Cases by age chart
+# TASK 6 — `src/components/AgeChart.jsx`
 
-**File:** `src/components/AgeChart.jsx`
-**Why:** Which age groups are affected is a real clinical signal — some outbreaks hit the elderly hardest.
+**The problem.** Outbreaks have fingerprints. Cholera at a Kumbh hits the elderly hardest; a food-poisoning cluster hits everyone who ate at one kitchen. The dashboard counts cases but says nothing about *who* is getting sick — and the age profile is a genuine clinical signal an epidemiologist reads instantly.
 
-Props it receives (fetch nothing):
+Your component receives (already wired — it renders on the dashboard with live data):
 
 ```js
 { data, title, subtitle }
-// data: [{ band: '0-5', count: 12 }, ...] — five bands
+// data: [{ band: '0-5', count: 12 }, ...] — five age bands
 ```
 
-- Vertical bar chart drawn as an inline `<svg>`. **No charting library**
-- Height proportional to the largest count
-- **All bars the same colour** (`--series-1`). Do not give each bar its own colour — height carries the meaning, not colour
-- Rounded top corners (~4px), square where they meet the baseline
-- Age band label under each bar, count above it
-- Thin baseline in `--axis`
-- On hover, darken the bar using `opacity` — don't change its colour
-- Must resize with its container: use `viewBox` and `width="100%"`
-- SVG text: `fill="var(--ink-3)"` for labels, `fill="var(--ink-2)"` for counts, font size 11 minimum
-- Wrap it in `<div className="chart">` with a `chart-head` containing the title and `chart-sub` subtitle
+**Design for this person:** the same control-room official. The shape of the distribution is the message — an elderly skew should be visible from across the room.
 
-**Done when:** it sits next to the existing dashboard charts and looks like it belongs.
+Constraints: draw it yourself as inline SVG (no charting library — nothing else in this app uses one), it must resize with its container, and the one-colour rule applies: height carries the meaning, so every bar is `--series-1`.
+
+**Done when** it sits next to the existing dashboard charts and looks like it was always there.
 
 ---
 
-# Before you send it back
+## When you're done
 
-1. `npm run dev` — does the app still load?
-2. Switch your system to dark mode — still readable?
-3. Narrow the window to phone width — does anything overflow sideways?
-4. Send the file to the main dev
+1. `npm run dev` — the app loads, your piece appears
+2. Dark mode still readable, phone width doesn't overflow
+3. Send the file to the main dev — don't push yourself
 
-If your AI tool gives you broken code, paste the error back and ask it to fix it. Two or three rounds is normal.
+Using an AI to help you build is fine — that's how the rest of this project was built too. But the *decisions* should be yours, because you'll be the one standing next to it when a judge asks "why did you build it this way?"
 
-| Task | File | Difficulty |
-|---|---|---|
-| 1. Demo controls | `src/pages/DemoPage.jsx` | medium |
-| 2. About page | `src/pages/AboutPage.jsx` | easy |
-| 3. Morning card | `src/components/MorningCard.jsx` | medium |
-| 4. Sector detail | `src/components/SectorDetail.jsx` | medium |
-| 5. Alert sound | `src/lib/useAlertSound.js` | hard |
-| 6. Age chart | `src/components/AgeChart.jsx` | medium |
-
-There is also a non-coding task: **print a referral card on real paper and check the QR still scans.** Nobody has ever tested this. Details from the main dev.
+There is also one non-coding task: **print a referral card on real paper and scan the QR off the print.** Nobody has ever tested it. Ask the main dev.
