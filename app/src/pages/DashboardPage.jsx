@@ -150,6 +150,28 @@ export default function DashboardPage() {
     return Math.round((recent.filter(e => e.severity === 'severe').length / recent.length) * 100)
   }, [recent])
 
+  /* Design rule 5: silence is not calm. A clinic with no encounter for 3h is
+     flagged, and a sector whose every clinic has gone quiet is drawn as a
+     blind spot, not as a healthy pale tile. Derived from the encounter stream
+     itself — no extra write path, and it works whichever client inserted. */
+  const clinicHealth = useMemo(() => {
+    const QUIET_MS = 3 * 3600_000
+    const last = new Map()
+    for (const e of encounters) {
+      const t = new Date(e.ts).getTime()
+      if (t > (last.get(e.clinic_id) ?? 0)) last.set(e.clinic_id, t)
+    }
+    const cutoff = Date.now() - QUIET_MS
+    const quiet = CLINICS.filter(c => (last.get(c.id) ?? 0) < cutoff)
+    const silentSectors = new Set(
+      FESTIVAL.sectors
+        .filter(s => CLINICS.filter(c => c.sector === s.id)
+          .every(c => (last.get(c.id) ?? 0) < cutoff))
+        .map(s => s.id),
+    )
+    return { quiet, silentSectors, total: CLINICS.length }
+  }, [encounters])
+
   async function assign(alert) {
     await supabase.from('tasks').insert({ alert_id: alert.id, assigned_unit: unit })
     await supabase.from('alerts').update({ status: 'assigned' }).eq('id', alert.id)
@@ -210,6 +232,7 @@ export default function DashboardPage() {
             counts={bySector}
             alertTier={alertTier}
             selected={sel?.sector}
+            clinicHealth={clinicHealth}
           />
         </div>
 

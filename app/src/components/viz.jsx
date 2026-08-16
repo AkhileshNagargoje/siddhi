@@ -200,7 +200,7 @@ export function StewardshipPanel({ rows, median }) {
 
 /* Sector heatmap. Fill = magnitude (sequential blue). Alert state is a SEPARATE
    channel — status ring + icon badge — so magnitude colour keeps its meaning. */
-export function SectorGrid({ sectors, counts, alertTier, onPick, selected }) {
+export function SectorGrid({ sectors, counts, alertTier, onPick, selected, clinicHealth }) {
   const max = Math.max(...sectors.map(s => counts.get(s.id) ?? 0), 1)
   const steps = ['--seq-0', '--seq-1', '--seq-2', '--seq-3', '--seq-4', '--seq-5', '--seq-6']
 
@@ -209,6 +209,9 @@ export function SectorGrid({ sectors, counts, alertTier, onPick, selected }) {
     const idx = Math.min(steps.length - 1, 1 + Math.floor((n / max) * (steps.length - 2)))
     return steps[idx]
   }
+
+  const quiet = clinicHealth?.quiet ?? []
+  const silentSectors = clinicHealth?.silentSectors ?? new Set()
 
   return (
     <div className="panel">
@@ -221,21 +224,28 @@ export function SectorGrid({ sectors, counts, alertTier, onPick, selected }) {
         {sectors.map(sec => {
           const n = counts.get(sec.id) ?? 0
           const tier = alertTier.get(sec.id)
-          const dark = n / max > 0.55
+          const silent = silentSectors.has(sec.id)
+          const dark = !silent && n / max > 0.55
           return (
             <button
               key={sec.id}
-              className={`sector${tier ? ` sector-${tier}` : ''}${selected === sec.id ? ' is-sel' : ''}`}
-              style={{ background: `var(${stepFor(n)})`, color: dark ? '#fff' : 'var(--ink-1)' }}
+              className={`sector${tier ? ` sector-${tier}` : ''}${silent ? ' sector-silent' : ''}${selected === sec.id ? ' is-sel' : ''}`}
+              /* A silent sector must never wear the healthy pale ramp — its
+                 count is stale information, so the tile becomes a blind spot. */
+              style={silent
+                ? { background: 'var(--surface-sunk)', color: 'var(--ink-3)' }
+                : { background: `var(${stepFor(n)})`, color: dark ? '#fff' : 'var(--ink-1)' }}
               onClick={() => onPick?.(sec.id)}
-              title={`${sec.name} — ${n} cases in last 6h`}
+              title={silent
+                ? `${sec.name} — no clinic has reported for 3 hours`
+                : `${sec.name} — ${n} cases in last 6h`}
             >
               <span className="sector-id" style={{ color: dark ? 'rgba(255,255,255,0.75)' : 'var(--ink-3)' }}>
                 S{sec.id}
               </span>
-              <span className="sector-count">{n}</span>
+              <span className="sector-count">{silent ? '—' : n}</span>
               <span className="sector-name" style={{ color: dark ? 'rgba(255,255,255,0.85)' : 'var(--ink-2)' }}>
-                {sec.name}
+                {silent ? 'no reports 3h+' : sec.name}
               </span>
               {tier && (
                 <span className={`sector-flag flag-${tier}`}>
@@ -256,6 +266,29 @@ export function SectorGrid({ sectors, counts, alertTier, onPick, selected }) {
         {steps.map(s => <i key={s} style={{ background: `var(${s})` }} />)}
         <span className="legend-label">more cases</span>
       </div>
+
+      {clinicHealth && (
+        <div className={quiet.length ? 'clinic-health is-quiet' : 'clinic-health'}>
+          {quiet.length === 0 ? (
+            <>
+              <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"
+                   fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12.5l5 5L20 6.5" />
+              </svg>
+              all {clinicHealth.total} clinics reporting
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"
+                   fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+                <path d="M8 2.2L14.4 13.4H1.6z" />
+                <path d="M8 6v3.2M8 11.2v.6" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              {quiet.length} of {clinicHealth.total} clinics silent 3h+: {quiet.map(c => c.name).join(', ')}
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

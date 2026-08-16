@@ -42,6 +42,21 @@ const Z_ACT = 4
 const MIN_COUNT = 8
 const PEAK_PER_CLINIC_HOUR = 6
 
+/* The whole detection decision for one (sector, syndrome) cell, as a pure
+   function so it can be unit-tested without a database. `hist` is the count
+   for the same 6h time-of-day slot on each of the previous 3 days.
+   Returns { mean, stddev, z, tier } — tier is null when no alert should fire. */
+export function scoreCell(observed, hist) {
+  const mean = hist.reduce((a, b) => a + b, 0) / hist.length
+  const variance = hist.reduce((a, b) => a + (b - mean) ** 2, 0) / hist.length
+  const stddev = Math.sqrt(variance)
+  // Poisson floor: count noise is at least sqrt(mean); the final 1 guards the
+  // all-zero baseline where sqrt(0) would otherwise divide by zero.
+  const z = (observed - mean) / Math.max(stddev, Math.sqrt(mean), 1)
+  const fires = z >= Z_WATCH && observed >= MIN_COUNT
+  return { mean, stddev, z, tier: fires ? (z >= Z_ACT ? 'act' : 'watch') : null }
+}
+
 // ---------- Supabase REST helpers ----------
 
 function headers(env, extra = {}) {
@@ -239,18 +254,13 @@ async function scan(env) {
       const observed = m.get(0) ?? 0
       // Phase-matched: same 6h slot on each of the previous 3 days.
       const hist = [4, 8, 12].map(w => m.get(w) ?? 0)
-      const mean = hist.reduce((a, b) => a + b, 0) / hist.length
-      const variance = hist.reduce((a, b) => a + (b - mean) ** 2, 0) / hist.length
-      const stddev = Math.sqrt(variance)
-      // Poisson floor: count noise is at least sqrt(mean).
-      const z = (observed - mean) / Math.max(stddev, Math.sqrt(mean), 1)
+      const { mean, stddev, z, tier } = scoreCell(observed, hist)
 
       baselines.push({ sector, syndrome, mean_6h: mean, stddev_6h: stddev, updated_at: new Date().toISOString() })
 
       const existing = openAlerts.find(a => a.sector === sector && a.syndrome === syndrome)
       if (!existing && inCooldown.has(`${sector}|${syndrome}`)) continue
-      if (z >= Z_WATCH && observed >= MIN_COUNT) {
-        const tier = z >= Z_ACT ? 'act' : 'watch'
+      if (tier) {
         if (existing) {
           if (observed !== existing.observed) {
             await sbPatch(env, 'alerts', `id=eq.${existing.id}`,
