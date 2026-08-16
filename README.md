@@ -98,6 +98,13 @@ These are deliberate and documented in `PROJECT.md`:
 6. **No pilgrim login.** Ever.
 7. **Config-driven.** Sectors, clinics, symptoms and thresholds live in config, so the same system redeploys to any mass gathering.
 
+## Sources
+
+The headline figures are published, not folkloric:
+
+- **Antibiotic prescribing of up to 31% of encounters** at the 2013/2015 Melas: [Shaikh et al., *JMIR Public Health and Surveillance* 2023](https://publichealth.jmir.org/2023/1/e45121) (also on [PMC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10034612/)).
+- **The Jana Swasthya Project / EMcounter** — digital syndromic surveillance plus mass screening, 2,000+ visits on day one across 30+ clinics on government tablets: [Harvard Mittal South Asia Institute](https://mittalsouthasiainstitute.harvard.edu/2018/05/the-jana-swasthya-project-at-the-2015-kumbh-mela/); raw data on [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/WCEWNR).
+
 ## Project docs
 
 - `PROJECT.md` — full specification, scope tiers, data model

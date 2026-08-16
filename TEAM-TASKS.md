@@ -76,8 +76,8 @@ Look at `src/pages/CrewPage.jsx` for an example of how existing pages are writte
   - Nobody sees fourteen, because nobody is adding them up
 - **What it does** — four points: 10-second offline entry · pools all clinics live · detects clusters and shows its maths · turns alerts into jobs a crew must close
 - **Three big numbers**, side by side on desktop, stacked on mobile:
-  - **31%** antibiotics prescribed at the 2015 Kumbh, recorded and never acted on
-  - **30,000** patient visits proving health workers will enter data
+  - **31%** antibiotics prescribed at the 2015 Kumbh, recorded and never acted on — link the source: https://publichealth.jmir.org/2023/1/e45121
+  - **2,000+ visits on day one, 30+ clinics** — health workers really will enter data on tablets — link the source: https://mittalsouthasiainstitute.harvard.edu/2018/05/the-jana-swasthya-project-at-the-2015-kumbh-mela/
   - **600 → 35** cases, when the tap is closed on day 1 instead of day 4
 - **Team** — four names and roles
 - **Links** — live app, and the GitHub repo
