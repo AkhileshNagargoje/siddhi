@@ -5,6 +5,8 @@ import CrewPage from './pages/CrewPage'
 import ReferralPage from './pages/ReferralPage'
 import ReplayPage from './pages/ReplayPage'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import DemoPage from './pages/DemoPage'
+import AboutPage from './pages/AboutPage'
 import './styles/tokens.css'
 import './App.css'
 
@@ -50,6 +52,8 @@ export default function App() {
         <Route path="/crew" element={<CrewPage />} />
         <Route path="/r" element={<ReferralPage />} />
         <Route path="/replay" element={<ReplayPage />} />
+        <Route path="/demo" element={<DemoPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

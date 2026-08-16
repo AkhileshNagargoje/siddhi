@@ -5,6 +5,7 @@ import { AGE_BANDS, SEXES, SEVERITIES, SYMPTOMS, DIAGNOSES, DRUGS, ANTIBIOTIC_RU
 import { riskFlags, makeToken } from '../lib/referral'
 import { uuid } from '../lib/uuid'
 import { ReferralCard } from '../components/ReferralCard'
+import { MorningCard } from '../components/MorningCard'
 
 // Offline-first: every record lands in localStorage first, a background loop
 // pushes it up. Client-generated UUIDs make retries duplicate-proof.
@@ -118,9 +119,21 @@ export default function EntryPage() {
     return () => { clearInterval(t); window.removeEventListener('online', flush) }
   }, [flush])
 
+  /* Morning card (TASK 3): shown once per local day, right after sign-in.
+     Sample props for now — main dev wires live figures once the component
+     ships. The stub renders null, so this mounts invisibly until then. */
+  const [showMorning, setShowMorning] = useState(false)
+
   function login() {
     const u = USERS.find(u => u.pin === pin && u.role === 'worker')
-    u ? setUser(u) : setPin('')
+    if (!u) { setPin(''); return }
+    setUser(u)
+    if (localStorage.getItem('drishti_morning_day') !== today()) setShowMorning(true)
+  }
+
+  function closeMorning() {
+    localStorage.setItem('drishti_morning_day', today())
+    setShowMorning(false)
   }
 
   function toggle(field, value) {
@@ -326,6 +339,17 @@ export default function EntryPage() {
       </div>
 
       {referral && <ReferralCard referral={referral} onClose={() => setReferral(null)} />}
+
+      {showMorning && (
+        <MorningCard
+          clinicName={clinic?.name}
+          yesterdayPatients={182}
+          sectorEvent={'Water contamination found and fixed at W-7'}
+          myAntibioticRate={0.18}
+          festivalMedianRate={0.24}
+          onClose={closeMorning}
+        />
+      )}
     </div>
   )
 }

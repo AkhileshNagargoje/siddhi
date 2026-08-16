@@ -3,6 +3,9 @@ import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL, RESPONSE_UNITS, CLINICS } from '../config/festival'
 import { SYNDROME_LABELS, DRUGS } from '../config/medical'
 import { StatTile, StatusBadge, EpiCurve, SectorGrid, StewardshipPanel } from '../components/viz'
+import { AgeChart } from '../components/AgeChart'
+import { SectorDetail } from '../components/SectorDetail'
+import { AGE_BANDS } from '../config/medical'
 
 const ANTIBIOTIC_IDS = new Set(DRUGS.filter(d => d.antibiotic).map(d => d.id))
 
@@ -35,6 +38,7 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState([])
   const [selected, setSelected] = useState(null)
   const [unit, setUnit] = useState(RESPONSE_UNITS[0].id)
+  const [pickedSector, setPickedSector] = useState(null) // sector tile clicked → detail panel (TASK 4)
 
   useEffect(() => {
     if (!isConfigured()) return
@@ -150,6 +154,33 @@ export default function DashboardPage() {
     return Math.round((recent.filter(e => e.severity === 'severe').length / recent.length) * 100)
   }, [recent])
 
+  /* Live props for the teammate-built components. Data is computed here so
+     the components stay pure display (TEAM-TASKS: "fetch nothing"). */
+  const ageData = useMemo(() => {
+    const c = new Map(AGE_BANDS.map(b => [b, 0]))
+    for (const e of recent) c.set(e.age_band, (c.get(e.age_band) ?? 0) + 1)
+    return AGE_BANDS.map(band => ({ band, count: c.get(band) ?? 0 }))
+  }, [recent])
+
+  const pickedDetail = useMemo(() => {
+    if (!pickedSector) return null
+    const sec = FESTIVAL.sectors.find(s => s.id === pickedSector)
+    if (!sec) return null
+    const inSector = recent.filter(e => e.sector === pickedSector)
+    const bySyn = new Map()
+    for (const e of inSector) bySyn.set(e.syndrome, (bySyn.get(e.syndrome) ?? 0) + 1)
+    return {
+      sector: sec,
+      totalCases: inSector.length,
+      bySyndrome: [...bySyn.entries()]
+        .filter(([s]) => s !== 'screening')
+        .map(([s, count]) => ({ syndrome: SYNDROME_LABELS[s] ?? s, count }))
+        .sort((a, b) => b.count - a.count),
+      clinics: CLINICS.filter(c => c.sector === pickedSector)
+        .map(c => ({ id: c.id, name: c.name, cases: inSector.filter(e => e.clinic_id === c.id).length })),
+    }
+  }, [pickedSector, recent])
+
   /* Design rule 5: silence is not calm. A clinic with no encounter for 3h is
      flagged, and a sector whose every clinic has gone quiet is drawn as a
      blind spot, not as a healthy pale tile. Derived from the encounter stream
@@ -233,7 +264,12 @@ export default function DashboardPage() {
             alertTier={alertTier}
             selected={sel?.sector}
             clinicHealth={clinicHealth}
+            onPick={id => setPickedSector(p => (p === id ? null : id))}
           />
+          {pickedDetail && (
+            <SectorDetail {...pickedDetail} onClose={() => setPickedSector(null)} />
+          )}
+          <AgeChart data={ageData} title="Cases by age" subtitle="last 6 hours" />
         </div>
 
         <div className="dash-col">
