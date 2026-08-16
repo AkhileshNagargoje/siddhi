@@ -189,7 +189,11 @@ export default function DashboardPage() {
         <div className="dash-col">
           <EpiCurve
             points={curve}
-            baseline={sel ? Number(sel.expected) : null}
+            /* alerts.expected is a count per SIX-HOUR window; this chart is
+               bucketed per hour. Plotting it raw drew the line 6x too high, so
+               the outbreak spike rendered *below* its own "expected" line —
+               visually contradicting the alert text beside it. */
+            baseline={sel ? Number(sel.expected) / 6 : null}
             title={sel ? `Sector ${sel.sector} — ${SYNDROME_LABELS[sel.syndrome] ?? sel.syndrome}` : 'All cases'}
             subtitle={sel ? 'cases per hour vs expected' : 'cases per hour, last 24 hours'}
           />

@@ -1,5 +1,6 @@
 import qr from 'qrcode-generator'
 import { RISK_RULES } from '../config/medical'
+import { uuid } from './uuid'
 
 /* The referral card is self-contained: the QR carries the referral itself, not a
    lookup key. A village health centre can read it with no network and no app —
@@ -30,7 +31,7 @@ export function riskFlags({ diagnosis, symptoms = [], vitals = {} }) {
 export function riskLabel(f) { return RISK_LABEL[f] ?? f }
 
 export function makeToken() {
-  return crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()
+  return uuid().replace(/-/g, '').slice(0, 12).toUpperCase()
 }
 
 /* Compact keys keep the QR sparse enough to scan off a cheap print. */
