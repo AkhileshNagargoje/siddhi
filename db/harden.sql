@@ -1,18 +1,33 @@
 -- Drishti — pre-demo hardening.
 --
--- HOW TO RUN: open the Supabase SQL Editor, select nothing (click in the editor
--- but do NOT highlight any text — a selection makes it run only that fragment),
--- paste this whole file, press Run. Then read the table it prints at the end.
+-- HOW TO RUN
+--   1. Open the Supabase SQL Editor.
+--   2. Click into the editor. Do NOT highlight any text — if anything is
+--      selected, Supabase runs only that fragment.
+--   3. Paste this whole file. Press Run.
+--   4. Read the two tables it prints at the bottom.
 --
--- WHY: setup.sql created one policy per table with `for all ... using (true)`.
--- "all" includes DELETE, and the publishable key is public by design — it ships
--- inside the frontend bundle. So today any visitor can empty every table with
--- one request:  DELETE /rest/v1/encounters?id=not.is.null
+-- WHY
+--   setup.sql granted `for all ... using (true)`, and "all" includes DELETE.
+--   The publishable key is public by design (it ships inside the frontend
+--   bundle), so any visitor can currently empty every table with one request.
+--   The app itself never deletes anything, so removing DELETE costs nothing.
 --
--- The app never deletes anything (every call is SELECT, INSERT or UPDATE), so
--- removing DELETE costs nothing.
+--   This script also switches row-level security ON. If RLS is off, Postgres
+--   ignores policies completely and permits everything — which would explain
+--   deletes still succeeding regardless of what the policies say. Enabling it
+--   when it is already on is harmless.
 
--- ---------------------------------------------------------------- clinics
+-- 1. Make sure RLS is actually enforced -------------------------------------
+alter table clinics    enable row level security;
+alter table encounters enable row level security;
+alter table baselines  enable row level security;
+alter table alerts     enable row level security;
+alter table tasks      enable row level security;
+alter table referrals  enable row level security;
+
+-- 2. Replace the blanket policies with select / insert / update -------------
+
 drop policy if exists demo_all on clinics;
 drop policy if exists demo_read on clinics;
 drop policy if exists demo_write on clinics;
@@ -21,7 +36,6 @@ create policy demo_read   on clinics for select to anon, authenticated using (tr
 create policy demo_write  on clinics for insert to anon, authenticated with check (true);
 create policy demo_update on clinics for update to anon, authenticated using (true) with check (true);
 
--- ------------------------------------------------------------- encounters
 drop policy if exists demo_all on encounters;
 drop policy if exists demo_read on encounters;
 drop policy if exists demo_write on encounters;
@@ -30,7 +44,6 @@ create policy demo_read   on encounters for select to anon, authenticated using 
 create policy demo_write  on encounters for insert to anon, authenticated with check (true);
 create policy demo_update on encounters for update to anon, authenticated using (true) with check (true);
 
--- -------------------------------------------------------------- baselines
 drop policy if exists demo_all on baselines;
 drop policy if exists demo_read on baselines;
 drop policy if exists demo_write on baselines;
@@ -39,7 +52,6 @@ create policy demo_read   on baselines for select to anon, authenticated using (
 create policy demo_write  on baselines for insert to anon, authenticated with check (true);
 create policy demo_update on baselines for update to anon, authenticated using (true) with check (true);
 
--- ----------------------------------------------------------------- alerts
 drop policy if exists demo_all on alerts;
 drop policy if exists demo_read on alerts;
 drop policy if exists demo_write on alerts;
@@ -48,7 +60,6 @@ create policy demo_read   on alerts for select to anon, authenticated using (tru
 create policy demo_write  on alerts for insert to anon, authenticated with check (true);
 create policy demo_update on alerts for update to anon, authenticated using (true) with check (true);
 
--- ------------------------------------------------------------------ tasks
 drop policy if exists demo_all on tasks;
 drop policy if exists demo_read on tasks;
 drop policy if exists demo_write on tasks;
@@ -57,7 +68,6 @@ create policy demo_read   on tasks for select to anon, authenticated using (true
 create policy demo_write  on tasks for insert to anon, authenticated with check (true);
 create policy demo_update on tasks for update to anon, authenticated using (true) with check (true);
 
--- -------------------------------------------------------------- referrals
 drop policy if exists demo_all on referrals;
 drop policy if exists demo_read on referrals;
 drop policy if exists demo_write on referrals;
@@ -66,17 +76,21 @@ create policy demo_read   on referrals for select to anon, authenticated using (
 create policy demo_write  on referrals for insert to anon, authenticated with check (true);
 create policy demo_update on referrals for update to anon, authenticated using (true) with check (true);
 
--- Stop two overlapping scans creating duplicate alerts. The engine checks
--- "is there already an unresolved alert for this sector and syndrome" and then
--- inserts; two scans running at once can both pass that check. This makes the
--- database refuse the second one.
+-- 3. Stop overlapping scans creating duplicate alerts -----------------------
 create unique index if not exists alerts_one_live_per_pair
   on alerts (sector, syndrome)
   where status <> 'resolved';
 
--- ------------------------------------------------------------------ CHECK
--- Should list exactly SELECT, INSERT, UPDATE for each of the six tables.
--- If you see DELETE, or "ALL", the policies above did not apply.
+-- 4. Report ------------------------------------------------------------------
+-- rls_enabled must be true on all six rows.
+select c.relname as table_name, c.relrowsecurity as rls_enabled
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relname in ('clinics','encounters','baselines','alerts','tasks','referrals')
+order by c.relname;
+
+-- Expect SELECT, INSERT, UPDATE per table. No DELETE. No ALL.
 select tablename, cmd, policyname
 from pg_policies
 where schemaname = 'public'
