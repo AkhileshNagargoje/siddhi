@@ -6,11 +6,15 @@ import { Component } from 'react'
 export class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { error: null }
+    // Gate on an explicit flag, not on the error value: `throw undefined` or
+    // `throw ''` would leave a falsy error, render the children again, throw
+    // again, and React would give up and unmount to the white screen this
+    // component exists to prevent.
+    this.state = { hasError: false, error: null }
   }
 
   static getDerivedStateFromError(error) {
-    return { error }
+    return { hasError: true, error }
   }
 
   componentDidCatch(error, info) {
@@ -18,7 +22,7 @@ export class ErrorBoundary extends Component {
   }
 
   render() {
-    if (!this.state.error) return this.props.children
+    if (!this.state.hasError) return this.props.children
     return (
       <div className="shell">
         <div className="panel" style={{ maxWidth: 560, margin: '48px auto' }}>
@@ -28,11 +32,15 @@ export class ErrorBoundary extends Component {
             detection is still running.
           </p>
           <p className="chart-sub" style={{ fontFamily: 'monospace', fontSize: 12 }}>
-            {String(this.state.error?.message ?? this.state.error)}
+            {String(this.state.error?.message ?? this.state.error ?? 'unknown error')}
           </p>
-          <button className="btn btn-accent" onClick={() => window.location.reload()}>
-            Reload
-          </button>
+          {/* Reload alone re-enters the route that just threw, so a deterministic
+              error offers a recovery that cannot recover. The boundary sits
+              outside the router, so a hard link is the only way back. */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <a className="btn btn-accent" href="/" style={{ textDecoration: 'none' }}>Back to start</a>
+            <button className="btn btn-quiet" onClick={() => window.location.reload()}>Reload</button>
+          </div>
         </div>
       </div>
     )

@@ -176,7 +176,15 @@ export default function DashboardPage() {
 
       <div className="kpi">
         <StatTile label="Patients today" value={todayCount} spark={sparkTotal} hint="all sectors" />
-        <StatTile label="Last 6 hours" value={recent.length} hint={`${FESTIVAL.sectors.length} sectors reporting`} />
+        {/* Count sectors that actually reported. Hardcoding the total made the
+            dashboard assert "12 sectors reporting" even if eleven had gone
+            dark — the exact opposite of design rule 5, on the tile most likely
+            to be read aloud. */}
+        <StatTile
+          label="Last 6 hours" value={recent.length}
+          status={bySector.size < FESTIVAL.sectors.length ? 'warning' : undefined}
+          hint={`${bySector.size} of ${FESTIVAL.sectors.length} sectors reporting`}
+        />
         <StatTile
           label="Open alerts" value={openAlerts.length}
           status={openAlerts.length ? 'critical' : undefined}

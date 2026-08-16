@@ -28,7 +28,7 @@
 | Role | Device | Screen | What they do |
 |---|---|---|---|
 | Health worker | Phone/tablet | Entry form | Log each patient in ~10s. Sees ONLY their clinic. |
-| Health official | Desktop | Dashboard | Sector map, alerts, assign teams. Sees everything. |
+| Health official | Desktop | Dashboard | Sector map, alerts, assign teams. NOTE: no PIN gate — the URL alone opens it. |
 | Field responder | Phone | Task list | Acknowledge → investigate → resolve with note. |
 
 **Pilgrims are NOT users.** No pilgrim app, ever. They receive a printed QR referral card only.
@@ -57,10 +57,10 @@ Voice entry (Hindi/Marathi), SMS fallback, morning feedback card, demand forecas
 2. **Explainable maths only.** No ML in detection. Every alert shows observed, expected, and the threshold. Officials must be able to argue with an alert.
 3. **Entry must stay ≤ 10 seconds.** Any feature that slows the entry form is rejected.
 4. **Offline-first.** Entry form writes to localStorage first, syncs when possible. Records carry client-generated UUIDs so retried uploads never duplicate.
-5. **Silence ≠ calm.** A clinic that stops reporting shows GREY on the map, not pale/healthy.
+5. **Silence ≠ calm.** A sector that stops reporting must never render as healthy. IMPLEMENTED at sector level (the KPI shows "N of 12 sectors reporting"). NOT YET per-clinic: clinics.last_report_at exists in the schema and is not written or read.
 6. **No pilgrim login.** Ever.
-7. **Simulator writes through the same API as real clients.** Detection must not be able to tell simulated data from real.
-8. **Config-driven festival.** Sectors, clinics, symptoms, thresholds live in seed/config files, not hardcoded in components.
+7. **Simulator writes through the same API as real clients.** Rows carry a simulated flag for cleanup only; detection does not read it, so synthetic and real traffic score identically.
+8. **Config-driven festival.** Sectors, clinics, symptoms live in config. KNOWN GAP: DETECTION thresholds in config/festival.js are unused — the worker and simulator each hardcode their own copy. Changing a threshold means editing worker/src/index.js.
 
 ## Data model (6 tables, Supabase Postgres)
 
@@ -87,13 +87,13 @@ referrals    id uuid PK, encounter_id FK, risk_type text, qr_token text,
 - **Frontend:** React + Vite, plain CSS (no UI framework — keep it light). One codebase, three routes: `/entry`, `/dashboard`, `/crew`.
 - **Backend:** Supabase — Postgres, Realtime (dashboard live updates), simple role handling. Detection runs as a scheduled/manually-invocable function.
 - **Simulator:** Node script in `/simulator`, writes via Supabase client (same API as app).
-- **Hosting:** Vercel or Netlify (decide at deploy time).
+- **Hosting:** Cloudflare Workers static assets (app) + a Cloudflare Worker with cron triggers (engine).
 - **Auth for hackathon:** simple PIN → role mapping (hardcoded users in a config table). Do NOT build real auth flows; it's demo software.
 
 ## Festival config (seed data)
 
 - 12 sectors (numbered 1–12), each with name, water points (e.g. W-7), kitchens (K-3)
-- ~25 clinics spread across sectors (2–3 per sector, mix of fixed/mobile)
+- 17 clinics across 12 sectors (1–2 each, mix of fixed/mobile). Sectors 2, 4, 6, 7, 9, 10, 12 have a single clinic.
 - Symptom chips: fever, loose motions, vomiting, cough, breathlessness, injury, dizziness, rash, weakness (EN/HI/MR labels)
 - Diagnoses: acute gastroenteritis, acute respiratory infection, heat exhaustion, injury/trauma, skin infection, fever of unknown origin, hypertension finding, diabetes finding, other
 - Syndrome mapping for detection: diagnosis → syndrome group (GI, respiratory, heat, injury, other)
@@ -103,8 +103,8 @@ referrals    id uuid PK, encounter_id FK, risk_type text, qr_token text,
 
 Every 5 minutes (or on manual trigger for demo):
 1. For each (sector, syndrome): count encounters in trailing 6h window.
-2. Baseline = mean & stddev of the same 6h-window counts over trailing 72h (excluding windows already inside an open alert's timespan).
-3. z = (observed − mean) / max(stddev, 1).
+2. Baseline = mean & stddev of the SAME 6h time-of-day window on each of the previous 3 days (phase-matched: windows 4, 8, 12 back). Comparing 6pm with 3am otherwise makes every evening look anomalous.
+3. z = (observed − mean) / max(stddev, sqrt(mean), 1). The sqrt(mean) term is a Poisson noise floor — count data has inherent noise of about sqrt(mean), and without it a 3-sample stddev of 0 makes tiny numbers alert.
 4. Fire alert if z ≥ 3 AND observed ≥ 8. Tier: "act" if z ≥ 4, else "watch".
 5. Never duplicate an open alert for the same (sector, syndrome) — update its observed count instead.
 6. Write alert row; dashboard picks it up via Realtime.
