@@ -276,33 +276,63 @@ async function scan(env) {
 
 export default {
   async scheduled(event, env, ctx) {
-    if (event.cron === '* * * * *') {
-      if (env.GENERATE_TRAFFIC !== 'true') return
-      const n = await generateTraffic(env)
-      if (n) console.log(`traffic: +${n} encounters`)
-      return
+    // Traffic generation and detection are separate cron invocations, so a
+    // throw in scan() used to leave traffic happily filling the dashboard
+    // while detection was dead — the system looks alive with its core
+    // function stopped. Log loudly so a silent detector is greppable.
+    try {
+      if (event.cron === '* * * * *') {
+        if (env.GENERATE_TRAFFIC !== 'true') return
+        const n = await generateTraffic(env)
+        if (n) console.log(`traffic: +${n} encounters`)
+        return
+      }
+      const r = await scan(env)
+      console.log(`scan: ${r.examined} examined, ${r.newAlerts.length} new alerts`,
+        r.newAlerts.length ? JSON.stringify(r.newAlerts) : '')
+    } catch (e) {
+      console.error(`DRISHTI_CRON_FAILED cron=${event.cron}:`, e?.stack ?? e?.message ?? e)
     }
-    const r = await scan(env)
-    console.log(`scan: ${r.examined} examined, ${r.newAlerts.length} new alerts`,
-      r.newAlerts.length ? JSON.stringify(r.newAlerts) : '')
   },
 
   async fetch(req, env) {
     const url = new URL(req.url)
-    const json = (o, s = 200) => new Response(JSON.stringify(o, null, 2),
-      { status: s, headers: { 'Content-Type': 'application/json' } })
+    // The app is on drishti.* and this worker is on drishti-engine.* — a
+    // different origin, so without these headers every fetch() from the
+    // dashboard or the demo-control page is blocked by the browser. Pasting
+    // the URL into the address bar works fine, which makes this a
+    // particularly confusing failure to debug.
+    const cors = {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    }
+    const json = (o, s = 200) => new Response(JSON.stringify(o, null, 2), { status: s, headers: cors })
+
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
 
     try {
       if (url.pathname === '/scan') return json(await scan(env))
 
       if (url.pathname === '/traffic') {
+        // The cron path already honours this flag; the HTTP path did not, so
+        // freezing the dataset before a demo left a public endpoint still
+        // inserting rows.
+        if (env.GENERATE_TRAFFIC !== 'true') return json({ generated: 0, disabled: true })
         const n = await generateTraffic(env)
         return json({ generated: n, hourFactorIST: hourFactorIST(new Date()) })
       }
 
       if (url.pathname === '/outbreak') {
         const sector = Number(url.searchParams.get('sector') ?? 5)
-        const n = Math.min(Number(url.searchParams.get('n') ?? 25), 100)
+        if (!Number.isInteger(sector) || sector < 1 || sector > SECTORS.length) {
+          return json({ error: `sector must be 1..${SECTORS.length}` }, 400)
+        }
+        // Clamp both ends: the old cap only bounded the top, so n=-5 or n=abc
+        // slipped through as a free way to trigger full scans.
+        const raw = Math.floor(Number(url.searchParams.get('n') ?? 25))
+        const n = Number.isFinite(raw) ? Math.min(Math.max(raw, 1), 100) : 25
         const inserted = await injectOutbreak(env, sector, n)
         const result = await scan(env)
         return json({ injected: inserted, sector, scan: result })
@@ -312,10 +342,13 @@ export default {
         service: 'drishti-engine',
         crons: { detection: '*/5 * * * *', traffic: '* * * * *' },
         trafficEnabled: env.GENERATE_TRAFFIC === 'true',
-        endpoints: ['/scan', '/outbreak?sector=5&n=25'],
       })
     } catch (e) {
-      return json({ error: e.message }, 500)
+      // Don't echo raw PostgREST errors to anonymous callers — they carry
+      // table names, column names and query strings. Log the detail, return
+      // a generic message.
+      console.error('request failed:', url.pathname, e?.message ?? e)
+      return json({ error: 'request failed' }, 500)
     }
   },
 }

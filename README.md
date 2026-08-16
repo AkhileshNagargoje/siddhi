@@ -32,7 +32,7 @@ The contaminated tap gets shut on day one evening instead of day four.
 | Health official | `/dashboard` | — | Sector map, epidemic curve, alerts, dispatch |
 | Field responder | `/crew` | `3333` | Assigned jobs: acknowledge → resolve |
 
-Plus `/replay` — replays a real recorded incident on a compressed clock, and `/r#…` — what a home-district clinician sees after scanning a referral card.
+Plus `/replay` — a scripted scenario running the live detection rule, on a compressed clock, and `/r#…` — what a home-district clinician sees after scanning a referral card.
 
 **Pilgrims are not users.** No app to install; they receive a printed QR card.
 
@@ -42,7 +42,7 @@ Plus `/replay` — replays a real recorded incident on a compressed clock, and `
 
 **Detect** — rolling baseline per sector per syndrome, phase-matched to the same time-of-day window over prior days. Fires when z ≥ 3 **and** raw count ≥ 8. A Poisson floor on the divisor suppresses small-number false alarms. Two tiers: watch and act. No ML — every alert shows its own arithmetic so officials can argue with it.
 
-**Respond** — one-tap dispatch to a named crew, acknowledge and resolve timestamps captured automatically, giving a real time-to-response metric. "Checked, nothing found" is a first-class outcome.
+**Respond** — dispatch to a named crew from the alert, acknowledge and resolve timestamps captured automatically, giving a real time-to-response metric. "Checked, nothing found" is a first-class outcome.
 
 **Treatment quality** — a non-blocking prompt when an antibiotic is chosen for a diagnosis that usually doesn't need one, plus a per-clinic prescribing panel against the festival median.
 
@@ -77,7 +77,7 @@ node simulate.js outbreak 5      # inject a growing outbreak in sector 5
 node simulate.js reset           # wipe simulated data
 ```
 
-The simulator writes through the **same API** a real tablet uses, so the detection engine cannot tell simulated data from real.
+The simulator writes through the **same API** a real tablet uses, into the same tables. Rows carry a `simulated` flag for cleanup, and the detection engine does not read it — synthetic and real traffic are scored identically.
 
 ## Deploying
 
@@ -94,7 +94,7 @@ These are deliberate and documented in `PROJECT.md`:
 2. **Explainable maths only.** No ML in detection.
 3. **Entry stays ≤ 10 seconds.** Any feature that slows it is rejected.
 4. **Offline-first.** The device is the source of truth until the server confirms.
-5. **Silence ≠ calm.** A clinic that stops reporting shows grey, not healthy.
+5. **Silence ≠ calm.** A sector that stops reporting is shown as such, never as healthy. *(Sector-level only — per-clinic silence detection is designed, not yet built.)*
 6. **No pilgrim login.** Ever.
 7. **Config-driven.** Sectors, clinics, symptoms and thresholds live in config, so the same system redeploys to any mass gathering.
 

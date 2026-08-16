@@ -5,7 +5,7 @@
 
 ## Current state
 
-- **What runs right now:** EVERYTHING in Tier 1 except deploy — entry form (offline queue), dashboard (realtime), detection, crew app. Full demo loop verified end to end locally.
+- **What runs right now:** Tier 1 and Tier 2 complete and deployed — entry form (offline queue), dashboard (realtime), detection, crew app. Full demo loop verified end to end locally.
 - **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>|reset` · detection: `node detect.js once|watch`
 - **Known broken:** —
 - **Live URL:** https://drishti.akhileshnagargoje.in (deploy: cd app && npm run build && npx wrangler deploy)
@@ -39,7 +39,7 @@
 | 7.1 | Antibiotic rule table + nudge in entry form | done | | table drafted by Claude, verified by Person A |
 | 7.2 | Clinic-vs-median antibiotic panel on dashboard | done | | |
 | 8.1 | Risk flagging + QR referral card | done | | card layout by Person A |
-| 9.1 | 60-second replay (real recorded incident) | done | | |
+| 9.1 | 60-second replay (scripted scenario, live detection rule) | done | | |
 
 ## Teammate tasks
 

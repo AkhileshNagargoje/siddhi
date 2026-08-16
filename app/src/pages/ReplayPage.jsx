@@ -52,10 +52,17 @@ const POSTS = [
 const ACTS = [
   { at: 0,  key: 'calm',    label: 'Normal',   line: 'Sector 5, an ordinary afternoon. Four posts, four separate queues.' },
   { at: 7,  key: 'spread',  line: 'People who drank at water point W-7 start arriving. They do not all go to the same post.' },
-  { at: 24, key: 'blind',   label: 'Blind spot', line: 'Three cases here. Four there. Every doctor sees a normal handful — and nobody sees fourteen.' },
+  // Don't name counts the tiles aren't showing yet. At t=24 they read 3/2/3/2
+  // and the sum is 10; "four there" and "fourteen" only become true at t=29,
+  // so quoting them here put the caption in visible contradiction with the
+  // number rendered right beside it.
+  { at: 24, key: 'blind',   label: 'Blind spot', line: 'Three cases here. Two there. Every doctor sees a normal handful — and nobody sees the total.' },
   { at: 31, key: 'alert',   label: 'Detected', line: 'Drishti adds them up continuously. 14 against 4 expected — the threshold breaks.' },
   { at: 38, key: 'dispatch',label: 'Dispatched', line: 'The alert becomes a job on a named crew’s phone. Someone must close it.' },
-  { at: 45, key: 'resolve', label: 'Resolved', line: 'Cracked pipe beside a drain. Valve shut, line chlorinated — 80 minutes after the first alert.' },
+  // 90, not 80: the alert breaks at 20:00 and this step is stamped 21:30, both
+  // visible on screen. A judge who subtracts the two timestamps should get the
+  // number the narration says.
+  { at: 45, key: 'resolve', label: 'Resolved', line: 'Cracked pipe beside a drain. Valve shut, line chlorinated — 90 minutes after the first alert.' },
   { at: 51, key: 'outcome', label: 'Outcome', line: 'Same festival, four days on. The tap closed on day one instead of day four.' },
 ]
 
