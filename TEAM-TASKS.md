@@ -2,6 +2,8 @@
 
 Six tasks. Each is one file. None of them can break the main app.
 
+**Your file already exists as a stub, and it is already wired into the live app.** Replace the stub, run `npm run dev`, and your work appears inside the real product — the age chart on the control-room dashboard, the sector panel when a tile is clicked, the morning card after a doctor signs in, /demo and /about as live routes. Send the finished file back; after merge it deploys to drishti.akhileshnagargoje.in with your name on it.
+
 Work out how to build it yourself — the points below are the requirements, not the instructions.
 
 ---
