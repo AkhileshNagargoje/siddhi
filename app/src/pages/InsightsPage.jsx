@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL } from '../config/festival'
@@ -41,6 +41,16 @@ const SYNDROME_HUE = {
   injury: 'var(--series-5)',
   other: 'var(--series-6)',
 }
+
+/* Each group knows how to reduce the raw encounter list back to the rows behind
+   one figure, so expanding a row is a filter rather than another query. */
+const GROUPS = [
+  { name: 'Diagnosis', rows: 'diagRows', match: (r, k) => r.diagnosis === k },
+  { name: 'Syndrome',  rows: 'synRows',  match: (r, k) => r.syndrome === k },
+  { name: 'Sector',    rows: 'sectorRows', match: (r, k) => r.sector === k },
+  { name: 'Severity',  rows: 'sevRows',  match: (r, k) => r.severity === k },
+  { name: 'Age band',  rows: 'ageRows',  match: (r, k) => r.age_band === k },
+]
 
 const RANGES = [
   { id: 6, label: '6 hours' },
@@ -233,12 +243,99 @@ function Trend({ label, hue, values }) {
   )
 }
 
+
+/* What a table row expands into.
+ *
+ * A number in a table is a dead end: "Acute gastroenteritis, 894" invites the
+ * question "where, and how bad?" and then refuses to answer it. Every row here
+ * can answer that from data already in memory, so it does — computed on expand
+ * rather than up front, because most rows are never opened.
+ */
+function RowDetail({ subset, group, hours, total }) {
+  const n = subset.length
+  if (!n) return <p className="rd-empty">No records in this range.</p>
+
+  const tally = (key, fn) => {
+    const m = new Map()
+    for (const r of subset) m.set(fn ? fn(r) : r[key], (m.get(fn ? fn(r) : r[key]) ?? 0) + 1)
+    return [...m.entries()].sort((x, y) => y[1] - x[1])
+  }
+
+  /* For a sector row "which sectors" is a tautology, so show what it is made of
+     instead. Everywhere else, where it is happening is the useful question. */
+  const byPlaceOrKind = group === 'Sector'
+    ? tally('syndrome').map(([k, c]) => [SYNDROME_LABELS[k] ?? k, c])
+    : tally('sector').map(([k, c]) => [FESTIVAL.sectors.find(s => s.id === k)?.name ?? `Sector ${k}`, c])
+
+  const sev = ['mild', 'moderate', 'severe'].map(k => [k, subset.filter(r => r.severity === k).length])
+  const abx = subset.filter(r => r.drugs?.some(d => ANTIBIOTICS.has(d))).length
+  const severe = subset.filter(r => r.severity === 'severe').length
+
+  const now = Date.now()
+  const buckets = new Array(hours).fill(0)
+  for (const r of subset) {
+    const idx = Math.min(hours - 1, hours - 1 - Math.floor((now - new Date(r.ts).getTime()) / 3600_000))
+    if (idx >= 0) buckets[idx]++
+  }
+  const firstHalf = buckets.slice(0, Math.floor(hours / 2)).reduce((x, y) => x + y, 0)
+  const lastHalf = buckets.slice(Math.floor(hours / 2)).reduce((x, y) => x + y, 0)
+  const dir = lastHalf > firstHalf * 1.3 ? 'rising' : lastHalf < firstHalf * 0.7 ? 'easing' : 'steady'
+
+  return (
+    <div className="rd">
+      <div className="rd-facts">
+        <div><span>Cases</span><b>{fmt(n)}</b></div>
+        <div><span>Share of all</span><b>{pct(n, total).toFixed(1)}%</b></div>
+        <div><span>Severe</span><b>{pct(severe, n).toFixed(0)}%</b></div>
+        <div><span>On antibiotics</span><b>{pct(abx, n).toFixed(0)}%</b></div>
+        <div><span>Direction</span><b>{dir}</b></div>
+      </div>
+
+      <div className="rd-cols">
+        <div>
+          <h5>{group === 'Sector' ? 'What it is made of' : 'Where it is'}</h5>
+          <div className="rank">
+            {byPlaceOrKind.slice(0, 5).map(([label, c]) => (
+              <div className="rank-row rd-row" key={label}>
+                <span className="rank-label" title={label}>{label}</span>
+                <span className="rank-track">
+                  <i style={{ width: `${(c / byPlaceOrKind[0][1]) * 100}%`, background: 'var(--series-1)',
+                              opacity: 0.45 + 0.55 * (c / byPlaceOrKind[0][1]) }} />
+                </span>
+                <span className="rank-n">{fmt(c)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h5>How bad</h5>
+          <div className="rank">
+            {sev.map(([label, c]) => (
+              <div className="rank-row rd-row" key={label}>
+                <span className="rank-label">{label}</span>
+                <span className="rank-track">
+                  <i style={{ width: `${n ? (c / n) * 100 : 0}%`, background: 'var(--series-2)',
+                              opacity: 0.45 + 0.55 * (n ? c / n : 0) }} />
+                </span>
+                <span className="rank-n">{fmt(c)}</span>
+              </div>
+            ))}
+          </div>
+          <h5 style={{ marginTop: 'var(--s-4)' }}>Per hour</h5>
+          <Trend label={dir} hue="var(--series-1)" values={buckets} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ---- page -------------------------------------------------------------- */
 
 export function Insights() {
   const [hours, setHours] = useState(24)
   const [rows, setRows] = useState(null)
   const [showTable, setShowTable] = useState(false)
+  const [open, setOpen] = useState(null)   // which table row is expanded
 
   useEffect(() => {
     if (!isConfigured()) return
@@ -288,6 +385,7 @@ export function Insights() {
       .map(([k, n]) => ({ key: k, label: SYNDROME_LABELS[k] ?? k, n, hue: SYNDROME_HUE[k] ?? 'var(--series-6)' }))
 
     return {
+      clinical,
       total,
       screening: rows.length - total,
       sectorsReporting: new Set(clinical.map(r => r.sector)).size,
@@ -450,22 +548,56 @@ export function Insights() {
                 <table>
                   <caption className="sr-only">Case counts and shares by category</caption>
                   <thead>
-                    <tr><th scope="col">Group</th><th scope="col">Category</th>
+                    <tr><th scope="col"><span className="sr-only">Expand</span></th>
+                      <th scope="col">Category</th>
                       <th scope="col">Cases</th><th scope="col">Share</th></tr>
                   </thead>
-                  <tbody>
-                    {[['Diagnosis', a.diagRows], ['Syndrome', a.synRows],
-                      ['Sector', a.sectorRows], ['Severity', a.sevRows],
-                      ['Age band', a.ageRows]].map(([group, list]) =>
-                      list.map((r, i) => (
-                        <tr key={group + r.key}>
-                          <td>{i === 0 ? group : ''}</td>
-                          <td>{r.label}</td>
-                          <td className="num">{fmt(r.n)}</td>
-                          <td className="num">{pct(r.n, a.total).toFixed(1)}%</td>
+                  {GROUPS.map(g => {
+                    const list = a[g.rows]
+                    const subtotal = list.reduce((x, r) => x + r.n, 0)
+                    return (
+                      <tbody key={g.name} className="tg">
+                        {/* A group heading row with its own subtotal, rather than
+                            the group name on the first row and blanks under it —
+                            which made five separate tables look like one long one. */}
+                        <tr className="tg-head">
+                          <th scope="colgroup" colSpan={2}>{g.name}</th>
+                          <td className="num">{fmt(subtotal)}</td>
+                          <td className="num">{pct(subtotal, a.total).toFixed(1)}%</td>
                         </tr>
-                      )))}
-                  </tbody>
+                        {list.map(r => {
+                          const id = `${g.name}:${r.key}`
+                          const isOpen = open === id
+                          return (
+                            <Fragment key={id}>
+                              <tr className={isOpen ? 'tg-row is-open' : 'tg-row'}>
+                                <td className="tg-toggle">
+                                  <button aria-expanded={isOpen} aria-controls={`d-${id}`}
+                                          onClick={() => setOpen(isOpen ? null : id)}>
+                                    <span aria-hidden="true">{isOpen ? '−' : '+'}</span>
+                                    <span className="sr-only">
+                                      {isOpen ? 'Hide' : 'Show'} details for {r.label}
+                                    </span>
+                                  </button>
+                                </td>
+                                <td>{r.label}</td>
+                                <td className="num">{fmt(r.n)}</td>
+                                <td className="num">{pct(r.n, a.total).toFixed(1)}%</td>
+                              </tr>
+                              {isOpen && (
+                                <tr className="tg-detail" id={`d-${id}`}>
+                                  <td colSpan={4}>
+                                    <RowDetail group={g.name} hours={hours} total={a.total}
+                                               subset={a.clinical.filter(x => g.match(x, r.key))} />
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
+                          )
+                        })}
+                      </tbody>
+                    )
+                  })}
                 </table>
               </div>
             </section>
