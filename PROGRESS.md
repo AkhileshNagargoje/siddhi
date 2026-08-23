@@ -5,7 +5,9 @@
 
 ## Current state
 
-- **Latest pass (polish):** routes code-split (main bundle 527 KB -> 443 KB; the public pilgrim page is now 6 KB), offline service-worker shell so the app boots with no network, `/demo` presenter console and `/about` both built and live, per-route page titles, all screens verified with no horizontal scroll and 44px touch targets on a phone.
+- **Latest pass (audit + polish):** every route now measures zero text-contrast failures in both light and dark mode, verified against computed backgrounds in the live DOM rather than against the palette. Every form control has an accessible name. Routes are code-split (main bundle 527 KB -> 443 KB; the pilgrim page is 6 KB), the app boots offline via a service worker, and `/demo` and `/about` are built. Fixed three bugs found on the way: a service worker that cached the SPA fallback under `.js` URLs and served HTML as a module permanently; a stale-chunk crash for anyone with the app open during a deploy; and a demo console that was dead under StrictMode, so it worked in production but not in `npm run dev`.
+- **Before presenting:** open `/demo` and press "Clear the board".
+- **Superseded by the above:** routes code-split (main bundle 527 KB -> 443 KB; the public pilgrim page is now 6 KB), offline service-worker shell so the app boots with no network, `/demo` presenter console and `/about` both built and live, per-route page titles, all screens verified with no horizontal scroll and 44px touch targets on a phone.
 - **What runs right now:** Tier 1 and Tier 2 complete and deployed — entry form (offline queue), dashboard (realtime), detection, crew app. Full demo loop verified end to end locally.
 - **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>|reset` · detection: `node detect.js once|watch`
 - **Known broken:** —
