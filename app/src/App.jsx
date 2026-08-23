@@ -84,11 +84,10 @@ import './App.css'
 
 const ROLES = [
   { to: '/entry', name: 'Health worker', desc: 'Record a patient in ten seconds', pin: 'PIN 1111' },
-  { to: '/dashboard', name: 'Health official', desc: 'Live map, alerts, dispatch', pin: 'no PIN' },
+  { to: '/dashboard', name: 'Health official', desc: 'Live map, alerts, dispatch, in-depth analysis', pin: 'no PIN' },
   { to: '/crew', name: 'Field crew', desc: 'Accept and close jobs', pin: 'PIN 3333' },
   // "real" would be a false claim — the replay is a scripted scenario running
   // the live detection rule, and says so in its own footer.
-  { to: '/insights', name: 'In-depth analysis', desc: 'Rankings, shares and trends', pin: 'open' },
   { to: '/replay', name: 'Replay an incident', desc: 'See an outbreak caught and closed', pin: '60 sec' },
 ]
 

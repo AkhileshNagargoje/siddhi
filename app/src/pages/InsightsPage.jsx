@@ -234,7 +234,7 @@ function Trend({ label, hue, values }) {
 
 /* ---- page -------------------------------------------------------------- */
 
-export default function InsightsPage() {
+export function Insights() {
   const [hours, setHours] = useState(24)
   const [rows, setRows] = useState(null)
   const [showTable, setShowTable] = useState(false)
@@ -302,15 +302,7 @@ export default function InsightsPage() {
   }, [rows, hours])
 
   return (
-    <div className="shell insights">
-      <div className="topbar">
-        <div className="brand">
-          <b>In-depth analysis</b>
-          <span>{FESTIVAL.name}</span>
-        </div>
-        <Link className="live" to="/dashboard" style={{ textDecoration: 'none' }}>control room →</Link>
-      </div>
-
+    <div className="insights">
       {/* Filters in one row above the charts, never per-chart. */}
       <div className="ins-filters">
         <div className="seg" role="group" aria-label="Time range">
@@ -472,6 +464,25 @@ export default function InsightsPage() {
           )}
         </>
       )}
+    </div>
+  )
+}
+
+/* The standalone route. Kept so /insights can still be linked and opened on its
+   own screen, but the health official reaches this through a tab on their own
+   dashboard — sending the person who needs it to a different address was the
+   wrong shape. */
+export default function InsightsPage() {
+  return (
+    <div className="shell">
+      <div className="topbar">
+        <div className="brand">
+          <b>In-depth analysis</b>
+          <span>{FESTIVAL.name}</span>
+        </div>
+        <Link className="live" to="/dashboard" style={{ textDecoration: 'none' }}>control room →</Link>
+      </div>
+      <Insights />
     </div>
   )
 }

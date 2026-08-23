@@ -38,9 +38,10 @@ Plus `/replay` — a scripted scenario running the live detection rule, on a com
 
 ## Features
 
-**In-depth analysis** (`/insights`) — a separate screen from the control room,
-because the dashboard answers "is something wrong now" and this answers "what is
-this festival made of". Ranked bars for diagnoses and sectors, one horizontal
+**In-depth analysis** — a second tab on the health official's own dashboard,
+because they are the person who needs it and sending them to a different address
+to find it was the wrong shape. Live stays the default tab, so the control room
+keeps the glanceability that matters during an incident. Ranked bars for diagnoses and sectors, one horizontal
 stacked bar for the syndrome mix, meters for antibiotic share, small multiples
 for how each illness is moving, and a full table view. Forms are picked by the
 job: ranking uses one hue with length carrying magnitude, part-to-whole uses a
