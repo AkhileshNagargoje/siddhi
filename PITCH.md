@@ -121,7 +121,17 @@ whatever it prints — rehearsals on 23 Aug gave "35 cases against 5.3 expected,
 
 Click **Dispatch**, pick a crew.
 
-> The alert becomes a job with a name on it. The crew must acknowledge it and close it with what they found. We measure detection to response automatically — nobody self-reports.
+> The alert becomes a job with a name on it. The crew must acknowledge it and close it with what they found.
+
+**Point at the "Detect → resolved" tile.**
+
+> And that number is on the screen, not in a report. Detected, dispatched,
+> acknowledged, closed — four timestamps the system already wrote. Nobody
+> self-reports it, and nobody can round it. Watch it move when the crew
+> acknowledges.
+
+*(It will move — the sample count ticks up live. "Where the time goes" beside
+the alerts breaks the same figure into its three stages.)*
 
 Hold up the printed referral card.
 
