@@ -598,6 +598,19 @@ export const Insights = memo(function Insights() {
 
             <section className="panel">
               <div className="chart-head">
+                <h3>How each illness is moving</h3>
+                <span className="chart-sub">cases per hour · each panel has its own scale</span>
+              </div>
+              <div className="tr-wrap">
+                {a.synRows.map(r => (
+                  <Trend key={r.key} label={r.label} hue={r.hue}
+                         values={a.buckets.get(r.key) ?? new Array(hours).fill(0)} />
+                ))}
+              </div>
+            </section>
+
+            <section className="panel">
+              <div className="chart-head">
                 <h3>What the festival is made of</h3>
                 <span className="chart-sub">share of all clinical cases</span>
               </div>
@@ -615,19 +628,6 @@ export const Insights = memo(function Insights() {
                 Hover, focus or click any slice, segment or bar for a breakdown.
               </p>
               {drill('Syndrome')}
-            </section>
-
-            <section className="panel">
-              <div className="chart-head">
-                <h3>How each illness is moving</h3>
-                <span className="chart-sub">cases per hour · each panel has its own scale</span>
-              </div>
-              <div className="tr-wrap">
-                {a.synRows.map(r => (
-                  <Trend key={r.key} label={r.label} hue={r.hue}
-                         values={a.buckets.get(r.key) ?? new Array(hours).fill(0)} />
-                ))}
-              </div>
             </section>
 
             <section className="panel">
@@ -653,18 +653,25 @@ export const Insights = memo(function Insights() {
               </p>
             </section>
 
-            <section className="panel">
+            <section className="panel ins-wide">
               <div className="chart-head">
                 <h3>Severity and age</h3>
                 <span className="chart-sub">ordered scales, one hue each</span>
               </div>
+              <div className="ins-cols">
+              <div>
               <h4 className="ins-sub">Severity</h4>
               <RankedBars rows={a.sevRows} total={a.total} hue="var(--series-2)" mark={marker('Severity')} />
               {drill('Severity')}
+              </div>
+              <div>
               <h4 className="ins-sub">Age band</h4>
               <RankedBars rows={a.ageRows} total={a.total} hue="var(--series-3)" mark={marker('Age band')} />
               {drill('Age band')}
+              </div>
+              </div>
             </section>
+
           </div>
 
           {/* Required, not optional: three light-mode hues sit under 3:1 against
