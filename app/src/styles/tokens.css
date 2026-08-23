@@ -26,6 +26,18 @@
 
   /* series (chart) */
   --series-1: #2a78d6;
+  /* Categorical slots 2-6, for the one place this product tells distinct
+     series apart: the syndrome mix. Fixed order, never cycled — a colour
+     belongs to a syndrome, not to its rank, so filtering must not repaint
+     the survivors. Validated against this project's own chart surface:
+     worst adjacent CVD dE 9.1 light / 8.4 dark, normal-vision 19.6 / 19.3.
+     Light mode fails 3:1 on three slots, which is why every segment carries
+     a visible label and the page ships a table view. */
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
   /* Solid fills that carry white text. Deliberately NOT --series-1: that token
      is tuned to sit on the page as a line colour, and white on it measures
      4.42:1 in light and 3.64:1 in dark. These are chosen for the text. */
@@ -108,6 +120,12 @@
     --border-strong: rgba(255, 255, 255, 0.22);
 
     --series-1: #3987e5;
+    /* Same six hues re-stepped for the dark surface, not an automatic flip. */
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
     --accent-solid: #256abf;   /* white 5.4:1 */
     --good-solid:   #0a7d0a;   /* white 5.3:1 */
     --seq-0-ink: #ffffff; --seq-1-ink: #ffffff; --seq-2-ink: #ffffff;

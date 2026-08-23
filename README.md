@@ -38,6 +38,16 @@ Plus `/replay` — a scripted scenario running the live detection rule, on a com
 
 ## Features
 
+**In-depth analysis** (`/insights`) — a separate screen from the control room,
+because the dashboard answers "is something wrong now" and this answers "what is
+this festival made of". Ranked bars for diagnoses and sectors, one horizontal
+stacked bar for the syndrome mix, meters for antibiotic share, small multiples
+for how each illness is moving, and a full table view. Forms are picked by the
+job: ranking uses one hue with length carrying magnitude, part-to-whole uses a
+shared baseline with printed shares rather than a pie, and a ratio against a
+reference uses a meter. The six categorical hues are validated in both themes —
+worst adjacent colour-blind separation dE 9.1 light / 8.4 dark.
+
 **What the doctor gets back** — a "My clinic" tab behind the entry form: the sector
 alert with something clinically actionable, the whole sector's 6-hour total across
 every clinic in it (the aggregate no single tent can see, with their own share of

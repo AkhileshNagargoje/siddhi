@@ -18,6 +18,7 @@ const TITLES = {
   '/demo': 'Demo console · Siddhi',
   '/about': 'About Siddhi',
   '/public': 'Health information · Siddhi',
+  '/insights': 'In-depth analysis · Siddhi',
 }
 
 function Title() {
@@ -77,6 +78,7 @@ const ReplayPage = route(() => import('./pages/ReplayPage'))
 const DemoPage = route(() => import('./pages/DemoPage'))
 const AboutPage = route(() => import('./pages/AboutPage'))
 const PublicPage = route(() => import('./pages/PublicPage'))
+const InsightsPage = route(() => import('./pages/InsightsPage'))
 import './styles/tokens.css'
 import './App.css'
 
@@ -86,6 +88,7 @@ const ROLES = [
   { to: '/crew', name: 'Field crew', desc: 'Accept and close jobs', pin: 'PIN 3333' },
   // "real" would be a false claim — the replay is a scripted scenario running
   // the live detection rule, and says so in its own footer.
+  { to: '/insights', name: 'In-depth analysis', desc: 'Rankings, shares and trends', pin: 'open' },
   { to: '/replay', name: 'Replay an incident', desc: 'See an outbreak caught and closed', pin: '60 sec' },
 ]
 
@@ -171,6 +174,7 @@ export default function App() {
         <Route path="/demo" element={<DemoPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/public" element={<PublicPage />} />
+        <Route path="/insights" element={<InsightsPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       </Suspense>

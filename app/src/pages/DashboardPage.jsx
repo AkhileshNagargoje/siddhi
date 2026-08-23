@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL, RESPONSE_UNITS, CLINICS } from '../config/festival'
@@ -279,7 +280,10 @@ export default function DashboardPage() {
           <b>Siddhi</b>
           <span>control room · {FESTIVAL.name}</span>
         </div>
-        <span className="live"><i />live</span>
+        <div className="topbar-links">
+          <Link to="/insights">in-depth analysis →</Link>
+          <span className="live"><i />live</span>
+        </div>
       </div>
 
       <div className="kpi">
