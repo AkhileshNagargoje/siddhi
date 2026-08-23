@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
+import { Insights } from './InsightsPage'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL, RESPONSE_UNITS, CLINICS } from '../config/festival'
 import { SYNDROME_LABELS, DRUGS } from '../config/medical'
@@ -39,6 +39,7 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState([])
   const [pharmacy, setPharmacy] = useState([])
   const [selected, setSelected] = useState(null)
+  const [view, setView] = useState('live')
   const [unit, setUnit] = useState(RESPONSE_UNITS[0].id)
   const [pickedSector, setPickedSector] = useState(null)
   const [advisoryDraft, setAdvisoryDraft] = useState(null) // null = composer closed // sector tile clicked → detail panel (TASK 4)
@@ -280,12 +281,25 @@ export default function DashboardPage() {
           <b>Siddhi</b>
           <span>control room · {FESTIVAL.name}</span>
         </div>
-        <div className="topbar-links">
-          <Link to="/insights">in-depth analysis →</Link>
-          <span className="live"><i />live</span>
-        </div>
+        <span className="live"><i />live</span>
       </div>
 
+      {/* Tabs, not a separate address. The analysis is for this exact person, so
+          sending them elsewhere to find it was the wrong shape. Live stays the
+          default: during an incident this screen has to be glanceable, and that
+          property is worth protecting even from useful additions. */}
+      <div className="tabs" role="tablist">
+        <button role="tab" aria-selected={view === 'live'}
+                className={view === 'live' ? 'tab on' : 'tab'}
+                onClick={() => setView('live')}>Live</button>
+        <button role="tab" aria-selected={view === 'deep'}
+                className={view === 'deep' ? 'tab on' : 'tab'}
+                onClick={() => setView('deep')}>In-depth analysis</button>
+      </div>
+
+      {view === 'deep' && <Insights />}
+
+      {view === 'live' && <>
       <div className="kpi">
         <StatTile label="Patients today" value={todayCount} spark={sparkTotal} hint="all sectors" />
         {/* Count sectors that actually reported. Hardcoding the total made the
@@ -513,6 +527,7 @@ export default function DashboardPage() {
           <StewardshipPanel rows={stewardship.rows} median={stewardship.median} />
         </div>
       </div>
+      </>}
     </div>
   )
 }
