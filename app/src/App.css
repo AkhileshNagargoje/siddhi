@@ -567,3 +567,31 @@
 }
 .chart-table th { color: var(--ink-3); font-weight: 500; font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; }
 .chart-table td:last-child, .chart-table th:last-child { text-align: right; }
+
+/* ---------- entry tabs + my clinic ---------- */
+
+.tabs { display: flex; gap: var(--s-2); margin-bottom: var(--s-4); }
+.tab {
+  flex: 1; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 10px; font-size: var(--t-sm);
+  color: var(--ink-2); cursor: pointer; min-height: 44px;
+}
+.tab.on { background: var(--ink-1); border-color: var(--ink-1); color: var(--surface-1); }
+
+.myclinic { display: flex; flex-direction: column; gap: var(--s-3); }
+.mc-alert { border-left: 3px solid var(--critical); }
+.mc-clear { border-left: 3px solid var(--good); }
+.myclinic h3 { margin: var(--s-2) 0 var(--s-1); font-size: var(--t-md); }
+.myclinic p { margin: 0 0 var(--s-2); font-size: var(--t-sm); color: var(--ink-2); line-height: 1.55; }
+.myclinic p b { color: var(--ink-1); }
+.mc-do {
+  background: var(--surface-sunk); border-radius: var(--r-md);
+  padding: 10px 12px; margin-bottom: 0 !important;
+}
+.mc-big { font-size: var(--t-hero); font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; }
+.mc-top { margin-top: var(--s-3); border-top: 1px solid var(--border); padding-top: var(--s-2); }
+.mc-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: var(--t-sm); }
+.mc-row b { font-variant-numeric: tabular-nums; }
+.mc-compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.mc-compare div { display: flex; flex-direction: column; gap: 2px; }
+.mc-compare b { font-size: var(--t-xl); font-weight: 600; letter-spacing: -0.02em; }
