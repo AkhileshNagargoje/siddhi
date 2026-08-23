@@ -45,7 +45,18 @@ export default function CrewPage() {
     u ? setUser(u) : setPin('')
   }
 
-  const ack = task => supabase.from('tasks').update({ ack_at: new Date().toISOString() }).eq('id', task.id)
+  /* Must be awaited. A supabase query builder is lazy — it only issues the
+     request when something consumes the promise. This was written as an
+     expression-bodied arrow that returned the builder and dropped it, so
+     Acknowledge looked responsive and silently did nothing: the row was never
+     written, and the button stayed on Acknowledge forever. */
+  async function ack(task) {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ ack_at: new Date().toISOString() })
+      .eq('id', task.id)
+    if (error) console.error('acknowledge failed:', error.message)
+  }
 
   async function resolve(task) {
     await supabase.from('tasks').update({ resolved_at: new Date().toISOString(), outcome, note }).eq('id', task.id)
