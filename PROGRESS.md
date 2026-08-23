@@ -25,7 +25,7 @@
 |---|---|---|---|---|
 | 0.1 | PROJECT.md + PROGRESS.md + CLAUDE.md | done | Claude | |
 | 0.2 | React+Vite skeleton (now 10 routes) | done | Claude | |
-| 0.3 | Supabase project + 6 tables | done | Claude + owner | needs owner's Supabase account |
+| 0.3 | Supabase project + 9 tables | done | Claude + owner | needs owner's Supabase account |
 | 0.4 | Seed/config data files (sectors, clinics, symptoms, diagnoses, drugs) | done | Claude | Person A verifies translations later |
 | 1.1 | Simulator: normal traffic generator | done | Claude | |
 | 1.2 | Simulator: outbreak injection | done | Claude | |

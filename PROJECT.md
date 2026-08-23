@@ -72,20 +72,32 @@ list stops contradicting the shipped app.
 
 ```sql
 encounters   id uuid PK, ts timestamptz, clinic_id, sector int, age_band text,
-             sex text, symptoms text[], diagnosis text, drugs text[],
-             severity text, risk_flags text[]
-clinics      id text PK, name, sector int, lat float, lng float,
+             sex text, symptoms text[], diagnosis text, syndrome text,
+             drugs text[], severity text, risk_flags text[], simulated bool
+             -- syndrome is what detection groups on; it was missing here.
+clinics      id text PK, name, sector int,
              type text (fixed|mobile), last_report_at timestamptz
+             -- no lat/lng: this block used to claim them and setup.sql
+             -- has never created them. The app reads clinic names from
+             -- config/festival.js, not from this table.
 baselines    sector int, syndrome text, mean_6h float, stddev_6h float,
              updated_at  (PK: sector+syndrome)
 alerts       id uuid PK, sector int, syndrome text, observed int,
              expected float, score float, tier text (watch|act),
-             ts timestamptz, status text (open|assigned|resolved)
+             ts timestamptz, status text (open|assigned|resolved),
+             resolved_at timestamptz            -- db/resolved-at.sql
+             advisory text, advisory_at, advisory_by  -- db/advisory.sql
 tasks        id uuid PK, alert_id FK, assigned_unit text, created_at,
              ack_at timestamptz, resolved_at timestamptz,
              outcome text (fixed|nothing_found|escalated), note text
 referrals    id uuid PK, encounter_id FK, risk_type text, qr_token text,
              home_district text, created_at
+
+-- db/pharmacy.sql adds the second signal's three tables:
+pharmacy_stalls   id text PK, name, sector int
+pharmacy_sales    id uuid PK, ts, stall_id FK, sector int, item text, qty int
+pharmacy_signals  sector int, window_start, observed int, expected float,
+                  score float, elevated bool
 ```
 
 ## Stack

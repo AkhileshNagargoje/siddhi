@@ -898,9 +898,6 @@
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-.topbar-links { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
-.topbar-links a { font-size: var(--t-sm); color: var(--link); text-decoration: none; }
-.topbar-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 /* pie — requested form, built for maximum readability */
 .mix { display: grid; grid-template-columns: auto 1fr; gap: var(--s-4); align-items: center; }
@@ -965,35 +962,49 @@
 .rd-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr) auto; }
 
 /* ---- hover layer ---- */
-.tip {
+.mtip {
+  /* Deliberately NOT `.tip` — that class already belongs to the epi curve's
+     chart-local tooltip, and a second bare rule at equal specificity silently
+     switched it to position:fixed, parking the control room's tooltip in the
+     corner of the screen. */
   position: fixed; z-index: 200; pointer-events: none;
   display: grid; grid-template-columns: auto 1fr; align-items: baseline;
   gap: 2px var(--s-2); max-width: 190px;
   padding: 7px 10px; border-radius: var(--r-md);
   background: var(--ink-1); color: var(--surface-1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
-  font-size: var(--t-xs); line-height: 1.4;
+  font-size: var(--t-xs); line-height: 1.4; white-space: normal;
 }
 /* A short stroke, not a filled box: at this size a box is data-weight ink. */
-.tip-key { width: 10px; height: 2px; border-radius: 1px; align-self: center; }
+.mtip-key { width: 10px; height: 2px; border-radius: 1px; align-self: center; }
 /* Value leads, label follows — the legend's hierarchy inverted. */
-.tip b { font-size: var(--t-md); font-weight: 700; font-variant-numeric: tabular-nums; }
-.tip-label { grid-column: 2; opacity: 0.88; }
-.tip-sub { grid-column: 2; opacity: 0.68; }
+.mtip b { font-size: var(--t-md); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mtip-label { grid-column: 2; opacity: 0.88; }
+.mtip-sub { grid-column: 2; opacity: 0.68; }
 
 /* ---- interactive marks ---- */
 .rank-row[role="button"] { cursor: pointer; border-radius: var(--r-sm); }
-.rank-row[role="button"]:hover .rank-track i,
-.rank-row[role="button"]:focus-visible .rank-track i { filter: brightness(1.12); }
+.rank-row[role="button"]:hover .rank-track i { filter: brightness(1.12); }
+/* Focus needs a real indicator, not a brightness nudge that is invisible on the
+   paler slots. Hover may be subtle; focus may not. */
+.rank-row[role="button"]:focus-visible {
+  outline: 2px solid var(--series-1); outline-offset: 2px;
+}
 .rank-row.is-picked .rank-label { font-weight: 600; color: var(--ink-1); }
 .rank-row.is-picked .rank-track { outline: 2px solid var(--ink-1); outline-offset: 1px; }
 
 .share-seg[role="button"] { cursor: pointer; }
-.share-seg[role="button"]:hover, .share-seg[role="button"]:focus-visible { filter: brightness(1.14); }
+.share-seg[role="button"]:hover { filter: brightness(1.14); }
+.share-seg[role="button"]:focus-visible {
+  outline: 3px solid var(--ink-1); outline-offset: -3px; filter: brightness(1.14);
+}
 .share-seg.is-picked { outline: 2px solid var(--ink-1); outline-offset: -2px; }
 
 .pie-slice[role="button"] { cursor: pointer; }
-.pie-slice[role="button"]:hover, .pie-slice[role="button"]:focus-visible { filter: brightness(1.12); }
+.pie-slice[role="button"]:hover { filter: brightness(1.12); }
+.pie-slice[role="button"]:focus-visible {
+  stroke: var(--ink-1); stroke-width: 4; filter: brightness(1.12);
+}
 .pie-slice.is-picked { stroke: var(--ink-1); stroke-width: 3; }
 
 button.share-item {

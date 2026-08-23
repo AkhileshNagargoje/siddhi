@@ -32,7 +32,10 @@ Seven minutes. Every number here is verified; sources at the bottom.
 
 ---
 
-## 0:50 — 2:20 · The replay. Press play, then mostly shut up.
+## 0:50 — 1:55 · The replay. Press play, then mostly shut up.
+
+*(The animation runs 60 seconds. Do not allot 90 — the silence works, thirty
+seconds of dead air does not.)*
 
 Open `/replay`, press **Play**. Say only these three lines, timed to the screen:
 
@@ -52,7 +55,11 @@ Then, before you move on — say this, because someone will check:
 
 Switch to `/dashboard`.
 
-> This is live. Twelve sectors, seventeen clinics, about fifteen thousand patient records, updating as we speak.
+> This is live. Twelve sectors, seventeen clinics, updating as we speak.
+
+*(Read any number off the screen rather than from memory. There is no cumulative
+record count on this page, so do not quote one — "Patients today" is midnight-to-now
+and will look small if you cleared the board an hour ago.)*
 
 Point at three things and no more:
 
@@ -120,7 +127,7 @@ Hold up the printed referral card.
 >
 > A typical waterborne outbreak is caught a median of **seven hours after the first case, at eight cases** — against **thirty-three cases** before that cluster would be obvious to someone reading a chart.
 >
-> False alarms: **1.5 a day** dispatch a crew. Five a day appear on the dashboard and send nobody. We report those separately because they cost completely different things.
+> False alarms: **1.5 a day** dispatch a crew. **5.4 a day** appear on the dashboard and send nobody. We report those separately because they cost completely different things.
 >
 > And the trade is explicit rather than asserted — the harness sweeps the threshold, so we can show what a different one would have cost.
 
@@ -189,7 +196,7 @@ Hold up the printed referral card.
 
 | Problem | Do this |
 |---|---|
-| Replay won't animate | Drag the progress bar — every beat is scrubbable |
+| Replay won't animate | Click anywhere on the progress bar, or use the arrow keys — every beat is reachable (there is no live drag) |
 | Dashboard looks stale | Hard refresh (Ctrl+Shift+R). Never deploy on demo day |
 | Phone won't sync | "It's queued — that's the offline design." True, and it's a feature |
 | No alert appears | Don't wait. Use the replay; that's why it exists |

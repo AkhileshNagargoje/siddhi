@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, memo, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL } from '../config/festival'
@@ -96,13 +96,13 @@ function Tip({ tip }) {
   if (!tip) return null
   const flip = tip.x > window.innerWidth - 190
   return (
-    <div className="tip" role="status" aria-live="polite"
+    <div className="mtip" aria-hidden="true"
          style={{ left: tip.x + (flip ? -12 : 12), top: tip.y - 12,
                   transform: flip ? 'translate(-100%, -100%)' : 'translateY(-100%)' }}>
-      <span className="tip-key" style={{ background: tip.hue }} />
+      <span className="mtip-key" style={{ background: tip.hue }} />
       <b>{tip.value}</b>
-      <span className="tip-label">{tip.label}</span>
-      {tip.sub && <span className="tip-sub">{tip.sub}</span>}
+      <span className="mtip-label">{tip.label}</span>
+      {tip.sub && <span className="mtip-sub">{tip.sub}</span>}
     </div>
   )
 }
@@ -172,8 +172,12 @@ function RankedBars({ rows, total, hue = 'var(--series-1)', unit = 'cases', mark
 function ShareBar({ rows, total, mark }) {
   return (
     <div className="share">
-      <div className="share-bar" role="img"
-           aria-label={rows.map(r => `${r.label} ${pct(r.n, total).toFixed(0)}%`).join(', ')}>
+      {/* No role="img" here: it is a leaf role, and it would prune the
+          focusable segments inside out of the accessibility tree. Each segment
+          carries its own name and value instead. */}
+      <div className="share-bar" role={mark ? 'group' : 'img'}
+           aria-label={mark ? 'Case mix by syndrome'
+             : rows.map(r => `${r.label} ${pct(r.n, total).toFixed(0)}%`).join(', ')}>
         {rows.map(r => {
           const p = pct(r.n, total)
           return (
@@ -248,8 +252,9 @@ function PieChart({ rows, total, size = 210, mark }) {
   return (
     <div className="pie-wrap">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="pie"
-           role="img"
-           aria-label={`Case mix: ${rows.map(x => `${x.label} ${pct(x.n, total).toFixed(0)}%`).join(', ')}`}>
+           role={mark ? 'group' : 'img'}
+           aria-label={mark ? 'Case mix by syndrome'
+             : `Case mix: ${rows.map(x => `${x.label} ${pct(x.n, total).toFixed(0)}%`).join(', ')}`}>
         {slices.map(sl => (
           <path key={sl.key} d={sl.d} fill={sl.hue}
                 className={mark?.isPicked(sl.key) ? 'pie-slice is-picked' : 'pie-slice'}
@@ -323,7 +328,7 @@ function Trend({ label, hue, values }) {
  * can answer that from data already in memory, so it does — computed on expand
  * rather than up front, because most rows are never opened.
  */
-function RowDetail({ subset, group, hours, total }) {
+const RowDetail = memo(function RowDetail({ subset, group, hours, total }) {
   const n = subset.length
   if (!n) return <p className="rd-empty">No records in this range.</p>
 
@@ -399,11 +404,11 @@ function RowDetail({ subset, group, hours, total }) {
       </div>
     </div>
   )
-}
+})
 
 /* ---- page -------------------------------------------------------------- */
 
-export function Insights() {
+export const Insights = memo(function Insights() {
   const [hours, setHours] = useState(24)
   const [rows, setRows] = useState(null)
   const [showTable, setShowTable] = useState(false)
@@ -411,42 +416,18 @@ export function Insights() {
   const [tip, setTip] = useState(null)      // hover/focus readout
   const [pick, setPick] = useState(null)    // {group, key, label} drilled into
 
+  /* Escape closes the drill. Without it the only keyboard exit was to Tab
+     forward to Close — on a page with roughly fifty tab stops. */
+  useEffect(() => {
+    if (!pick) return
+    const onKey = e => { if (e.key === 'Escape') setPick(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [pick])
+
   /* One factory so every chart gets identical hover, focus and click behaviour.
      Clicking the picked mark again clears it — a drill-down you cannot close is
      a trap on a screen someone is reading during an incident. */
-  const marker = group => ({
-    onShow: setTip,
-    onHide: () => setTip(null),
-    onPick: r => setPick(p => (p && p.group === group && p.key === r.key)
-      ? null : { group, key: r.key, label: r.label }),
-    isPicked: key => pick?.group === group && pick.key === key,
-  })
-
-  /* The rows behind whatever is picked, filtered from data already in memory. */
-  const drill = (group) => {
-    if (!a || pick?.group !== group) return null
-    const g = GROUPS.find(x => x.name === group)
-    if (!g) return null
-    return (
-      <div className="drill">
-        <div className="drill-head">
-          <b>{pick.label}</b>
-          <button onClick={() => setPick(null)} aria-label="Close breakdown">Close</button>
-        </div>
-        <RowDetail group={group} hours={hours} total={a.total}
-                   subset={a.clinical.filter(x => g.match(x, pick.key))} />
-      </div>
-    )
-  }
-
-  useEffect(() => {
-    if (!isConfigured()) return
-    let alive = true
-    setRows(null)
-    fetchRange(hours).then(r => { if (alive) setRows(r) })
-    return () => { alive = false }
-  }, [hours])
-
   const a = useMemo(() => {
     if (!rows) return null
     const clinical = rows.filter(r => r.syndrome !== 'screening')
@@ -504,6 +485,61 @@ export function Insights() {
       severeRate: pct(bySev.get('severe') ?? 0, total),
     }
   }, [rows, hours])
+
+  const marker = group => ({
+    onShow: setTip,
+    onHide: () => setTip(null),
+    onPick: r => setPick(p => (p && p.group === group && p.key === r.key)
+      ? null : { group, key: r.key, label: r.label }),
+    isPicked: key => pick?.group === group && pick.key === key,
+  })
+
+  /* The rows behind whatever is picked. Memoised on [rows, hours, pick] because
+     setTip fires on every pointermove: filtering the full fetched set inline in
+     JSX meant one 30k-row pass per mouse-move event, with RowDetail redoing all
+     of its own passes on the new array identity each time. */
+  const pickedSubset = useMemo(() => {
+    if (!a || !pick) return null
+    const g = GROUPS.find(x => x.name === pick.group)
+    return g ? a.clinical.filter(x => g.match(x, pick.key)) : null
+  }, [a, pick])
+
+  /* Same reasoning for the expanded table row. */
+  const openSubset = useMemo(() => {
+    if (!a || !open) return null
+    const [groupName, key] = [open.slice(0, open.indexOf(':')), open.slice(open.indexOf(':') + 1)]
+    const g = GROUPS.find(x => x.name === groupName)
+    if (!g) return null
+    /* Sector keys are numbers; the id round-trips them through a string. */
+    const typed = groupName === 'Sector' ? Number(key) : key
+    return a.clinical.filter(x => g.match(x, typed))
+  }, [a, open])
+
+  const drill = (group) => {
+    if (!a || pick?.group !== group || !pickedSubset) return null
+    return (
+      <div className="drill">
+        <div className="drill-head">
+          <b>{pick.label}</b>
+          <button onClick={() => setPick(null)} aria-label="Close breakdown">Close</button>
+        </div>
+        <RowDetail group={group} hours={hours} total={a.total} subset={pickedSubset} />
+      </div>
+    )
+  }
+
+  useEffect(() => {
+    if (!isConfigured()) return
+    let alive = true
+    setRows(null)
+    /* Clear selections: a pick made in one range may have no rows in the next,
+       which left an open panel headed by a label nothing on screen matched. */
+    setPick(null)
+    setOpen(null)
+    fetchRange(hours).then(r => { if (alive) setRows(r) })
+    return () => { alive = false }
+  }, [hours])
+
 
   if (!isConfigured()) {
     return <div className="empty">Supabase is not configured — check the app's .env file.</div>
@@ -638,9 +674,10 @@ export function Insights() {
               </div>
               <h4 className="ins-sub">Severity</h4>
               <RankedBars rows={a.sevRows} total={a.total} hue="var(--series-2)" mark={marker('Severity')} />
+              {drill('Severity')}
               <h4 className="ins-sub">Age band</h4>
               <RankedBars rows={a.ageRows} total={a.total} hue="var(--series-3)" mark={marker('Age band')} />
-              {drill('Severity') || drill('Age band')}
+              {drill('Age band')}
             </section>
           </div>
 
@@ -696,7 +733,7 @@ export function Insights() {
                                 <tr className="tg-detail" id={`d-${id}`}>
                                   <td colSpan={4}>
                                     <RowDetail group={g.name} hours={hours} total={a.total}
-                                               subset={a.clinical.filter(x => g.match(x, r.key))} />
+                                               subset={openSubset} />
                                   </td>
                                 </tr>
                               )}
@@ -714,7 +751,7 @@ export function Insights() {
       )}
     </div>
   )
-}
+})
 
 /* The standalone route. Kept so /insights can still be linked and opened on its
    own screen, but the health official reaches this through a tab on their own
