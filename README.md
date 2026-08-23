@@ -40,6 +40,8 @@ Plus `/replay` — a scripted scenario running the live detection rule, on a com
 
 **Capture** — ~10 second tap entry, offline-first with a localStorage queue, duplicate-proof via client-generated UUIDs, immediate push when online with a 5s retry timer and an `online` event listener.
 
+Offline goes one layer deeper than the queue. A service worker (`app/public/sw.js`) caches the app shell, so the entry screen *boots* with no network at all — not just survives losing one mid-shift. HTML is network-first so a fresh deploy always wins; hashed assets are cache-first, which is safe because their bytes can never change. Supabase and engine responses are never cached: a doctor must not read yesterday's alert as if it were live. Open any URL with `?nosw` to tear the whole thing out.
+
 **Detect** — rolling baseline per sector per syndrome, phase-matched to the same time-of-day window over prior days. Fires when z ≥ 3 **and** raw count ≥ 8. A Poisson floor on the divisor suppresses small-number false alarms. Two tiers: watch and act. No ML — every alert shows its own arithmetic so officials can argue with it.
 
 **Respond** — dispatch to a named crew from the alert, acknowledge and resolve timestamps captured automatically, giving a real time-to-response metric. "Checked, nothing found" is a first-class outcome.

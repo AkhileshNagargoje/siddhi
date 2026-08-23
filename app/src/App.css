@@ -680,3 +680,106 @@
 
 .pub-detail { font-size: var(--t-sm); color: var(--ink-3); line-height: 1.5; padding: 0 var(--s-3) var(--s-3); margin: 0; }
 .pub-foot { margin-top: var(--s-4); font-size: var(--t-xs); color: var(--ink-3); text-align: center; }
+
+/* ---------- demo console ---------- */
+
+.demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: start; }
+@media (max-width: 800px) { .demo-grid { grid-template-columns: 1fr; } }
+.demo-controls { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin-bottom: var(--s-3); }
+.demo-controls label { display: flex; flex-direction: column; gap: 4px; }
+.demo-controls span { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3); }
+.demo-controls select {
+  min-height: 48px; padding: 0 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--r-md); background: var(--surface-2); color: var(--ink-1);
+  font-family: inherit; font-size: var(--t-md);
+}
+.demo-stack { display: flex; flex-direction: column; gap: 4px; }
+.demo-stack .btn { margin-top: var(--s-2); }
+.demo-hint { font-size: var(--t-xs); color: var(--ink-3); line-height: 1.5; }
+.demo .btn:disabled { opacity: 0.5; cursor: wait; }
+.demo-log { display: flex; flex-direction: column; gap: var(--s-2); }
+.demo-line {
+  display: grid; grid-template-columns: 76px 1fr; gap: var(--s-3); align-items: baseline;
+  padding: var(--s-2) 0; border-bottom: 1px solid var(--border); font-size: var(--t-sm);
+}
+.demo-line:last-child { border-bottom: 0; }
+.demo-line time { color: var(--ink-3); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+.demo-line.bad span { color: var(--critical-ink); }
+
+/* ---------- about ---------- */
+
+.about { max-width: 680px; margin: 0 auto; padding: var(--s-6) var(--s-4) var(--s-7); }
+.about-head h1 { font-size: 46px; margin: 0; letter-spacing: -0.035em; }
+.about-head p { margin: var(--s-2) 0 var(--s-6); color: var(--ink-2); font-size: var(--t-lg); }
+.about-problem {
+  border-left: 3px solid var(--critical); padding-left: var(--s-4); margin-bottom: var(--s-4);
+}
+.about-problem p { margin: 0 0 var(--s-2); font-size: var(--t-lg); line-height: 1.5; }
+.about-lede { color: var(--ink-2); line-height: 1.7; margin: 0 0 var(--s-6); }
+
+.about-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); margin-bottom: var(--s-6); }
+@media (max-width: 700px) { .about-nums { grid-template-columns: 1fr; } }
+.about-num {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--s-4); display: flex; flex-direction: column; gap: 6px;
+}
+.about-num b { font-size: 34px; letter-spacing: -0.03em; line-height: 1; }
+.about-num span { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.5; }
+.about-num a, .about-num em {
+  font-size: var(--t-xs); color: var(--ink-3); font-style: normal; text-decoration: none;
+  margin-top: auto; padding-top: var(--s-2);
+}
+.about-num a:hover { color: var(--series-1); text-decoration: underline; }
+
+.about-block { margin-bottom: var(--s-6); }
+.about-block h2 { font-size: var(--t-lg); margin: 0 0 var(--s-3); }
+.about-does { list-style: none; counter-reset: d; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.about-does li { counter-increment: d; display: flex; flex-direction: column; gap: 3px; padding-left: 34px; position: relative; }
+.about-does li::before {
+  content: counter(d); position: absolute; left: 0; top: 1px;
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface-sunk); color: var(--ink-2); font-size: var(--t-xs); font-weight: 600;
+}
+.about-does b { font-size: var(--t-md); }
+.about-does span { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.55; }
+
+.about-nots { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.about-nots li { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.6; border-left: 2px solid var(--border-strong); padding-left: var(--s-3); }
+.about-nots b { color: var(--ink-1); }
+.about-limits, .about-stack { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.7; margin: 0; }
+
+.about-links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-5); }
+.about-links .btn { text-decoration: none; }
+.about-foot { font-size: var(--t-sm); color: var(--ink-3); line-height: 1.6; border-top: 1px solid var(--border); padding-top: var(--s-4); }
+
+/* Route chunk loading. Fades in after a beat so a fast chunk shows nothing. */
+.route-wait {
+  padding: var(--s-7) var(--s-4); text-align: center;
+  color: var(--ink-3); font-size: var(--t-sm);
+  animation: waitIn 0.01s linear 0.25s both;
+}
+@keyframes waitIn { from { opacity: 0 } to { opacity: 1 } }
+
+/* --- Demo console on a narrow screen -------------------------------------
+   A <select> sizes itself to its widest option, and "7 — Trimbak Road" is
+   wider than half a phone. In a grid track that intrinsic width wins and
+   pushes the panel past the viewport, so the whole page scrolls sideways.
+   min-width:0 lets the track actually shrink. */
+.demo-grid, .demo-controls { min-width: 0; }
+.demo-controls label, .demo-controls select, .demo-stack .btn { min-width: 0; max-width: 100%; }
+.demo-controls select { text-overflow: ellipsis; }
+@media (max-width: 460px) {
+  .demo-controls { grid-template-columns: 1fr; }
+}
+
+/* --- Touch targets -------------------------------------------------------
+   Everything tappable clears 44px on a phone. These screens are used standing
+   up, one-handed, sometimes by someone wearing gloves. */
+@media (pointer: coarse) {
+  .btn, .demo-controls select, .pub-other, .pub-change { min-height: 44px; }
+  .pub-fold summary, .dash-details summary { min-height: 44px; display: flex; align-items: center; }
+}
+
+/* Citation links on About are small text by design, but they are still links —
+   give them room to be hit without enlarging the type. */
+.about-num a { display: inline-block; padding: 6px 0; }
