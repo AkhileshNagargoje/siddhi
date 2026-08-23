@@ -3,7 +3,7 @@
 // detection cannot tell simulated data from real (PROJECT.md rule 7).
 //
 // Usage:
-//   node simulate.js backfill          # 72h of normal history (baseline food)
+//   node simulate.js backfill          # 84h of normal history (baseline food)
 //   node simulate.js live              # ongoing normal traffic, ~1 batch/30s
 //   node simulate.js outbreak <sector> # inject growing GI outbreak in a sector
 //   node simulate.js reset             # delete all simulated data

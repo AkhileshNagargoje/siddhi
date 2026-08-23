@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Insights } from './InsightsPage'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL, RESPONSE_UNITS, CLINICS } from '../config/festival'
@@ -40,6 +40,12 @@ export default function DashboardPage() {
   const [pharmacy, setPharmacy] = useState([])
   const [selected, setSelected] = useState(null)
   const [view, setView] = useState('live')
+  /* Read through a ref so the polling effect never re-subscribes on a tab switch. */
+  const viewRef = useRef('live')
+  useEffect(() => { viewRef.current = view }, [view])
+  /* Latches true the first time the analysis tab is opened. */
+  const [seenDeep, setSeenDeep] = useState(false)
+  useEffect(() => { if (view === 'deep') setSeenDeep(true) }, [view])
   const [unit, setUnit] = useState(RESPONSE_UNITS[0].id)
   const [pickedSector, setPickedSector] = useState(null)
   const [advisoryDraft, setAdvisoryDraft] = useState(null) // null = composer closed // sector tile clicked → detail panel (TASK 4)
@@ -78,7 +84,10 @@ export default function DashboardPage() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, refetch('tasks'))
       .subscribe()
 
-    const t = setInterval(load, 60_000)
+    /* Poll only while the live board is on screen. Realtime stays subscribed,
+       so switching back is still instant and nothing is missed — this drops the
+       repeated full re-page, not the freshness. */
+    const t = setInterval(() => { if (viewRef.current === 'live') load() }, 60_000)
     return () => { alive = false; supabase.removeChannel(ch); clearInterval(t) }
   }, [])
 
@@ -297,7 +306,11 @@ export default function DashboardPage() {
                 onClick={() => setView('deep')}>In-depth analysis</button>
       </div>
 
-      {view === 'deep' && <Insights />}
+      {/* Mounted once visited and then hidden rather than unmounted: Insights
+          fetches on mount, so unmounting made every tab switch blank the page
+          and re-page the entire range. It has no interval of its own, so
+          leaving it mounted costs nothing. */}
+      {seenDeep && <div hidden={view !== 'deep'}><Insights /></div>}
 
       {view === 'live' && <>
       <div className="kpi">

@@ -32,7 +32,12 @@ The contaminated tap gets shut on day one evening instead of day four.
 | Health official | `/dashboard` | — | Sector map, epidemic curve, alerts, dispatch |
 | Field responder | `/crew` | `3333` | Assigned jobs: acknowledge → resolve |
 
-Plus `/replay` — a scripted scenario running the live detection rule, on a compressed clock, and `/r#…` — what a home-district clinician sees after scanning a referral card.
+Plus `/replay` — a scripted scenario running the live detection rule on a
+compressed clock; `/r#…` — what a home-district clinician sees after scanning a
+referral card; `/public` — the pilgrim-facing advisory page reached from a
+printed poster; `/demo` — the presenter's console; `/about` — the sourced
+one-pager; and `/insights` — the analysis view, which is also the second tab on
+the dashboard. Ten routes in all.
 
 **Pilgrims are not users.** No app to install; they receive a printed QR card.
 
@@ -45,8 +50,10 @@ keeps the glanceability that matters during an incident. Ranked bars for diagnos
 stacked bar for the syndrome mix, meters for antibiotic share, small multiples
 for how each illness is moving, and a full table view. Forms are picked by the
 job: ranking uses one hue with length carrying magnitude, part-to-whole uses a
-shared baseline with printed shares rather than a pie, and a ratio against a
-reference uses a meter. The six categorical hues are validated in both themes —
+shared baseline with printed shares, and a ratio against a
+reference uses a meter. A pie sits beside the stacked bar for the syndrome mix —
+the pie makes "one illness dominates" immediate, the shared baseline is what you
+use to compare the small slices. The six categorical hues are validated in both themes —
 worst adjacent colour-blind separation dE 9.1 light / 8.4 dark.
 
 **What the doctor gets back** — a "My clinic" tab behind the entry form: the sector
@@ -77,12 +84,15 @@ Offline goes one layer deeper than the queue. A service worker (`app/public/sw.j
 - **Engine** — Cloudflare Worker on cron: detection every 5 min, simulated traffic every 1 min
 - **Hosting** — Cloudflare Workers static assets
 
-Six tables: `encounters`, `clinics`, `baselines`, `alerts`, `tasks`, `referrals`.
+Nine tables: `encounters`, `clinics`, `baselines`, `alerts`, `tasks`,
+`referrals`, plus `pharmacy_sales`, `pharmacy_signals`, `pharmacy_stalls`.
 
 ## Running locally
 
 ```bash
-# 1. database — paste db/setup.sql into the Supabase SQL editor and run it
+# 1. database — in the Supabase SQL editor, run IN THIS ORDER:
+#      db/setup.sql  db/pharmacy.sql  db/advisory.sql  db/resolved-at.sql  db/harden.sql
+#    setup alone gives you an app whose corroboration and advisory features throw.
 
 # 2. app
 cd app
@@ -96,7 +106,9 @@ npm install
 node simulate.js backfill        # ~84h of realistic traffic
 node detect.js once              # run one detection scan
 node simulate.js outbreak 5      # inject a growing outbreak in sector 5
-node simulate.js reset           # wipe simulated data
+# NOTE: `node simulate.js reset` no longer works — db/harden.sql removed DELETE
+# from the public key. To reset, open /demo and press "Clear the board", or run
+# db/cleanup.sql in the SQL editor.
 ```
 
 The simulator writes through the **same API** a real tablet uses, into the same tables. Rows carry a `simulated` flag for cleanup, and the detection engine does not read it — synthetic and real traffic are scored identically.
@@ -179,4 +191,7 @@ The headline figures are published, not folkloric:
 
 ## Status
 
-Tier 1 and Tier 2 complete and deployed. Roadmap (designed, not built): voice entry, SMS fallback, demand forecasting, pharmacy ORS-velocity signal, water-quality fusion, IDSP export.
+Tier 1 and Tier 2 complete and deployed, plus the pharmacy corroboration
+signal, the officer-approved public advisory page, and the in-depth analysis
+tab. Roadmap (designed, not built): voice entry, SMS fallback, demand
+forecasting, water-quality fusion, IDSP export.

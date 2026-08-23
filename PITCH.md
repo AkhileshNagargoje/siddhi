@@ -58,7 +58,8 @@ Point at three things and no more:
 
 1. **The sector grid** — "shaded by case load. Grey means a clinic has gone quiet, which is different from calm, and we treat it that way."
 2. **The curve** — "cases per hour, with the expected line."
-3. **Click a resolved alert** — "and every alert shows its own arithmetic. Observed, expected, how many standard deviations. An officer can argue with this. That's deliberate — they ignore anything they can't argue with."
+3. **The second tab** — "and there's a second tab on this screen: rankings, the case mix, how each illness is moving. We'll leave it, but it's there." *(One sentence. Do not open it — the live board is the story.)*
+4. **Click a resolved alert** — "and every alert shows its own arithmetic. Observed, expected, how many standard deviations. An officer can argue with this. That's deliberate — they ignore anything they can't argue with."
 
 ---
 

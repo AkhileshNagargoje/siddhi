@@ -11,20 +11,20 @@
 - **`db/resolved-at.sql` has been run.** Verified live: cleared 7 alerts, all stamped, immediate rescan raised 0 — the same rescan raised all 7 back before the migration. Counter-checked that detection is not deaf: a fresh outbreak in a sector outside the cooldown still fired at 15.5 sigma, while a suppressed sector stayed suppressed under 40 more injected cases.
 - **Superseded by the above:** routes code-split (main bundle 527 KB -> 443 KB; the public pilgrim page is now 6 KB), offline service-worker shell so the app boots with no network, `/demo` presenter console and `/about` both built and live, per-route page titles, all screens verified with no horizontal scroll and 44px touch targets on a phone.
 - **What runs right now:** Tier 1 and Tier 2 complete and deployed — entry form (offline queue), dashboard (realtime), detection, crew app. Full demo loop verified end to end locally.
-- **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>|reset` · detection: `node detect.js once|watch`
+- **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>` (`reset` no longer works — harden.sql removed DELETE; use /demo → Clear the board, or db/cleanup.sql) · detection: `node detect.js once|watch`
 - **Known broken:** —
 - **Database:** hardened. Public key can SELECT/INSERT/UPDATE only; DELETE is blocked (db/harden.sql). Cleanup therefore runs from the Supabase SQL Editor via db/cleanup.sql, not from a script.
 - **Live URL:** https://siddhi.akhileshnagargoje.in (deploy: cd app && npm run build && npx wrangler deploy)
 - **Engine (cloud):** https://siddhi-engine.akhileshnagargoje.in — Cloudflare Worker, 2 crons: detection every 5 min, live traffic every 1 min. Endpoints: /scan, /traffic, /outbreak?sector=5&n=25
 - **Deploy commands:** app: `cd app && npm run build && npx wrangler deploy` · engine: `cd worker && npx wrangler deploy`
-- **Next up:** run db/cleanup.sql right before presenting. Then: rehearse, teammate components, add a source for the 31% / 30,000 figures before the About page ships.
+- **Next up:** open /demo and press "Clear the board" right before presenting. Then: rehearse, and the teammate components (SectorDetail, AgeChart, MorningCard are still stubs). The 31% and Harvard figures are sourced on the About page; the unsourced "30,000 visits" claim has been replaced everywhere with the sourced "2,000+ on day one".
 
 ## Tier 1 — Essential (the demo path)
 
 | # | Task | Status | Who | Notes |
 |---|---|---|---|---|
 | 0.1 | PROJECT.md + PROGRESS.md + CLAUDE.md | done | Claude | |
-| 0.2 | React+Vite skeleton, 3 routes | done | Claude | |
+| 0.2 | React+Vite skeleton (now 10 routes) | done | Claude | |
 | 0.3 | Supabase project + 6 tables | done | Claude + owner | needs owner's Supabase account |
 | 0.4 | Seed/config data files (sectors, clinics, symptoms, diagnoses, drugs) | done | Claude | Person A verifies translations later |
 | 1.1 | Simulator: normal traffic generator | done | Claude | |

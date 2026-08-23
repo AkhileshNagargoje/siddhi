@@ -42,6 +42,9 @@
      is tuned to sit on the page as a line colour, and white on it measures
      4.42:1 in light and 3.64:1 in dark. These are chosen for the text. */
   --accent-solid: #1f5fae;   /* white 6.4:1 */
+  /* Link/small-text blue. --series-1 is tuned to sit on the page as a MARK; as
+     11-13px text it measures 4.2:1 in light mode, just under the floor. */
+  --link: #1f5fae;
   --good-solid:   #0a7d0a;   /* white 5.3:1 */
   /* Ink for each step of the sequential ramp. The tile paints its own
      background, so its text cannot follow the theme's ink — in dark mode a busy
@@ -127,6 +130,7 @@
     --series-5: #d55181;
     --series-6: #008300;
     --accent-solid: #256abf;   /* white 5.4:1 */
+    --link: #5598e7;
     --good-solid:   #0a7d0a;   /* white 5.3:1 */
     --seq-0-ink: #ffffff; --seq-1-ink: #ffffff; --seq-2-ink: #ffffff;
     --seq-3-ink: #ffffff; --seq-4-ink: #ffffff;

@@ -45,9 +45,10 @@ export function MyClinic({ clinic, sector }) {
           .eq('sector', sector)
           .neq('status', 'resolved'),
         supabase.from('encounters')
-          .select('drugs')
+          .select('clinic_id, drugs')
           .gte('ts', since6h)
-          .limit(1000),
+          .order('ts', { ascending: false })
+          .limit(2000),
         /* The whole sector, not just this tent. This is the number that does
            not exist anywhere else: every clinic sees its own queue, and the
            total has never been visible to the person generating it. */
@@ -55,11 +56,13 @@ export function MyClinic({ clinic, sector }) {
           .select('syndrome, clinic_id')
           .eq('sector', sector)
           .gte('ts', since6h)
+          .order('ts', { ascending: false })
           .limit(3000),
         supabase.from('encounters')
           .select('ts')
           .eq('clinic_id', clinic.id)
           .gte('ts', since12h)
+          .order('ts', { ascending: false })
           .limit(3000),
       ])
       if (!alive) return
@@ -74,11 +77,26 @@ export function MyClinic({ clinic, sector }) {
         if (e.drugs?.some(d => ANTIBIOTICS.has(d))) abx++
       }
 
-      const fest = festival.data ?? []
-      const festAbx = fest.filter(e => e.drugs?.some(d => ANTIBIOTICS.has(d))).length
+      /* A true per-clinic median, matching DashboardPage's calculation. The
+         previous version averaged every encounter festival-wide and called it
+         a median, so this screen and the control room disagreed under the same
+         label — and a mean is dragged by whichever clinic is busiest. */
+      const perClinic = new Map()
+      for (const e of festival.data ?? []) {
+        if (!perClinic.has(e.clinic_id)) perClinic.set(e.clinic_id, { n: 0, abx: 0 })
+        const c = perClinic.get(e.clinic_id)
+        c.n++
+        if (e.drugs?.some(d => ANTIBIOTICS.has(d))) c.abx++
+      }
+      const rates = [...perClinic.values()].filter(c => c.n >= 5).map(c => c.abx / c.n).sort((a, b) => a - b)
+      const mid = Math.floor(rates.length / 2)
+      const festMedian = !rates.length ? null
+        : rates.length % 2 ? rates[mid] : (rates[mid - 1] + rates[mid]) / 2
 
       /* Sector aggregate, and how much of it came from this clinic. */
-      const secRows = sectorRows.data ?? []
+      /* Exclude screening here too — the headline and the breakdown beneath it
+         must describe the same population, or the parts do not sum to the whole. */
+      const secRows = (sectorRows.data ?? []).filter(e => e.syndrome !== 'screening')
       const secBySyn = new Map()
       let secMine = 0
       for (const e of secRows) {
@@ -109,7 +127,7 @@ export function MyClinic({ clinic, sector }) {
         today: rows.length,
         top: [...bySyndrome.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3),
         myRate: rows.length ? abx / rows.length : null,
-        festRate: fest.length ? festAbx / fest.length : null,
+        festRate: festMedian,
         alerts: sectorAlerts.data ?? [],
       })
     }
