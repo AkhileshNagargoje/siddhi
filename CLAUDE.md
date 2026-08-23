@@ -1,4 +1,4 @@
-# Drishti
+# Siddhi
 
 Outbreak early-warning system for mass gatherings. Hackathon project, 10-day timeline.
 
