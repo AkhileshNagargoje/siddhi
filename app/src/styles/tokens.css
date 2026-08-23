@@ -123,7 +123,9 @@
     --seq-5: #3987e5;
     --seq-6: #5598e7;
 
-    --good-ink: #0ca30c;
+    --good-ink: #2fc22f;   /* was #0ca30c: 3.9:1 on the green wash once that
+                              wash is composited over the surface it sits on,
+                              not over the page. Light mode is unaffected. */
     --critical-ink: #e66767;
     --warning-ink: #fab219;
     --good-wash: rgba(12, 163, 12, 0.14);
