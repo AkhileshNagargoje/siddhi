@@ -776,3 +776,18 @@
   background: var(--warning-wash); color: var(--warning-ink);
   border-radius: var(--r-md); font-size: var(--t-sm); line-height: 1.5;
 }
+
+/* ---- my-clinic: the sector aggregate and the trend ---- */
+.mc-sector .mc-big { color: var(--series-1); }
+.mc-note {
+  margin: var(--s-3) 0 0; padding-top: var(--s-3);
+  border-top: 1px solid var(--grid);
+  font-size: var(--t-xs); color: var(--ink-3); line-height: 1.55;
+}
+.mc-trend {
+  display: flex; align-items: center; gap: var(--s-3);
+  margin-top: var(--s-3); padding-top: var(--s-3);
+  border-top: 1px solid var(--grid);
+  font-size: var(--t-sm); color: var(--ink-2);
+}
+.mc-trend b { color: var(--ink-1); font-weight: 600; }
