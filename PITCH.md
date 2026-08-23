@@ -5,10 +5,6 @@ Seven minutes. Every number here is verified; sources at the bottom.
 **Setup before you stand up**
 - Laptop: three tabs — `/replay`, `/dashboard`, `/dashboard` (spare). Hard-refresh each.
 - Phone: `/entry`, signed in with PIN 1111, browser storage cleared so it reads "0 today".
-- **Once, ever:** run `db/resolved-at.sql` in the Supabase SQL editor. Without it,
-  clearing the board does not stick — every alert re-fires within five minutes,
-  because the engine's cooldown has nothing to anchor to. Verified: cleared 7,
-  rescanned, got the same 7 straight back.
 - Open `/demo` and press **Clear the board**. Check the dashboard says **0 open alerts**.
 - Do **not** click a sector tile on stage — the detail panel is a teammate task and still renders nothing.
 - Phone on the projector too if the venue allows. If not, hold it up and narrate.
