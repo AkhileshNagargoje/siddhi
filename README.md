@@ -14,7 +14,7 @@ When fourteen people from one sector fall ill across four different clinics and 
 
 **The data needed to prevent it was collected. It never reached a decision-maker in time.**
 
-The 2015 Harvard *Jana Swasthya* project at the Nashik Kumbh proved health workers will enter data at scale — 30,000 visits logged on tablets. But it only drew charts: no detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters, recorded and never acted on.
+The 2015 Harvard *Jana Swasthya* project at the Nashik Kumbh proved health workers will enter data at scale — 2,000+ visits logged on tablets across 30+ clinics on its first day. But it only drew charts: no detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters, recorded and never acted on.
 
 Drishti is everything that should happen in the ten minutes **after** the data is entered.
 
@@ -94,9 +94,9 @@ These are deliberate and documented in `PROJECT.md`:
 2. **Explainable maths only.** No ML in detection.
 3. **Entry stays ≤ 10 seconds.** Any feature that slows it is rejected.
 4. **Offline-first.** The device is the source of truth until the server confirms.
-5. **Silence ≠ calm.** A sector that stops reporting is shown as such, never as healthy. *(Sector-level only — per-clinic silence detection is designed, not yet built.)*
+5. **Silence ≠ calm.** A clinic quiet for 3h is named on the dashboard; a sector whose every clinic has gone quiet renders as a blind spot, never as healthy.
 6. **No pilgrim login.** Ever.
-7. **Config-driven.** Sectors, clinics, symptoms and thresholds live in config, so the same system redeploys to any mass gathering.
+7. **Config-driven.** Sectors, clinics and symptoms live in config, so the same system redeploys to any mass gathering. *(Detection thresholds are still hardcoded in the worker — a known gap.)*
 
 ## Does it actually work?
 
