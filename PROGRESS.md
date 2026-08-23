@@ -59,6 +59,8 @@
 
 ## Decisions log
 
+- 2026-08-16: Industry dataviz pass applied (dataviz skill): tabular-nums scoped to columns only, stewardship panel got median reference tick + icon+label for above-median (never color alone), epi curve got pointer events + persistent end marker + table-view twin, sparkline end-dot got surface ring. Sequential ramps verified monotonic in OKLab; heatmap contrast relief = direct labels on every cell.
+
 - 2026-08-15: Scope locked to PROJECT.md tiers. Tier 1 first, nothing else until it runs end to end.
 - 2026-08-15: Claude writes all critical-path code. Teammates get isolated display components only.
 - 2026-08-15: Crowd normalization designed but deferred from Tier 1 (simulator traffic is constant).
