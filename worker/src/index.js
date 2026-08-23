@@ -296,10 +296,12 @@ async function scanPharmacy(env) {
       observed,
       expected: Number(mean.toFixed(2)),
       score: Number(z.toFixed(2)),
-      // Deliberately lower than the clinical bar. This signal never dispatches
-      // anyone on its own — it corroborates, or it warns early. The cost of a
-      // false positive here is a line on a dashboard, not a crew's afternoon.
-      elevated: z >= 2.5 && observed >= 12,
+      // Matches the clinical bar rather than sitting below it. At z >= 2.5 two
+      // of twelve sectors read elevated on ordinary data, and a corroborating
+      // signal that is lit 17% of the time corroborates nothing. This signal
+      // still never dispatches anyone on its own — it confirms or it warns
+      // early — but it has to mean something when it is lit.
+      elevated: z >= 3 && observed >= 20,
       updated_at: new Date().toISOString(),
     })
   }
