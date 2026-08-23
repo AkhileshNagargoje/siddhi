@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { SYNDROME_LABELS, DRUGS } from '../config/medical'
-import { StatusBadge } from '../components/viz'
+import { StatusBadge, Sparkline } from '../components/viz'
 
 const ANTIBIOTICS = new Set(DRUGS.filter(d => d.antibiotic).map(d => d.id))
 
@@ -33,7 +33,9 @@ export function MyClinic({ clinic, sector }) {
       const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
       const since6h = new Date(Date.now() - 6 * 3600_000).toISOString()
 
-      const [mine, sectorAlerts, festival] = await Promise.all([
+      const since12h = new Date(Date.now() - 12 * 3600_000).toISOString()
+
+      const [mine, sectorAlerts, festival, sectorRows, trendRows] = await Promise.all([
         supabase.from('encounters')
           .select('syndrome, drugs, severity')
           .eq('clinic_id', clinic.id)
@@ -46,6 +48,19 @@ export function MyClinic({ clinic, sector }) {
           .select('drugs')
           .gte('ts', since6h)
           .limit(1000),
+        /* The whole sector, not just this tent. This is the number that does
+           not exist anywhere else: every clinic sees its own queue, and the
+           total has never been visible to the person generating it. */
+        supabase.from('encounters')
+          .select('syndrome, clinic_id')
+          .eq('sector', sector)
+          .gte('ts', since6h)
+          .limit(3000),
+        supabase.from('encounters')
+          .select('ts')
+          .eq('clinic_id', clinic.id)
+          .gte('ts', since12h)
+          .limit(3000),
       ])
       if (!alive) return
 
@@ -62,7 +77,35 @@ export function MyClinic({ clinic, sector }) {
       const fest = festival.data ?? []
       const festAbx = fest.filter(e => e.drugs?.some(d => ANTIBIOTICS.has(d))).length
 
+      /* Sector aggregate, and how much of it came from this clinic. */
+      const secRows = sectorRows.data ?? []
+      const secBySyn = new Map()
+      let secMine = 0
+      for (const e of secRows) {
+        if (e.syndrome !== 'screening') secBySyn.set(e.syndrome, (secBySyn.get(e.syndrome) ?? 0) + 1)
+        if (e.clinic_id === clinic.id) secMine++
+      }
+
+      /* Twelve hourly buckets. A doctor's real question is not "how many" but
+         "is this building?", which a single number cannot answer. */
+      const now = Date.now()
+      const buckets = new Array(12).fill(0)
+      for (const e of trendRows.data ?? []) {
+        const hrsAgo = (now - new Date(e.ts).getTime()) / 3600_000
+        const idx = 11 - Math.floor(hrsAgo)
+        if (idx >= 0 && idx < 12) buckets[idx]++
+      }
+      const firstHalf = buckets.slice(0, 6).reduce((a, b) => a + b, 0)
+      const lastHalf = buckets.slice(6).reduce((a, b) => a + b, 0)
+
       setState({
+        sectorTotal: secRows.length,
+        sectorTop: [...secBySyn.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3),
+        sectorClinics: new Set(secRows.map(e => e.clinic_id)).size,
+        sectorMine: secMine,
+        trend: buckets,
+        trendDir: lastHalf > firstHalf * 1.3 ? 'rising'
+          : lastHalf < firstHalf * 0.7 ? 'easing' : 'steady',
         today: rows.length,
         top: [...bySyndrome.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3),
         myRate: rows.length ? abx / rows.length : null,
@@ -108,6 +151,34 @@ export function MyClinic({ clinic, sector }) {
         </div>
       )}
 
+      {/* The payoff for entering the data. Every clinic can count its own
+          queue; none of them can see this, and it is the exact number the
+          whole system exists to produce. Put it above their own count. */}
+      <div className="panel mc-sector">
+        <div className="chart-head">
+          <h3>Your sector, last 6 hours</h3>
+          <span className="chart-sub">{state.sectorClinics} clinic{state.sectorClinics === 1 ? '' : 's'} reporting</span>
+        </div>
+        <div className="mc-big">{state.sectorTotal}</div>
+        <p className="chart-sub" style={{ marginTop: 0 }}>
+          patients across the whole sector — <b>{state.sectorMine}</b> of them yours
+        </p>
+        {state.sectorTop.length > 0 && (
+          <div className="mc-top">
+            {state.sectorTop.map(([syn, n]) => (
+              <div key={syn} className="mc-row">
+                <span>{SYNDROME_LABELS[syn] ?? syn}</span>
+                <b>{n}</b>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="mc-note">
+          No single clinic can see this number. It only exists because every
+          tent in the sector is entering patients.
+        </p>
+      </div>
+
       <div className="panel">
         <div className="chart-head">
           <h3>Your clinic today</h3>
@@ -115,6 +186,14 @@ export function MyClinic({ clinic, sector }) {
         </div>
         <div className="mc-big">{state.today}</div>
         <p className="chart-sub" style={{ marginTop: 0 }}>patients recorded</p>
+
+        {/* "Is it building?" is the question a running total cannot answer. */}
+        <div className="mc-trend">
+          <Sparkline values={state.trend} width={120} height={30} />
+          <span>
+            last 12 hours · <b>{state.trendDir}</b>
+          </span>
+        </div>
 
         {state.top.length > 0 && (
           <div className="mc-top">

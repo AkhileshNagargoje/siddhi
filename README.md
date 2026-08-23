@@ -38,6 +38,13 @@ Plus `/replay` — a scripted scenario running the live detection rule, on a com
 
 ## Features
 
+**What the doctor gets back** — a "My clinic" tab behind the entry form: the sector
+alert with something clinically actionable, the whole sector's 6-hour total across
+every clinic in it (the aggregate no single tent can see, with their own share of
+it), their own day, a 12-hour trend that answers "is this building?", and their
+antibiotic share beside the festival median with no verdict attached. It sits
+behind a tab so the ten-second path never renders it — measured at 2.2s.
+
 **Capture** — ~10 second tap entry, offline-first with a localStorage queue, duplicate-proof via client-generated UUIDs, immediate push when online with a 5s retry timer and an `online` event listener.
 
 Offline goes one layer deeper than the queue. A service worker (`app/public/sw.js`) caches the app shell, so the entry screen *boots* with no network at all — not just survives losing one mid-shift. HTML is network-first so a fresh deploy always wins; hashed assets are cache-first, which is safe because their bytes can never change. Supabase and engine responses are never cached: a doctor must not read yesterday's alert as if it were live. Open any URL with `?nosw` to tear the whole thing out.
