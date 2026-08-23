@@ -821,12 +821,14 @@
 .seg button:last-child { border-right: 0; }
 .seg button.on { background: var(--accent-solid); color: #fff; }
 
-/* Cards in a row share a height, so their bottom edges line up instead of
-   leaving a ragged void beside the taller one — measured at 141px under the
-   ranking panel and 81px under the trends panel. Panels are also ordered so
-   each pair is close in height, which keeps the shared row from padding much. */
-.ins-grid > section { min-width: 0; }
-.ins-grid { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: stretch; }
+/* The ragged voids were fixed by ORDERING panels into height-matched pairs
+   (ranking with trends, pie with antibiotics), not by stretching them.
+   `align-items: stretch` was the first attempt and it was wrong: expanding one
+   panel's drill-down grew the whole row, so the untouched sibling stretched
+   with it and looked like it had opened too. A panel must only ever change its
+   own height. */
+.ins-grid > section { min-width: 0; align-self: start; }
+.ins-grid { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: start; }
 /* An odd panel out would leave half a row empty — 347px of it. Span instead. */
 .ins-wide { grid-column: 1 / -1; }
 @media (min-width: 901px) {
