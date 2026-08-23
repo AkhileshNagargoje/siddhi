@@ -900,3 +900,14 @@
 .topbar-links { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
 .topbar-links a { font-size: var(--t-sm); color: var(--series-1); text-decoration: none; }
 .topbar-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* pie — requested form, built for maximum readability */
+.mix { display: grid; grid-template-columns: auto 1fr; gap: var(--s-4); align-items: center; }
+@media (max-width: 620px) { .mix { grid-template-columns: 1fr; } }
+.pie-wrap { display: grid; place-items: center; min-width: 0; }
+.pie { max-width: 100%; height: auto; overflow: visible; }
+.pie path { transition: opacity 0.12s; }
+.pie path:hover { opacity: 0.85; }
+/* Labels wear text ink, never the series colour. */
+.pie-label { fill: var(--ink-2); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mix-bar { min-width: 0; }
