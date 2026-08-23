@@ -43,6 +43,12 @@ the dashboard. Ten routes in all.
 
 ## Features
 
+The live board carries **what's driving it** — the syndrome mix over the last six
+hours with a direction for each, sitting directly under the epidemic curve
+because it answers the question the curve raises: the line is going up, up with
+*what*. That is an operational readout, so it belongs on the board rather than
+in the analysis tab.
+
 **In-depth analysis** — a second tab on the health official's own dashboard,
 because they are the person who needs it and sending them to a different address
 to find it was the wrong shape. Live stays the default tab, so the control room
