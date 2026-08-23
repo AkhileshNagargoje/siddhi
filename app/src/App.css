@@ -912,3 +912,54 @@
 /* Labels wear text ink, never the series colour. */
 .pie-label { fill: var(--ink-2); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .mix-bar { min-width: 0; }
+
+/* ---- grouped, expandable table ---- */
+.tg + .tg::before { content: ''; display: block; height: var(--s-4); }
+.tg-head th {
+  padding-top: var(--s-3); font-size: var(--t-xs); text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--ink-1); font-weight: 700;
+  border-bottom: 2px solid var(--border-strong);
+}
+.tg-head td {
+  padding-top: var(--s-3); font-weight: 700; color: var(--ink-1);
+  border-bottom: 2px solid var(--border-strong);
+}
+.tg-row td { transition: background 0.1s; }
+.tg-row:hover td { background: var(--surface-2); }
+.tg-row.is-open td { background: var(--surface-2); border-bottom-color: transparent; }
+.tg-toggle { width: 34px; padding-right: 0 !important; }
+.tg-toggle button {
+  width: 26px; height: 26px; display: grid; place-items: center;
+  background: var(--surface-sunk); color: var(--ink-1);
+  border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+  font-size: 14px; line-height: 1; cursor: pointer; font-weight: 600;
+}
+.tg-row:hover .tg-toggle button { border-color: var(--ink-3); }
+/* Match the 44px minimum the rest of the app uses on touch. A table row is
+   not an excuse for a smaller target — this one is read standing up too. */
+@media (pointer: coarse) {
+  .tg-toggle { width: 52px; }
+  .tg-toggle button { width: 44px; height: 44px; }
+}
+
+.tg-detail > td { padding: 0 0 var(--s-4) !important; background: var(--surface-2); }
+.rd { padding: var(--s-4); border-radius: var(--r-md); background: var(--surface-1); }
+.rd-empty { margin: 0; padding: var(--s-4); color: var(--ink-3); font-size: var(--t-sm); }
+.rd-facts {
+  display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5);
+  padding-bottom: var(--s-3); margin-bottom: var(--s-3);
+  border-bottom: 1px solid var(--grid);
+}
+.rd-facts div { display: flex; flex-direction: column; gap: 2px; }
+.rd-facts span {
+  font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3);
+}
+.rd-facts b { font-size: var(--t-md); color: var(--ink-1); font-variant-numeric: tabular-nums; }
+.rd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); }
+@media (max-width: 720px) { .rd-cols { grid-template-columns: 1fr; gap: var(--s-4); } }
+.rd h5 {
+  margin: 0 0 var(--s-2); font-size: var(--t-xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3);
+}
+/* Inside the detail there is no rank number or share column. */
+.rd-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr) auto; }
