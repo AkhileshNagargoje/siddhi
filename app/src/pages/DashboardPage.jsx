@@ -91,6 +91,14 @@ export default function DashboardPage() {
   }, [recent])
 
   const openAlerts = alerts.filter(a => a.status !== 'resolved')
+  /* An operations screen surfaces what needs attention, with just enough
+     history for context — not an unbounded archive. A week of the engine
+     running unattended left fifty resolved cards burying the live ones. */
+  const feed = useMemo(() => {
+    const live = alerts.filter(a => a.status !== 'resolved')
+    const recentlyClosed = alerts.filter(a => a.status === 'resolved').slice(0, 3)
+    return [...live, ...recentlyClosed]
+  }, [alerts])
   const alertTier = useMemo(() => {
     const m = new Map()
     for (const a of openAlerts) {
@@ -290,6 +298,13 @@ export default function DashboardPage() {
               <span className="chart-sub">{openAlerts.length} open</span>
             </div>
 
+            {alerts.filter(a => a.status === 'resolved').length > 3 && (
+              <p className="chart-sub" style={{ margin: '0 0 var(--s-2)' }}>
+                Showing {openAlerts.length} open and the 3 most recent of{' '}
+                {alerts.filter(a => a.status === 'resolved').length} closed.
+              </p>
+            )}
+
             {alerts.length === 0 && (
               <div className="empty">
                 <svg viewBox="0 0 24 24" width="30" height="30" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -300,7 +315,7 @@ export default function DashboardPage() {
             )}
 
             <div className="alert-list">
-              {alerts.map(a => (
+              {feed.map(a => (
                 <button
                   key={a.id}
                   className={`alert-card ${a.tier}${a.status === 'resolved' ? ' resolved' : ''}${a.id === selected ? ' is-sel' : ''}`}

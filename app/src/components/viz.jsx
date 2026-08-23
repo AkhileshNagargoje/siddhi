@@ -2,20 +2,41 @@ import { useLayoutEffect, useRef, useState } from 'react'
 
 /* Measure a container's pixel width so SVGs render 1:1 (crisp text, no scaling).
    Measures synchronously on mount — a ResizeObserver alone can leave width at 0. */
-export function useWidth() {
+export function useWidth(fallback = 640) {
   const ref = useRef(null)
   const [w, setW] = useState(0)
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    const measure = () => setW(el.getBoundingClientRect().width)
+    const measure = () => {
+      const next = el.getBoundingClientRect().width
+      if (next > 0) setW(next)
+    }
     measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    return () => ro.disconnect()
+    // A layout effect can run before the grid has settled, in which case the
+    // measurement above is 0. rAF and a short timeout both re-check.
+    const raf = requestAnimationFrame(measure)
+    const t = setTimeout(measure, 250)
+    // ResizeObserver refines this on real resizes, but it must never be the
+    // only path: some embedded and non-compositing browsers never deliver its
+    // callbacks at all, and a chart that silently renders nothing on a
+    // projector is worse than one whose text is a few percent off.
+    let ro
+    try {
+      ro = new ResizeObserver(measure)
+      ro.observe(el)
+    } catch { /* not supported — the fallback carries it */ }
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(t)
+      ro?.disconnect()
+    }
   }, [])
-  return [ref, w]
+  // Never hand back 0: the caller gates rendering on this, so 0 means a blank
+  // panel. A slightly wrong width that draws beats a correct width that does not.
+  return [ref, w || fallback]
 }
+
 
 /* Status is never carried by colour alone — every badge ships an icon + label. */
 const STATUS_ICON = {
