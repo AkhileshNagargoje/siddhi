@@ -33,6 +33,14 @@ async function fetchEncounters(sinceIso) {
   return out
 }
 
+const dur = m => {
+  if (m == null) return '—'
+  if (m < 1) return '<1 min'
+  if (m < 90) return `${Math.round(m)} min`
+  const h = m / 60
+  return h < 24 ? `${h.toFixed(1)} h` : `${(h / 24).toFixed(1)} d`
+}
+
 export default function DashboardPage() {
   const [encounters, setEncounters] = useState([])
   const [alerts, setAlerts] = useState([])
@@ -74,7 +82,11 @@ export default function DashboardPage() {
       const since = new Date(Date.now() - HOURS * 3600_000).toISOString()
       const [enc, al, tk] = await Promise.all([
         fetchEncounters(since),
-        supabase.from('alerts').select('*').order('ts', { ascending: false }).limit(50),
+        /* 200, not 50: a closed job can only report end-to-end time if its
+           alert is still in this set, and tasks outlive the 50 most recent
+           alerts. At 50 the headline was a median of one job while four were
+           closed. The feed is bounded separately, so this costs nothing on screen. */
+        supabase.from('alerts').select('*').order('ts', { ascending: false }).limit(200),
         supabase.from('tasks').select('*').order('created_at', { ascending: false }).limit(50),
       ])
       if (!alive) return
@@ -89,9 +101,13 @@ export default function DashboardPage() {
     }
     load()
 
+    /* Must mirror the initial load's limits. It did not: any realtime alert
+       event refetched only 50, silently shrinking the window the response-time
+       medians are computed over, so the number would degrade as the demo ran. */
     const refetch = table => () =>
       supabase.from(table).select('*').order(table === 'alerts' ? 'ts' : 'created_at', { ascending: false })
-        .limit(50).then(r => r.data && (table === 'alerts' ? setAlerts(r.data) : setTasks(r.data)))
+        .limit(table === 'alerts' ? 200 : 50)
+        .then(r => r.data && (table === 'alerts' ? setAlerts(r.data) : setTasks(r.data)))
 
     const ch = supabase.channel('dashboard')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'encounters' },
@@ -198,6 +214,52 @@ export default function DashboardPage() {
 
   /* Live props for the teammate-built components. Data is computed here so
      the components stay pure display (TEAM-TASKS: "fetch nothing"). */
+  /* Time from detection to response — the number the pitch claims we measure
+     "automatically" and which, until now, appeared nowhere on screen.
+     Every timestamp already exists: alerts.ts when the software raised it,
+     tasks.created_at when a crew was dispatched, ack_at when they accepted,
+     resolved_at when they closed it with a finding.
+
+     Median, not mean: one crew that went to lunch should not define the number.
+     Each stage is medianed independently, so the three stages do NOT sum to the
+     end-to-end figure — that is a property of medians, and the panel says so
+     rather than quietly presenting a total that does not add up. */
+  const response = useMemo(() => {
+    const alertById = new Map(alerts.map(a => [a.id, a]))
+    const mins = (from, to) => {
+      if (!from || !to) return null
+      const d = (new Date(to).getTime() - new Date(from).getTime()) / 60000
+      return d >= 0 ? d : null      // clock skew, not a negative response time
+    }
+    const med = xs => {
+      const v = xs.filter(x => x != null).sort((a, b) => a - b)
+      if (!v.length) return null
+      const m = Math.floor(v.length / 2)
+      return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2
+    }
+
+    const rows = tasks.map(t => {
+      const a = alertById.get(t.alert_id)
+      return {
+        toDispatch: a ? mins(a.ts, t.created_at) : null,
+        toAck: mins(t.created_at, t.ack_at),
+        toResolve: mins(t.ack_at, t.resolved_at),
+        endToEnd: a ? mins(a.ts, t.resolved_at) : null,
+      }
+    })
+
+    return {
+      closed: rows.filter(r => r.endToEnd != null).length,
+      dispatched: rows.filter(r => r.toDispatch != null).length,
+      endToEnd: med(rows.map(r => r.endToEnd)),
+      stages: [
+        { label: 'Detected → crew dispatched', v: med(rows.map(r => r.toDispatch)), n: rows.filter(r => r.toDispatch != null).length },
+        { label: 'Dispatched → acknowledged', v: med(rows.map(r => r.toAck)), n: rows.filter(r => r.toAck != null).length },
+        { label: 'Acknowledged → closed', v: med(rows.map(r => r.toResolve)), n: rows.filter(r => r.toResolve != null).length },
+      ],
+    }
+  }, [alerts, tasks])
+
   /* What is actually driving the current load, and which way each part is
      moving. Six hours split in half is a crude direction, deliberately: this is
      a glance-level readout during an incident, not the analysis tab. */
@@ -379,6 +441,15 @@ export default function DashboardPage() {
           hint={openAlerts.length ? 'action required' : 'all clear'}
         />
         <StatTile label="Severe cases" value={`${severeShare}%`} hint="of last 6 hours" />
+        {/* The claim "we measure detection to response automatically" now has a
+            number behind it on the screen it is claimed from. */}
+        <StatTile
+          label="Detect → resolved"
+          value={dur(response.endToEnd)}
+          hint={response.closed
+            ? `median of ${response.closed} closed job${response.closed === 1 ? '' : 's'}`
+            : 'no jobs closed yet'}
+        />
       </div>
 
       <div className="dash-grid">
@@ -611,6 +682,34 @@ export default function DashboardPage() {
                 )}
               </div>
             )}
+          </div>
+
+          <div className="panel">
+            <div className="chart-head">
+              <h3>Where the time goes</h3>
+              <span className="chart-sub">median per stage</span>
+            </div>
+            <div className="resp">
+              {response.stages.map(st => {
+                const max = Math.max(...response.stages.map(x => x.v ?? 0), 1)
+                return (
+                  <div className="resp-row" key={st.label}>
+                    <span className="resp-label">{st.label}</span>
+                    <span className="resp-track">
+                      <i style={{ width: st.v == null ? 0 : `${Math.max((st.v / max) * 100, 2)}%` }} />
+                    </span>
+                    <b className="resp-v">{dur(st.v)}</b>
+                    <span className="resp-n">{st.n || '—'}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="resp-note">
+              Nobody self-reports these. Each one is the gap between two
+              timestamps the system already wrote — the alert, the dispatch, the
+              acknowledgement, the closing note.
+              {response.closed > 0 && ' Stage medians do not sum to the end-to-end median; each is taken over the jobs that reached that stage.'}
+            </p>
           </div>
 
           <StewardshipPanel rows={stewardship.rows} median={stewardship.median} />
