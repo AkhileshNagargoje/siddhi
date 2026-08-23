@@ -1,4 +1,4 @@
-# Drishti — Progress Tracker
+# Siddhi — Progress Tracker
 
 > Update rule: whoever finishes a task updates its line IMMEDIATELY, same sitting.
 > Status values: `todo` / `doing` / `done` / `blocked` / `cut`
@@ -9,8 +9,8 @@
 - **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>|reset` · detection: `node detect.js once|watch`
 - **Known broken:** —
 - **Database:** hardened. Public key can SELECT/INSERT/UPDATE only; DELETE is blocked (db/harden.sql). Cleanup therefore runs from the Supabase SQL Editor via db/cleanup.sql, not from a script.
-- **Live URL:** https://drishti.akhileshnagargoje.in (deploy: cd app && npm run build && npx wrangler deploy)
-- **Engine (cloud):** https://drishti-engine.akhileshnagargoje.in — Cloudflare Worker, 2 crons: detection every 5 min, live traffic every 1 min. Endpoints: /scan, /traffic, /outbreak?sector=5&n=25
+- **Live URL:** https://siddhi.akhileshnagargoje.in (deploy: cd app && npm run build && npx wrangler deploy)
+- **Engine (cloud):** https://siddhi-engine.akhileshnagargoje.in — Cloudflare Worker, 2 crons: detection every 5 min, live traffic every 1 min. Endpoints: /scan, /traffic, /outbreak?sector=5&n=25
 - **Deploy commands:** app: `cd app && npm run build && npx wrangler deploy` · engine: `cd worker && npx wrangler deploy`
 - **Next up:** run db/cleanup.sql right before presenting. Then: rehearse, teammate components, add a source for the 31% / 30,000 figures before the About page ships.
 
@@ -30,7 +30,7 @@
 | 4.1 | Entry form: tap-based, ≤10s | done | Claude | |
 | 4.2 | Entry form: offline queue + sync counter | done | Claude | |
 | 5.1 | Crew app: task list + ack/resolve | done | Claude | |
-| 6.1 | Deploy — Cloudflare Workers static assets | done | Claude | https://drishti.akhileshnagargoje.in |
+| 6.1 | Deploy — Cloudflare Workers static assets | done | Claude | https://siddhi.akhileshnagargoje.in |
 | 6.2 | End-to-end demo run works | done | all | |
 
 ## Tier 2 — only after ALL Tier 1 is done

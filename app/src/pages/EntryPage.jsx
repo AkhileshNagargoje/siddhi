@@ -9,27 +9,27 @@ import { MorningCard } from '../components/MorningCard'
 
 // Offline-first: every record lands in localStorage first, a background loop
 // pushes it up. Client-generated UUIDs make retries duplicate-proof.
-const QUEUE_KEY = 'drishti_queue'
+const QUEUE_KEY = 'siddhi_queue'
 const loadQueue = () => { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') } catch { return [] } }
 const saveQueue = q => localStorage.setItem(QUEUE_KEY, JSON.stringify(q))
 
 /* Referrals ride their own queue. The card itself never needs the server — the
    QR carries everything — but the health system still wants a record that one
    was issued, so it syncs whenever the network allows. */
-const REF_KEY = 'drishti_ref_queue'
+const REF_KEY = 'siddhi_ref_queue'
 const loadRefs = () => { try { return JSON.parse(localStorage.getItem(REF_KEY) ?? '[]') } catch { return [] } }
 const saveRefs = q => localStorage.setItem(REF_KEY, JSON.stringify(q))
 
 // Counter is scoped to the local calendar day and rolls over on its own.
 const today = () => new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local
 function readSyncedToday() {
-  if (localStorage.getItem('drishti_synced_day') !== today()) return 0
-  return Number(localStorage.getItem('drishti_synced') ?? 0)
+  if (localStorage.getItem('siddhi_synced_day') !== today()) return 0
+  return Number(localStorage.getItem('siddhi_synced') ?? 0)
 }
 function bumpSyncedToday(by) {
   const n = readSyncedToday() + by
-  localStorage.setItem('drishti_synced_day', today())
-  localStorage.setItem('drishti_synced', String(n))
+  localStorage.setItem('siddhi_synced_day', today())
+  localStorage.setItem('siddhi_synced', String(n))
   return n
 }
 
@@ -128,11 +128,11 @@ export default function EntryPage() {
     const u = USERS.find(u => u.pin === pin && u.role === 'worker')
     if (!u) { setPin(''); return }
     setUser(u)
-    if (localStorage.getItem('drishti_morning_day') !== today()) setShowMorning(true)
+    if (localStorage.getItem('siddhi_morning_day') !== today()) setShowMorning(true)
   }
 
   function closeMorning() {
-    localStorage.setItem('drishti_morning_day', today())
+    localStorage.setItem('siddhi_morning_day', today())
     setShowMorning(false)
   }
 

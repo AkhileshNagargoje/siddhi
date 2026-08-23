@@ -1,17 +1,17 @@
-# Drishti — Project Specification
+# Siddhi — Project Specification
 
 > **Purpose of this file:** Complete context for any coding agent or developer joining this project.
 > Read this fully before writing any code. See `PROGRESS.md` for current build status.
 
 ## What we are building
 
-**Drishti** — an outbreak early-warning and response system for mass gatherings (Kumbh Mela scale).
+**Siddhi** — an outbreak early-warning and response system for mass gatherings (Kumbh Mela scale).
 
 **The problem:** At a Kumbh-scale festival, millions of pilgrims live in a temporary tent city served by dozens of temporary clinics. Each doctor sees only their own queue. When 14 people from one sector fall ill across 4 different clinics and 3 shifts, every doctor sees a normal-looking handful and nobody sees "14" — that number exists nowhere until paper registers are tallied weeks later. By the time an outbreak is obvious it's day 4, there are hundreds of cases, and infected pilgrims have boarded trains to dozens of districts. The data to prevent it was collected; it never reached a decision-maker in time.
 
 **The solution:** Capture every patient in ~10 seconds → pool all clinics into one live picture → let software detect the cluster → turn the alert into an assigned job that someone must close. The contaminated tap gets shut on day 1 evening instead of day 4. Result: ~35 cases instead of ~600.
 
-**Historical basis:** The 2015 Harvard "Jana Swasthya" project at Nashik Kumbh proved health workers WILL enter data at scale (30,000 visits logged on tablets) — but it only drew charts. No detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters — recorded, never acted on. Drishti is everything that should happen in the ten minutes AFTER the data is entered.
+**Historical basis:** The 2015 Harvard "Jana Swasthya" project at Nashik Kumbh proved health workers WILL enter data at scale (30,000 visits logged on tablets) — but it only drew charts. No detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters — recorded, never acted on. Siddhi is everything that should happen in the ten minutes AFTER the data is entered.
 
 ## The 90-second demo story (this is what we optimize for)
 

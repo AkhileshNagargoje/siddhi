@@ -221,7 +221,7 @@ export default function DashboardPage() {
     <div className="shell">
       <div className="topbar">
         <div className="brand">
-          <b>Drishti</b>
+          <b>Siddhi</b>
           <span>control room · {FESTIVAL.name}</span>
         </div>
         <span className="live"><i />live</span>

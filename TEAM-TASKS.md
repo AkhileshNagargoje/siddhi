@@ -11,13 +11,13 @@ What you make may or may not end up in the final product — that's normal, that
 ## Practicalities
 
 ```bash
-git clone https://github.com/AkhileshNagargoje/drishti.git
-cd drishti/app
+git clone https://github.com/AkhileshNagargoje/siddhi.git
+cd siddhi/app
 npm install
 npm run dev
 ```
 
-Ask the main dev for the two `.env` values. The app is React + plain CSS; look at `src/pages/CrewPage.jsx` to see the house style. The live system is at drishti.akhileshnagargoje.in.
+Ask the main dev for the two `.env` values. The app is React + plain CSS; look at `src/pages/CrewPage.jsx` to see the house style. The live system is at siddhi.akhileshnagargoje.in.
 
 - Put your work in **new files** — don't edit existing ones. The main dev merges.
 - No new npm packages without asking.

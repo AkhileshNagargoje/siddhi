@@ -18,7 +18,7 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('Drishti render error:', error, info)
+    console.error('Siddhi render error:', error, info)
   }
 
   render() {

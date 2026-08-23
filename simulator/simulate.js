@@ -1,4 +1,4 @@
-// Drishti traffic simulator.
+// Siddhi traffic simulator.
 // Writes encounters through the SAME Supabase API the real app uses —
 // detection cannot tell simulated data from real (PROJECT.md rule 7).
 //

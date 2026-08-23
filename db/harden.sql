@@ -1,4 +1,4 @@
--- Drishti — pre-demo hardening.
+-- Siddhi — pre-demo hardening.
 --
 -- HOW TO RUN
 --   1. Open the Supabase SQL Editor.

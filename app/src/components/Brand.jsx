@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-/* The Drishti mark — an eye, because that is what the word means.
+/* The Siddhi mark — an eye, because that is what the word means.
    Inherits currentColor so it sits correctly on any surface in both themes. */
 export function Mark({ size = 22 }) {
   return (
@@ -19,7 +19,7 @@ export function TopBar({ context, right, links = true }) {
     <div className="topbar">
       <Link to="/" className="brand-lockup">
         <Mark />
-        <b>Drishti</b>
+        <b>Siddhi</b>
         {context && <span>{context}</span>}
       </Link>
       <div className="topbar-right">

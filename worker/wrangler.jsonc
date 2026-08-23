@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "drishti-engine",
+  "name": "siddhi-engine",
   "main": "src/index.js",
   "compatibility_date": "2026-08-01",
   "triggers": {
@@ -16,7 +16,7 @@
     "GENERATE_TRAFFIC": "true"
   },
   "routes": [
-    { "pattern": "drishti-engine.akhileshnagargoje.in", "custom_domain": true }
+    { "pattern": "siddhi-engine.akhileshnagargoje.in", "custom_domain": true }
   ],
   "observability": {
     "enabled": true

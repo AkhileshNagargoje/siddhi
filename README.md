@@ -1,8 +1,8 @@
-# Drishti
+# Siddhi
 
 **Outbreak early warning for mass gatherings.**
 
-Live: [drishti.akhileshnagargoje.in](https://drishti.akhileshnagargoje.in)
+Live: [siddhi.akhileshnagargoje.in](https://siddhi.akhileshnagargoje.in)
 
 ---
 
@@ -16,7 +16,7 @@ When fourteen people from one sector fall ill across four different clinics and 
 
 The 2015 Harvard *Jana Swasthya* project at the Nashik Kumbh proved health workers will enter data at scale — 2,000+ visits logged on tablets across 30+ clinics on its first day. But it only drew charts: no detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters, recorded and never acted on.
 
-Drishti is everything that should happen in the ten minutes **after** the data is entered.
+Siddhi is everything that should happen in the ten minutes **after** the data is entered.
 
 ## What it does
 

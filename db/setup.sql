@@ -1,4 +1,4 @@
--- Drishti database setup (PROJECT.md data model)
+-- Siddhi database setup (PROJECT.md data model)
 -- Paste this whole file into Supabase SQL Editor and click Run.
 
 -- 1. Tables ------------------------------------------------------

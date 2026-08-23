@@ -1,4 +1,4 @@
-// Drishti engine — runs in Cloudflare's network, not on anyone's laptop.
+// Siddhi engine — runs in Cloudflare's network, not on anyone's laptop.
 //
 //   */5 * * * *  detection scan (PROJECT.md spec)
 //   *   * * * *  one minute of live clinic traffic, so the demo is always alive
@@ -180,7 +180,131 @@ async function injectOutbreak(env, sector, n) {
     rows.push(enc)
   }
   await sbInsert(env, 'encounters', rows)
+  // Sales lead consultations, so a realistic injection moves both — and the
+  // lead time is the whole argument for the second signal.
+  await injectPharmacySpike(env, sector, Math.round(n * 1.6))
   return rows.length
+}
+
+
+// ---------- pharmacy signal ----------
+
+/* People self-medicate before they consult anyone, so rehydration sales lead
+   clinic cases by hours — and they capture the people who never reach a clinic
+   at all. It is a genuinely independent stream: different reporters, a
+   different act, different failure modes. Two independent signals agreeing is
+   evidence in a way one signal shouting twice is not. */
+
+const STALLS = [
+  { id: 'P01', sector: 1 }, { id: 'P02', sector: 1 }, { id: 'P03', sector: 2 },
+  { id: 'P04', sector: 3 }, { id: 'P05', sector: 3 }, { id: 'P06', sector: 4 },
+  { id: 'P07', sector: 5 }, { id: 'P08', sector: 5 }, { id: 'P09', sector: 6 },
+  { id: 'P10', sector: 7 }, { id: 'P11', sector: 8 }, { id: 'P12', sector: 8 },
+  { id: 'P13', sector: 9 }, { id: 'P14', sector: 10 }, { id: 'P15', sector: 11 },
+  { id: 'P16', sector: 11 }, { id: 'P17', sector: 12 },
+]
+
+// Only rehydration products carry the diarrhoeal signal. Paracetamol and cough
+// syrup are sold for everything, so counting them would bury it in noise.
+const REHYDRATION = ['ors', 'zinc', 'antidiarrheal']
+const OTHER_ITEMS = ['paracetamol', 'orsyp']
+const PHARM_PEAK_PER_STALL_HOUR = 9
+
+async function generatePharmacy(env) {
+  const now = new Date()
+  const f = hourFactorIST(now)
+  const rows = []
+  for (const stall of STALLS) {
+    const expected = PHARM_PEAK_PER_STALL_HOUR * f / 60
+    let n = Math.floor(expected)
+    if (Math.random() < expected - n) n++
+    for (let i = 0; i < n; i++) {
+      const rehydration = Math.random() < 0.45
+      const item = rehydration
+        ? REHYDRATION[Math.floor(Math.random() * REHYDRATION.length)]
+        : OTHER_ITEMS[Math.floor(Math.random() * OTHER_ITEMS.length)]
+      rows.push({
+        id: crypto.randomUUID(),
+        ts: new Date(now.getTime() - Math.random() * 60_000).toISOString(),
+        sector: stall.sector,
+        stall_id: stall.id,
+        item,
+        qty: 1 + Math.floor(Math.random() * 3),
+        simulated: true,
+      })
+    }
+  }
+  await sbInsert(env, 'pharmacy_sales', rows)
+  return rows.length
+}
+
+/* Buying happens before consulting, so the injected sales are backdated
+   further than the injected cases — that lead time is the entire point of the
+   signal, and the demo should show it rather than assert it. */
+async function injectPharmacySpike(env, sector, n) {
+  const stalls = STALLS.filter(s => s.sector === sector)
+  if (!stalls.length) return 0
+  const now = Date.now()
+  const rows = []
+  for (let i = 0; i < n; i++) {
+    rows.push({
+      id: crypto.randomUUID(),
+      ts: new Date(now - Math.random() * 5 * 3600_000).toISOString(),
+      sector,
+      stall_id: pick(stalls).id,
+      item: REHYDRATION[Math.floor(Math.random() * REHYDRATION.length)],
+      qty: 1 + Math.floor(Math.random() * 4),
+      simulated: true,
+    })
+  }
+  await sbInsert(env, 'pharmacy_sales', rows)
+  return rows.length
+}
+
+/* Same 6h window, same phase-matched baseline, same scoreCell as clinical
+   detection — so the two z-scores mean the same thing and can be compared. */
+async function scanPharmacy(env) {
+  const now = Date.now()
+  const since = new Date(now - (72 + WINDOW_H) * 3600_000).toISOString()
+  const rows = []
+  let offset = 0
+  for (;;) {
+    const page = await sbGet(env,
+      `pharmacy_sales?select=ts,sector,item,qty&ts=gte.${since}&order=ts.asc&limit=1000&offset=${offset}`)
+    rows.push(...page)
+    if (page.length < 1000) break
+    offset += 1000
+  }
+
+  const buckets = new Map()
+  for (const r of rows) {
+    if (!REHYDRATION.includes(r.item)) continue
+    const win = Math.floor((now - new Date(r.ts).getTime()) / (WINDOW_H * 3600_000))
+    if (!buckets.has(r.sector)) buckets.set(r.sector, new Map())
+    const m = buckets.get(r.sector)
+    m.set(win, (m.get(win) ?? 0) + (r.qty ?? 1))
+  }
+
+  const signals = []
+  for (const sector of SECTORS) {
+    const m = buckets.get(sector) ?? new Map()
+    const observed = m.get(0) ?? 0
+    const hist = [4, 8, 12].map(w => m.get(w) ?? 0)
+    const { mean, z } = scoreCell(observed, hist)
+    signals.push({
+      sector,
+      observed,
+      expected: Number(mean.toFixed(2)),
+      score: Number(z.toFixed(2)),
+      // Deliberately lower than the clinical bar. This signal never dispatches
+      // anyone on its own — it corroborates, or it warns early. The cost of a
+      // false positive here is a line on a dashboard, not a crew's afternoon.
+      elevated: z >= 2.5 && observed >= 12,
+      updated_at: new Date().toISOString(),
+    })
+  }
+  await sbUpsert(env, 'pharmacy_signals', signals)
+  return signals.filter(s => s.elevated)
 }
 
 // ---------- detection ----------
@@ -279,7 +403,17 @@ async function scan(env) {
   }
 
   await sbUpsert(env, 'baselines', baselines)
-  return { examined: rows.length, newAlerts: fired }
+
+  // Independent stream, refreshed on the same tick so the dashboard can show
+  // whether a clinical alert is corroborated.
+  let pharmacy = []
+  try {
+    pharmacy = await scanPharmacy(env)
+  } catch (e) {
+    // Never let the second signal take down the primary one.
+    console.error('pharmacy scan failed:', e?.message ?? e)
+  }
+  return { examined: rows.length, newAlerts: fired, pharmacyElevated: pharmacy.map(p => p.sector) }
 }
 
 // ---------- entrypoints ----------
@@ -294,20 +428,21 @@ export default {
       if (event.cron === '* * * * *') {
         if (env.GENERATE_TRAFFIC !== 'true') return
         const n = await generateTraffic(env)
-        if (n) console.log(`traffic: +${n} encounters`)
+        const p = await generatePharmacy(env)
+        if (n || p) console.log(`traffic: +${n} encounters, +${p} pharmacy sales`)
         return
       }
       const r = await scan(env)
       console.log(`scan: ${r.examined} examined, ${r.newAlerts.length} new alerts`,
         r.newAlerts.length ? JSON.stringify(r.newAlerts) : '')
     } catch (e) {
-      console.error(`DRISHTI_CRON_FAILED cron=${event.cron}:`, e?.stack ?? e?.message ?? e)
+      console.error(`SIDDHI_CRON_FAILED cron=${event.cron}:`, e?.stack ?? e?.message ?? e)
     }
   },
 
   async fetch(req, env) {
     const url = new URL(req.url)
-    // The app is on drishti.* and this worker is on drishti-engine.* — a
+    // The app is on siddhi.* and this worker is on siddhi-engine.* — a
     // different origin, so without these headers every fetch() from the
     // dashboard or the demo-control page is blocked by the browser. Pasting
     // the URL into the address bar works fine, which makes this a
@@ -331,7 +466,8 @@ export default {
         // inserting rows.
         if (env.GENERATE_TRAFFIC !== 'true') return json({ generated: 0, disabled: true })
         const n = await generateTraffic(env)
-        return json({ generated: n, hourFactorIST: hourFactorIST(new Date()) })
+        const p = await generatePharmacy(env)
+        return json({ generated: n, pharmacySales: p, hourFactorIST: hourFactorIST(new Date()) })
       }
 
       if (url.pathname === '/outbreak') {
@@ -349,7 +485,7 @@ export default {
       }
 
       return json({
-        service: 'drishti-engine',
+        service: 'siddhi-engine',
         crons: { detection: '*/5 * * * *', traffic: '* * * * *' },
         trafficEnabled: env.GENERATE_TRAFFIC === 'true',
       })

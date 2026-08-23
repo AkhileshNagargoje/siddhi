@@ -48,7 +48,7 @@ function Home() {
       <div className="home-inner">
         <header className="home-brand">
           <Mark size={30} />
-          <span>Drishti</span>
+          <span>Siddhi</span>
         </header>
 
         <h1>See the outbreak<br />before it spreads.</h1>
