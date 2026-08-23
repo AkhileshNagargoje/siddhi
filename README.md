@@ -98,6 +98,50 @@ These are deliberate and documented in `PROJECT.md`:
 6. **No pilgrim login.** Ever.
 7. **Config-driven.** Sectors, clinics, symptoms and thresholds live in config, so the same system redeploys to any mass gathering.
 
+## Does it actually work?
+
+Not an assertion — a measurement. `worker/eval/harness.mjs` runs the **deployed**
+detection function (it imports `scoreCell` from the worker, not a copy) against
+a thousand synthetic festivals, injecting an outbreak at a random sector and
+hour, and reports what happened. Deterministic: the same seed gives the same
+numbers on any machine.
+
+```bash
+cd worker && node eval/harness.mjs --trials 1000
+```
+
+Latest run — full output in [`worker/eval/RESULTS.txt`](worker/eval/RESULTS.txt):
+
+| outbreak | caught | median lag | cases when we alert | cases if unaided |
+|---|---|---|---|---|
+| tiny (~1 case/hour) | 99% | 16.0h | 9 | 26 |
+| small, self-limiting | 100% | 9.0h | 8 | 48 |
+| slow (doubles every 6h) | 100% | 10.0h | 9 | 39 |
+| typical (doubles every 4h) | 100% | 7.0h | 8 | 33 |
+| fast (doubles every 2.5h) | 100% | 5.0h | 8 | 27 |
+
+**A typical waterborne outbreak is caught a median of 7 hours after the first
+case, at 8 cases — against 33 cases before the cluster would be obvious to
+someone reading a chart.**
+
+False alarms on festivals where nothing is wrong, split by what they cost:
+
+| tier | what it does | per festival-day |
+|---|---|---|
+| act | dispatches a crew | **1.4** |
+| watch | appears on the dashboard, nobody is sent | 5.4 |
+
+The harness also sweeps the threshold, so the trade is explicit rather than
+asserted: dropping to z ≥ 2 buys about 3 hours of lag and costs 17.7 alerts a
+day; raising to z ≥ 5 cuts alerts to 0.8 a day and costs 3 hours. z ≥ 3 is
+where we chose to sit, and the table is why.
+
+**What it does not prove.** The festivals are synthetic, generated from the same
+distributions as our simulator, so this measures the detector against our model
+of a Kumbh — not against a real one. Detection at these outbreak sizes is not
+the hard part; not crying wolf is, which is why the false-alarm cost is
+reported by tier.
+
 ## Sources
 
 The headline figures are published, not folkloric:

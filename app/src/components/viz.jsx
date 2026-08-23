@@ -51,7 +51,8 @@ export function Sparkline({ values, width = 96, height = 28 }) {
     <svg width={width} height={height} role="img" aria-label="recent trend">
       <path d={area} fill="var(--series-1-fill)" />
       <path d={line} fill="none" stroke="var(--series-1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={x(values.length - 1)} cy={y(values[values.length - 1])} r="2.5" fill="var(--series-1)" />
+      <circle cx={x(values.length - 1)} cy={y(values[values.length - 1])} r="3"
+              fill="var(--series-1)" stroke="var(--surface-1)" strokeWidth="2" />
     </svg>
   )
 }
@@ -101,6 +102,8 @@ export function EpiCurve({ points, baseline, title, subtitle, height = 210 }) {
     setHover(Math.max(0, Math.min(points.length - 1, i)))
   }
 
+  const last = points[points.length - 1]
+
   return (
     <div className="chart">
       <div className="chart-head">
@@ -110,7 +113,7 @@ export function EpiCurve({ points, baseline, title, subtitle, height = 210 }) {
       <div className="chart-plot" style={{ height }} ref={ref}>
         {w > 0 && (
           <svg width={width} height={height} role="img" aria-label={title}
-               onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+               onPointerMove={onMove} onPointerLeave={() => setHover(null)}>
             {ticks.map(t => (
               <g key={t}>
                 <line x1={padL} x2={width - padR} y1={y(t)} y2={y(t)} stroke="var(--grid)" strokeWidth="1" />
@@ -131,6 +134,13 @@ export function EpiCurve({ points, baseline, title, subtitle, height = 210 }) {
             <path d={area} fill="var(--series-1-fill)" />
             <path d={line} fill="none" stroke="var(--series-1)" strokeWidth="2"
                   strokeLinejoin="round" strokeLinecap="round" />
+
+            {/* Persistent end marker: ≥8px, 2px surface ring so it survives
+                crossing the line; the reader's eye lands on "now". */}
+            {last && (
+              <circle cx={x(points.length - 1)} cy={y(last.v)} r="4"
+                      fill="var(--series-1)" stroke="var(--surface-1)" strokeWidth="2" />
+            )}
 
             {hover != null && points[hover] && (
               <>
@@ -158,6 +168,19 @@ export function EpiCurve({ points, baseline, title, subtitle, height = 210 }) {
           </div>
         )}
       </div>
+
+      {/* The WCAG-clean twin: every plotted value, readable without a pointer. */}
+      <details className="chart-table">
+        <summary>View as table</summary>
+        <table>
+          <thead><tr><th scope="col">Hour</th><th scope="col">Cases</th></tr></thead>
+          <tbody>
+            {points.map((p, i) => (
+              <tr key={i}><td>{p.label}</td><td>{p.v}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
     </div>
   )
 }
@@ -176,6 +199,7 @@ export function StewardshipPanel({ rows, median }) {
     )
   }
   const max = Math.max(...rows.map(r => r.rate), median, 0.01)
+  const over = rows.filter(r => r.rate > median).length
   return (
     <div className="panel">
       <div className="chart-head">
@@ -183,17 +207,32 @@ export function StewardshipPanel({ rows, median }) {
         <span className="chart-sub">share of visits, last 24h</span>
       </div>
       <p className="stew-med">
-        Festival median <b>{Math.round(median * 100)}%</b> · {rows.filter(r => r.rate > median).length} clinics above it
+        Festival median <b>{Math.round(median * 100)}%</b> · {over} {over === 1 ? 'clinic' : 'clinics'} above it
       </p>
-      {rows.map(r => (
-        <div className="stew-row" key={r.clinicId}>
-          <span className="stew-name">{r.name}</span>
-          <span className="stew-bar">
-            <i className={r.rate > median ? 'over' : ''} style={{ width: `${(r.rate / max) * 100}%` }} />
-          </span>
-          <span className="stew-pct">{Math.round(r.rate * 100)}%</span>
-        </div>
-      ))}
+      {rows.map(r => {
+        const isOver = r.rate > median
+        return (
+          <div className="stew-row" key={r.clinicId}
+               title={`${r.name}: ${Math.round(r.rate * 100)}% of ${r.total} visits included an antibiotic`}>
+            <span className="stew-name">{r.name}</span>
+            <span className="stew-bar">
+              <i className={isOver ? 'over' : ''} style={{ width: `${(r.rate / max) * 100}%` }} />
+              {/* median reference tick — the comparison the panel exists for */}
+              <u className="stew-median" style={{ left: `${(median / max) * 100}%` }} aria-hidden="true" />
+            </span>
+            <span className="stew-pct">
+              {/* status never rides color alone: over-median rows also get the mark */}
+              {isOver && (
+                <svg viewBox="0 0 16 16" width="11" height="11" role="img" aria-label="above median">
+                  <path d="M8 2.2L14.4 13.4H1.6z" fill="none" strokeWidth="1.8" strokeLinejoin="round" />
+                  <path d="M8 6.4v3M8 11.4v.4" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              )}
+              {Math.round(r.rate * 100)}%
+            </span>
+          </div>
+        )
+      })}
     </div>
   )
 }

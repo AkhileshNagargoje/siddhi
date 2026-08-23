@@ -496,3 +496,74 @@
   font-size: var(--t-xs); color: var(--good-ink);
 }
 .clinic-health.is-quiet { color: var(--warning-ink); }
+
+/* ---------- home (landing) ---------- */
+
+.home-brand {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  color: var(--series-1); margin-bottom: var(--s-5);
+}
+.home-brand span { font-size: var(--t-md); font-weight: 600; letter-spacing: 0.01em; color: var(--ink-1); }
+
+.home-inner { text-align: left; max-width: 560px; }
+.home h1 { font-size: clamp(34px, 6vw, 50px); line-height: 1.06; letter-spacing: -0.035em; margin: 0 0 var(--s-3); }
+.home .lede { font-size: var(--t-md); line-height: 1.6; max-width: 46ch; margin: 0 0 var(--s-4); }
+
+.pulse {
+  display: flex; align-items: center; gap: var(--s-2);
+  font-size: var(--t-sm); color: var(--ink-2);
+  border: 1px solid var(--border); background: var(--surface-1);
+  border-radius: var(--r-pill); padding: 8px 14px; margin-bottom: var(--s-5);
+  width: fit-content; opacity: 0.75; transition: opacity 0.4s;
+}
+.pulse.show { opacity: 1; }
+.pulse b { color: var(--ink-1); }
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); animation: blip 2s infinite; flex: none; }
+
+.roles { grid-template-columns: 1fr 1fr; }
+@media (max-width: 560px) { .roles { grid-template-columns: 1fr; } }
+.role { flex-direction: column; align-items: flex-start; gap: var(--s-2); }
+.role kbd { align-self: flex-end; }
+
+.home-foot { margin-top: var(--s-6); font-size: var(--t-xs); color: var(--ink-3); }
+.home-foot a { color: var(--ink-2); }
+
+.brand-lockup {
+  display: inline-flex; align-items: baseline; gap: var(--s-2);
+  color: var(--ink-1); text-decoration: none;
+}
+.brand-lockup svg { color: var(--series-1); align-self: center; }
+.brand-lockup b { font-size: var(--t-lg); letter-spacing: -0.02em; }
+.brand-lockup span { font-size: var(--t-sm); color: var(--ink-3); }
+.topbar-right { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.topnav { display: flex; gap: var(--s-3); }
+.topnav a { font-size: var(--t-sm); color: var(--ink-2); text-decoration: none; }
+.topnav a:hover { color: var(--ink-1); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- dataviz polish ---------- */
+
+.stew-bar { position: relative; }
+.stew-median {
+  position: absolute; top: -2px; bottom: -2px; width: 2px;
+  background: var(--axis); border-radius: 1px; text-decoration: none;
+}
+.stew-pct { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.stew-pct svg { stroke: var(--warning-ink); fill: none; flex: none; }
+
+.chart-table { margin-top: var(--s-2); }
+.chart-table summary {
+  font-size: var(--t-xs); color: var(--ink-3); cursor: pointer;
+  list-style: none; width: fit-content; padding: 2px 0;
+}
+.chart-table summary::before { content: '▸ '; }
+.chart-table[open] summary::before { content: '▾ '; }
+.chart-table table {
+  width: 100%; border-collapse: collapse; margin-top: var(--s-2);
+  font-size: var(--t-sm); max-height: 200px;
+}
+.chart-table th, .chart-table td {
+  text-align: left; padding: 4px 10px 4px 0;
+  border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums;
+}
+.chart-table th { color: var(--ink-3); font-weight: 500; font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; }
+.chart-table td:last-child, .chart-table th:last-child { text-align: right; }

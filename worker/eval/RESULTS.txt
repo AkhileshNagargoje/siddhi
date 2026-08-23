@@ -1,0 +1,45 @@
+
+Drishti - detection evaluation
+1000 synthetic festivals per row | seed 42 | 96h evaluated each
+Algorithm under test: scoreCell() imported from the deployed worker.
+
+DETECTION PERFORMANCE  (outbreak injected at a random sector and hour)
+----------------------------------------------------------------------------
+outbreak speed             caught  median  p90    cases when  cases if
+                                   lag     lag    we alert    unaided
+----------------------------------------------------------------------------
+tiny (~1 case/hour)        98%     15.0h   25.0h  9.0         26.0
+small, self-limiting       100%    9.0h    15.0h  8.0         48.0
+slow (doubles every 6h)    100%    10.0h   15.0h  9.0         41.0
+typical (doubles every 4h) 100%    7.0h    10.0h  8.0         33.0
+fast (doubles every 2.5h)  100%    5.0h    7.0h   8.0         28.0
+----------------------------------------------------------------------------
+"cases if unaided" = size the cluster reaches before it is obvious by eye
+(6h count at 3x its own baseline, and 25+ cases) - the counterfactual.
+
+FALSE ALARMS  (nothing wrong anywhere - 12 sectors x 6 syndromes watched)
+----------------------------------------------------------------------------
+  These cost different things. A watch appears on the dashboard and
+  nobody is sent anywhere. An act dispatches a crew - the expensive one.
+
+  act   (crew dispatched)   mean 1.5 / day   p90 2.3
+  watch (dashboard only)    mean 5.4 / day   p90 6.8
+  festivals with zero act-tier false alarms: 1%
+
+THRESHOLD SWEEP  (typical outbreak - what a different z buys and costs)
+----------------------------------------------------------------------------
+  z threshold   caught   median lag   false alarms/day (all tiers)
+----------------------------------------------------------------------------
+  z >= 2        100%     7.0h         17.7
+  z >= 2.5      100%     8.0h         10.9
+  z >= 3        100%     10.0h        6.8   <- shipped
+  z >= 3.5      100%     11.0h        3.9
+  z >= 4        100%     12.0h        2.4
+  z >= 5        100%     13.0h        0.8
+----------------------------------------------------------------------------
+
+HEADLINE
+  A typical waterborne outbreak is caught 100% of the time,
+  a median of 7.0h after the first case, at 8.0 cases -
+  against 33.0 cases before it would be obvious unaided.
+
