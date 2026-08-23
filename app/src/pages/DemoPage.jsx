@@ -39,18 +39,38 @@ export default function DemoPage() {
   const refresh = useCallback(async () => {
     if (!isConfigured()) return
     const since = new Date(Date.now() - 6 * 3600_000).toISOString()
-    const [enc, open, pharm] = await Promise.all([
+    const [enc, open, pharm, gi] = await Promise.all([
       supabase.from('encounters').select('id', { count: 'exact', head: true }).gte('ts', since),
       supabase.from('alerts').select('id', { count: 'exact', head: true }).neq('status', 'resolved'),
       supabase.from('pharmacy_signals').select('sector').eq('elevated', true),
+      /* Standing gi load per sector. An injection lands ON TOP of whatever is
+         already there, so firing into a sector that rehearsals have already
+         loaded up produces a number like "238 against 5.7 — 88 sigma", which
+         reads as broken rather than impressive. */
+      supabase.from('encounters').select('sector').eq('syndrome', 'gi').gte('ts', since).limit(4000),
     ])
     if (!alive.current) return
+    const load = new Map()
+    for (const r of gi.data ?? []) load.set(r.sector, (load.get(r.sector) ?? 0) + 1)
     setLive({
       recent: enc.count ?? 0,
       openAlerts: open.count ?? 0,
       pharmacy: pharm.data?.length ?? 0,
+      load,
     })
   }, [])
+
+  /* Aim at the quietest sector the first time we learn the loads, so the
+     default press produces a believable alert rather than an absurd one. */
+  const picked = useRef(false)
+  useEffect(() => {
+    if (picked.current || !live?.load?.size) return
+    picked.current = true
+    const quietest = FESTIVAL.sectors
+      .map(s => [s.id, live.load.get(s.id) ?? 0])
+      .sort((a, b) => a[1] - b[1])[0]
+    if (quietest) setSector(quietest[0])
+  }, [live])
 
   useEffect(() => {
     refresh()
@@ -70,7 +90,7 @@ export default function DemoPage() {
       const res = await fetch(`${ENGINE}${path}`)
       if (!res.ok) throw new Error(`engine returned ${res.status}`)
       const data = await res.json()
-      note({ ok: true, text: describe(data) })
+      note({ ok: true, text: await describe(data) })
       refresh()
     } catch (e) {
       note({ ok: false, text: `Failed — ${e.message}. The engine may be waking up; try once more.` })
@@ -137,7 +157,10 @@ export default function DemoPage() {
             <label>
               <span>Sector to seed</span>
               <select value={sector} onChange={e => setSector(Number(e.target.value))}>
-                {FESTIVAL.sectors.map(s => <option key={s.id} value={s.id}>{s.id} — {s.name}</option>)}
+                {FESTIVAL.sectors.map(s => {
+                  const n = live?.load?.get(s.id) ?? 0
+                  return <option key={s.id} value={s.id}>{s.name} — {n} gi in 6h</option>
+                })}
               </select>
             </label>
             <label>
@@ -149,14 +172,36 @@ export default function DemoPage() {
               </select>
             </label>
           </div>
+          {(live?.load?.get(sector) ?? 0) > 25 && (
+            <p className="demo-warn">
+              Sector {sector} already carries {live.load.get(sector)} gi cases in the
+              last six hours, so an injection here will score absurdly high. Pick a
+              quieter sector for a believable number.
+            </p>
+          )}
           <button className="btn btn-accent btn-wide" disabled={!!busy}
                   onClick={() => run('outbreak', `/outbreak?sector=${sector}&n=${size}`,
-                    d => {
-                      const mine = d.scan?.newAlerts?.filter(a => a.sector === sector) ?? []
-                      const hit = mine[0]
-                      return hit
-                        ? `Outbreak in ${FESTIVAL.sectors.find(s => s.id === sector)?.name} — alert raised at ${hit.z}σ (${hit.observed} cases against ${hit.expected} expected).`
-                        : `Added ${d.injected} cases to sector ${d.sector}. No new alert yet — one may already be open there, or run a scan.`
+                    async d => {
+                      const name = FESTIVAL.sectors.find(s => s.id === sector)?.name
+                      const hit = (d.scan?.newAlerts ?? []).find(a => a.sector === sector)
+                      if (hit) {
+                        return `Outbreak in ${name} — alert raised at ${hit.z}σ (${hit.observed} cases against ${hit.expected} expected).`
+                      }
+                      /* Not in newAlerts does NOT mean it failed: the scan reports
+                         only alerts it RAISED, so an existing alert it merely
+                         updated is invisible here. Announcing failure while a
+                         perfectly good alert sits on the dashboard is the worst
+                         thing this screen could say mid-pitch, so ask the
+                         database what is actually true before claiming anything. */
+                      const { data } = await supabase.from('alerts')
+                        .select('observed, expected, score, tier')
+                        .eq('sector', sector).eq('syndrome', 'gi')
+                        .neq('status', 'resolved').order('ts', { ascending: false }).limit(1)
+                      const live = data?.[0]
+                      if (live) {
+                        return `Outbreak in ${name} — alert live at ${Number(live.score).toFixed(1)}σ (${live.observed} cases against ${Number(live.expected).toFixed(1)} expected).`
+                      }
+                      return `Added ${d.injected} cases to ${name}, but nothing is above threshold there yet. Press "Run detection now".`
                     })}>
             {label('outbreak', 'Start outbreak')}
           </button>

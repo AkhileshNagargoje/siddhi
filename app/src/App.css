@@ -769,3 +769,10 @@
 /* Citation links on About are small text by design, but they are still links —
    give them room to be hit without enlarging the type. */
 .about-num a { display: inline-block; padding: 6px 0; }
+
+/* Warning when the chosen demo sector is already loaded from rehearsals. */
+.demo-warn {
+  margin: 0 0 var(--s-3); padding: var(--s-3);
+  background: var(--warning-wash); color: var(--warning-ink);
+  border-radius: var(--r-md); font-size: var(--t-sm); line-height: 1.5;
+}

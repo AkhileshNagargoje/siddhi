@@ -7,6 +7,9 @@ Seven minutes. Every number here is verified; sources at the bottom.
 - Phone: `/entry`, signed in with PIN 1111, browser storage cleared so it reads "0 today".
 - Open `/demo` and press **Clear the board**. Check the dashboard says **0 open alerts**.
 - Do **not** click a sector tile on stage — the detail panel is a teammate task and still renders nothing.
+- Clearing the board suppresses re-alerts in the sectors it closed for six hours.
+  That is deliberate, and the outbreak injector overrides it for the sector it
+  fires into, so the demo beat still works. Verified end to end on 23 Aug.
 - Phone on the projector too if the venue allows. If not, hold it up and narrate.
 
 ---
@@ -78,6 +81,11 @@ Enter a patient while talking — age, sex, two symptoms, diagnosis, medicine:
 ## 4:20 — 5:10 · The second signal. The part nobody else has.
 
 Trigger an outbreak (`/demo`, or ask a teammate to fire it), then click the new alert.
+
+The console picks the quietest sector for you and shows each sector's current
+load, so the alert lands on a believable number rather than a silly one. Read
+whatever it prints — rehearsals on 23 Aug gave "35 cases against 5.3 expected,
+12.8σ" and pharmacy at "4.4x normal, 171 units against 39".
 
 > Now — this alert is corroborated.
 >
