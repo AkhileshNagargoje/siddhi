@@ -78,16 +78,74 @@ async function fetchRange(hours) {
 const pct = (n, total) => (total ? (n / total) * 100 : 0)
 const fmt = n => new Intl.NumberFormat().format(n)
 
+
+/* Hover layer.
+ *
+ * Per the mark-level rule: on bars, segments and slices the MARK is the hit
+ * target — no crosshair — and the hovered mark has to visibly respond. Focus
+ * gets the identical readout, so a keyboard reaches everything a pointer does.
+ *
+ * Value leads, label follows: the legend's hierarchy inverted, because by the
+ * time someone is pointing at a mark they have the category and want the
+ * number. The series key is a short stroke rather than a filled box — at this
+ * density a box is data-weight ink doing a label's job.
+ *
+ * Nothing here gates: every figure a tooltip shows is also in the table view.
+ */
+function Tip({ tip }) {
+  if (!tip) return null
+  const flip = tip.x > window.innerWidth - 190
+  return (
+    <div className="tip" role="status" aria-live="polite"
+         style={{ left: tip.x + (flip ? -12 : 12), top: tip.y - 12,
+                  transform: flip ? 'translate(-100%, -100%)' : 'translateY(-100%)' }}>
+      <span className="tip-key" style={{ background: tip.hue }} />
+      <b>{tip.value}</b>
+      <span className="tip-label">{tip.label}</span>
+      {tip.sub && <span className="tip-sub">{tip.sub}</span>}
+    </div>
+  )
+}
+
+/* One set of handlers for every mark, so hover and focus cannot drift apart. */
+function markProps({ label, value, sub, hue, onShow, onHide, onPick, isPicked }) {
+  const show = (x, y) => onShow({ x, y, label, value, sub, hue })
+  return {
+    tabIndex: 0,
+    role: 'button',
+    'aria-pressed': isPicked,
+    'aria-label': `${label}: ${value}${sub ? `, ${sub}` : ''}. Activate for a breakdown.`,
+    onPointerMove: e => show(e.clientX, e.clientY),
+    onPointerLeave: onHide,
+    onFocus: e => {
+      const r = e.currentTarget.getBoundingClientRect()
+      show(r.left + r.width / 2, r.top)
+    },
+    onBlur: onHide,
+    onClick: onPick,
+    onKeyDown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick() } },
+  }
+}
+
 /* ---- marks ------------------------------------------------------------- */
 
 /* Ranked bars. One hue, magnitude by length; the value is always printed, so
    the reader never estimates it off the axis. */
-function RankedBars({ rows, total, hue = 'var(--series-1)', unit = 'cases' }) {
+function RankedBars({ rows, total, hue = 'var(--series-1)', unit = 'cases', mark }) {
   const max = Math.max(...rows.map(r => r.n), 1)
   return (
     <div className="rank">
       {rows.map((r, i) => (
-        <div className="rank-row" key={r.key}>
+        <div className={mark?.isPicked(r.key) ? 'rank-row is-picked' : 'rank-row'} key={r.key}
+             {...(mark ? markProps({
+               label: r.label,
+               value: `${fmt(r.n)} ${unit}`,
+               sub: `${pct(r.n, total).toFixed(1)}% of all cases`,
+               hue,
+               onShow: mark.onShow, onHide: mark.onHide,
+               onPick: () => mark.onPick(r),
+               isPicked: mark.isPicked(r.key),
+             }) : {})}>
           <span className="rank-pos">{i + 1}</span>
           <span className="rank-label" title={r.label}>{r.label}</span>
           <span className="rank-track">
@@ -111,7 +169,7 @@ function RankedBars({ rows, total, hue = 'var(--series-1)', unit = 'cases' }) {
 /* Part-to-whole. A stacked bar rather than a pie: one shared baseline, exact
    figures on the segments that can hold them, and a legend that is always
    present so identity never rests on colour alone. */
-function ShareBar({ rows, total }) {
+function ShareBar({ rows, total, mark }) {
   return (
     <div className="share">
       <div className="share-bar" role="img"
@@ -119,8 +177,14 @@ function ShareBar({ rows, total }) {
         {rows.map(r => {
           const p = pct(r.n, total)
           return (
-            <span key={r.key} className="share-seg" style={{ width: `${p}%`, background: r.hue }}
-                  title={`${r.label} — ${fmt(r.n)} (${p.toFixed(1)}%)`}>
+            <span key={r.key}
+                  className={mark?.isPicked(r.key) ? 'share-seg is-picked' : 'share-seg'}
+                  style={{ width: `${p}%`, background: r.hue }}
+                  {...(mark ? markProps({
+                    label: r.label, value: fmt(r.n), sub: `${p.toFixed(1)}% of all cases`,
+                    hue: r.hue, onShow: mark.onShow, onHide: mark.onHide,
+                    onPick: () => mark.onPick(r), isPicked: mark.isPicked(r.key),
+                  }) : {})}>
               {p >= 9 && <b>{p.toFixed(0)}%</b>}
             </span>
           )
@@ -128,11 +192,14 @@ function ShareBar({ rows, total }) {
       </div>
       <div className="share-key">
         {rows.map(r => (
-          <span key={r.key} className="share-item">
+          <button key={r.key}
+                  className={mark?.isPicked(r.key) ? 'share-item is-picked' : 'share-item'}
+                  onClick={() => mark?.onPick(r)}
+                  aria-pressed={mark ? mark.isPicked(r.key) : undefined}>
             <i style={{ background: r.hue }} />
             {r.label}
             <b>{pct(r.n, total).toFixed(1)}%</b>
-          </span>
+          </button>
         ))}
       </div>
     </div>
@@ -157,7 +224,7 @@ function ShareBar({ rows, total }) {
  * both is deliberate: the pie gives the immediate impression of "one thing
  * dominates", the bar is what you use to compare the small slices to each other.
  */
-function PieChart({ rows, total, size = 210 }) {
+function PieChart({ rows, total, size = 210, mark }) {
   const r = size / 2 - 26
   const cx = size / 2, cy = size / 2
   let angle = -Math.PI / 2          // start at 12 o'clock
@@ -185,9 +252,14 @@ function PieChart({ rows, total, size = 210 }) {
            aria-label={`Case mix: ${rows.map(x => `${x.label} ${pct(x.n, total).toFixed(0)}%`).join(', ')}`}>
         {slices.map(sl => (
           <path key={sl.key} d={sl.d} fill={sl.hue}
-                stroke="var(--surface-1)" strokeWidth="2" strokeLinejoin="round">
-            <title>{`${sl.label} — ${fmt(sl.n)} (${(sl.frac * 100).toFixed(1)}%)`}</title>
-          </path>
+                className={mark?.isPicked(sl.key) ? 'pie-slice is-picked' : 'pie-slice'}
+                stroke="var(--surface-1)" strokeWidth="2" strokeLinejoin="round"
+                {...(mark ? markProps({
+                  label: sl.label, value: fmt(sl.n),
+                  sub: `${(sl.frac * 100).toFixed(1)}% of all cases`, hue: sl.hue,
+                  onShow: mark.onShow, onHide: mark.onHide,
+                  onPick: () => mark.onPick(sl), isPicked: mark.isPicked(sl.key),
+                }) : {})} />
         ))}
         {slices.filter(sl => sl.frac >= 0.07).map(sl => (
           <text key={sl.key} x={sl.lx} y={sl.ly}
@@ -336,6 +408,36 @@ export function Insights() {
   const [rows, setRows] = useState(null)
   const [showTable, setShowTable] = useState(false)
   const [open, setOpen] = useState(null)   // which table row is expanded
+  const [tip, setTip] = useState(null)      // hover/focus readout
+  const [pick, setPick] = useState(null)    // {group, key, label} drilled into
+
+  /* One factory so every chart gets identical hover, focus and click behaviour.
+     Clicking the picked mark again clears it — a drill-down you cannot close is
+     a trap on a screen someone is reading during an incident. */
+  const marker = group => ({
+    onShow: setTip,
+    onHide: () => setTip(null),
+    onPick: r => setPick(p => (p && p.group === group && p.key === r.key)
+      ? null : { group, key: r.key, label: r.label }),
+    isPicked: key => pick?.group === group && pick.key === key,
+  })
+
+  /* The rows behind whatever is picked, filtered from data already in memory. */
+  const drill = (group) => {
+    if (!a || pick?.group !== group) return null
+    const g = GROUPS.find(x => x.name === group)
+    if (!g) return null
+    return (
+      <div className="drill">
+        <div className="drill-head">
+          <b>{pick.label}</b>
+          <button onClick={() => setPick(null)} aria-label="Close breakdown">Close</button>
+        </div>
+        <RowDetail group={group} hours={hours} total={a.total}
+                   subset={a.clinical.filter(x => g.match(x, pick.key))} />
+      </div>
+    )
+  }
 
   useEffect(() => {
     if (!isConfigured()) return
@@ -409,6 +511,7 @@ export function Insights() {
 
   return (
     <div className="insights">
+      <Tip tip={tip} />
       {/* Filters in one row above the charts, never per-chart. */}
       <div className="ins-filters">
         <div className="seg" role="group" aria-label="Time range">
@@ -458,7 +561,8 @@ export function Insights() {
                 <h3>Which illness is biggest</h3>
                 <span className="chart-sub">ranked by case count</span>
               </div>
-              <RankedBars rows={a.diagRows} total={a.total} />
+              <RankedBars rows={a.diagRows} total={a.total} mark={marker('Diagnosis')} />
+              {drill('Diagnosis')}
             </section>
 
             <section className="panel">
@@ -467,9 +571,9 @@ export function Insights() {
                 <span className="chart-sub">share of all clinical cases</span>
               </div>
               <div className="mix">
-                <PieChart rows={a.synRows} total={a.total} />
+                <PieChart rows={a.synRows} total={a.total} mark={marker('Syndrome')} />
                 <div className="mix-bar">
-                  <ShareBar rows={a.synRows} total={a.total} />
+                  <ShareBar rows={a.synRows} total={a.total} mark={marker('Syndrome')} />
                 </div>
               </div>
               <p className="ins-note">
@@ -477,7 +581,9 @@ export function Insights() {
                 that one illness dominates; the bar below shares a single baseline,
                 which is what you want when comparing the smaller slices to each
                 other. Exact figures are in the legend and in the table view.
+                Hover, focus or click any slice, segment or bar for a breakdown.
               </p>
+              {drill('Syndrome')}
             </section>
 
             <section className="panel">
@@ -485,7 +591,8 @@ export function Insights() {
                 <h3>Busiest sectors</h3>
                 <span className="chart-sub">ranked by case count</span>
               </div>
-              <RankedBars rows={a.sectorRows} total={a.total} />
+              <RankedBars rows={a.sectorRows} total={a.total} mark={marker('Sector')} />
+              {drill('Sector')}
             </section>
 
             <section className="panel">
@@ -530,9 +637,10 @@ export function Insights() {
                 <span className="chart-sub">ordered scales, one hue each</span>
               </div>
               <h4 className="ins-sub">Severity</h4>
-              <RankedBars rows={a.sevRows} total={a.total} hue="var(--series-2)" />
+              <RankedBars rows={a.sevRows} total={a.total} hue="var(--series-2)" mark={marker('Severity')} />
               <h4 className="ins-sub">Age band</h4>
-              <RankedBars rows={a.ageRows} total={a.total} hue="var(--series-3)" />
+              <RankedBars rows={a.ageRows} total={a.total} hue="var(--series-3)" mark={marker('Age band')} />
+              {drill('Severity') || drill('Age band')}
             </section>
           </div>
 

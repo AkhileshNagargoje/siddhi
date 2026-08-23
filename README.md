@@ -53,7 +53,12 @@ job: ranking uses one hue with length carrying magnitude, part-to-whole uses a
 shared baseline with printed shares, and a ratio against a
 reference uses a meter. A pie sits beside the stacked bar for the syndrome mix —
 the pie makes "one illness dominates" immediate, the shared baseline is what you
-use to compare the small slices. The six categorical hues are validated in both themes —
+use to compare the small slices. Every mark is interactive: hovering or focusing a
+slice, segment or bar gives a readout with the value leading and the label
+following, and clicking one opens a breakdown of the rows behind it — where it
+is, how severe, the antibiotic rate, and its per-hour trend. Selection is shared,
+so picking a syndrome in the pie also marks it in the stacked bar and the legend.
+The six categorical hues are validated in both themes —
 worst adjacent colour-blind separation dE 9.1 light / 8.4 dark.
 
 **What the doctor gets back** — a "My clinic" tab behind the entry form: the sector
