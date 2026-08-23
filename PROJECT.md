@@ -100,6 +100,24 @@ pharmacy_signals  sector int, window_start, observed int, expected float,
                   score float, elevated bool
 ```
 
+
+### Post-resolution cooldown (not in the original spec — added after a rehearsal)
+
+When an alert is resolved, the cases that triggered it are still inside the
+six-hour window, so the very next scan would raise it again. Detection therefore
+suppresses a NEW alert for that (sector, syndrome) pair for `WINDOW_H` after the
+resolution, anchored on `alerts.resolved_at` (see `db/resolved-at.sql`), falling
+back to the closing task's timestamp.
+
+The trade is real and worth naming: a genuine second outbreak in the same pair
+inside that window is missed. The crew that closed the job is expected to still
+be watching the sector.
+
+`/outbreak?sector=N` clears the suppression for the pair it injects into, and
+only that pair. Without this the demo sabotaged itself — the run sheet says to
+clear the board first, which puts every recently-alerting sector into cooldown,
+so the demo injection raised nothing at all.
+
 ## Stack
 
 - **Frontend:** React + Vite, plain CSS (no UI framework — keep it light). One codebase, ten routes — `/`, `/entry`, `/dashboard`, `/crew`, `/r`, `/replay`, `/demo`, `/about`, `/public`, `/insights`.
