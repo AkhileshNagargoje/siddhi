@@ -563,9 +563,9 @@ export const Insights = memo(function Insights() {
       </div>
 
       {!a ? (
-        <div className="empty">Reading the last {hours} hours…</div>
+        <div className="empty ins-hold">Reading the last {hours} hours…</div>
       ) : a.total === 0 ? (
-        <div className="empty">No patient records in the last {hours} hours.</div>
+        <div className="empty ins-hold">No patient records in the last {hours} hours.</div>
       ) : (
         <>
           <div className="kpi">
