@@ -27,6 +27,7 @@ FALSE ALARMS  (nothing wrong anywhere - 12 sectors x 6 syndromes watched)
   festivals with zero act-tier false alarms: 1%
 
 THRESHOLD SWEEP  (typical outbreak - what a different z buys and costs)
+  200 trials per row, not 1000 - this block is capped for runtime
 ----------------------------------------------------------------------------
   z threshold   caught   median lag   false alarms/day (all tiers)
 ----------------------------------------------------------------------------

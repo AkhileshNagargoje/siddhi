@@ -73,7 +73,7 @@ The warning sign does not exist for one person. It only exists in the total.
 
 Outbreaks don't grow steadily. They multiply. So every hour of delay costs more than the hour before.
 
-- **Day 1 evening:** 14 cases · one water tap · one crew · 80 minutes to fix
+- **Day 1 evening:** 14 cases · one water tap · one crew · 90 minutes to fix
 - **Day 4:** ~400 cases · clinic overwhelmed · five-hour queue
 
 And look at what that second line really means. Once that clinic is drowning, **it stops working for everyone** — a man with chest pain now waits behind thirty diarrhoea cases.
@@ -239,7 +239,7 @@ It lives behind a tab, so the ten-second entry path never renders it.
 ## 5e. Looking at the whole festival
 
 The control room has a second tab too: **in-depth analysis**. Which illness is
-biggest, what the festival is made of, which sectors are busiest, how each
+biggest, what the festival is made of, how each illness is moving, how each
 illness is moving hour by hour, antibiotic rates, and a table of every figure.
 
 Every chart is interactive — hovering or focusing a slice or bar gives its

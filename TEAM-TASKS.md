@@ -74,6 +74,11 @@ One warning from the project's values: whatever the doctor gets back must never 
 
 ## Problem 4 — The official who can't see inside
 
+> Update: the tile now opens a placeholder naming the sector and its six-hour
+> count, so a click is no longer a dead end. Replacing that placeholder with the
+> real breakdown — syndromes, clinics, water points — is still the task, and the
+> props are already being passed. See the header comment in SectorDetail.jsx.
+
 > Note: the dashboard now has an **In-depth analysis** tab covering the festival
 > as a whole — rankings, case mix, trends. This problem is still open and still
 > yours: it is about clicking **one sector tile** and seeing inside *that*

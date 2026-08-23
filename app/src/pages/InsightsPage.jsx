@@ -122,8 +122,8 @@ function markProps({ label, value, sub, hue, onShow, onHide, onPick, isPicked })
       show(r.left + r.width / 2, r.top)
     },
     onBlur: onHide,
-    onClick: onPick,
-    onKeyDown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick() } },
+    onClick: e => onPick(e.currentTarget),
+    onKeyDown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(e.currentTarget) } },
   }
 }
 
@@ -143,7 +143,7 @@ function RankedBars({ rows, total, hue = 'var(--series-1)', unit = 'cases', mark
                sub: `${pct(r.n, total).toFixed(1)}% of all cases`,
                hue,
                onShow: mark.onShow, onHide: mark.onHide,
-               onPick: () => mark.onPick(r),
+               onPick: el => mark.onPick(r, el),
                isPicked: mark.isPicked(r.key),
              }) : {})}>
           <span className="rank-pos">{i + 1}</span>
@@ -187,7 +187,7 @@ function ShareBar({ rows, total, mark }) {
                   {...(mark ? markProps({
                     label: r.label, value: fmt(r.n), sub: `${p.toFixed(1)}% of all cases`,
                     hue: r.hue, onShow: mark.onShow, onHide: mark.onHide,
-                    onPick: () => mark.onPick(r), isPicked: mark.isPicked(r.key),
+                    onPick: el => mark.onPick(r, el), isPicked: mark.isPicked(r.key),
                   }) : {})}>
               {p >= 9 && <b>{p.toFixed(0)}%</b>}
             </span>
@@ -198,7 +198,7 @@ function ShareBar({ rows, total, mark }) {
         {rows.map(r => (
           <button key={r.key}
                   className={mark?.isPicked(r.key) ? 'share-item is-picked' : 'share-item'}
-                  onClick={() => mark?.onPick(r)}
+                  onClick={e => mark?.onPick(r, e.currentTarget)}
                   aria-pressed={mark ? mark.isPicked(r.key) : undefined}>
             <i style={{ background: r.hue }} />
             {r.label}
@@ -263,7 +263,7 @@ function PieChart({ rows, total, size = 210, mark }) {
                   label: sl.label, value: fmt(sl.n),
                   sub: `${(sl.frac * 100).toFixed(1)}% of all cases`, hue: sl.hue,
                   onShow: mark.onShow, onHide: mark.onHide,
-                  onPick: () => mark.onPick(sl), isPicked: mark.isPicked(sl.key),
+                  onPick: el => mark.onPick(sl, el), isPicked: mark.isPicked(sl.key),
                 }) : {})} />
         ))}
         {slices.filter(sl => sl.frac >= 0.07).map(sl => (
@@ -408,19 +408,23 @@ const RowDetail = memo(function RowDetail({ subset, group, hours, total }) {
 
 /* ---- page -------------------------------------------------------------- */
 
-export const Insights = memo(function Insights() {
+export const Insights = memo(function Insights({ visible = true }) {
   const [hours, setHours] = useState(24)
   const [rows, setRows] = useState(null)
   const [showTable, setShowTable] = useState(false)
   const [open, setOpen] = useState(null)   // which table row is expanded
   const [tip, setTip] = useState(null)      // hover/focus readout
   const [pick, setPick] = useState(null)    // {group, key, label} drilled into
+  /* The mark that opened the current panel, so focus can go back to it.
+     Unmounting the focused Close button drops focus to <body>, which restarts a
+     keyboard user at the top of a page with roughly fifty tab stops. */
+  const lastMark = useRef(null)
 
   /* Escape closes the drill. Without it the only keyboard exit was to Tab
      forward to Close — on a page with roughly fifty tab stops. */
   useEffect(() => {
     if (!pick) return
-    const onKey = e => { if (e.key === 'Escape') setPick(null) }
+    const onKey = e => { if (e.key === 'Escape') closeDrill() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [pick])
@@ -486,11 +490,20 @@ export const Insights = memo(function Insights() {
     }
   }, [rows, hours])
 
+  function closeDrill() {
+    setPick(null)
+    const el = lastMark.current
+    if (el && document.contains(el)) el.focus?.()
+  }
+
   const marker = group => ({
     onShow: setTip,
     onHide: () => setTip(null),
-    onPick: r => setPick(p => (p && p.group === group && p.key === r.key)
-      ? null : { group, key: r.key, label: r.label }),
+    onPick: (r, el) => {
+      lastMark.current = el ?? null
+      setPick(p => (p && p.group === group && p.key === r.key)
+        ? null : { group, key: r.key, label: r.label })
+    },
     isPicked: key => pick?.group === group && pick.key === key,
   })
 
@@ -521,24 +534,35 @@ export const Insights = memo(function Insights() {
       <div className="drill">
         <div className="drill-head">
           <b>{pick.label}</b>
-          <button onClick={() => setPick(null)} aria-label="Close breakdown">Close</button>
+          <button onClick={() => closeDrill()} aria-label="Close breakdown">Close</button>
         </div>
         <RowDetail group={group} hours={hours} total={a.total} subset={pickedSubset} />
       </div>
     )
   }
 
+  /* Refetch whenever this becomes visible again, and on a slow timer while it
+     stays visible. Prefetching on hover means the data can be arbitrarily old
+     by the time someone actually opens the tab. */
+  const [nonce, setNonce] = useState(0)
+  useEffect(() => {
+    if (!visible) return
+    setNonce(n => n + 1)
+    const t = setInterval(() => setNonce(n => n + 1), 120_000)
+    return () => clearInterval(t)
+  }, [visible])
+
   useEffect(() => {
     if (!isConfigured()) return
     let alive = true
-    setRows(null)
+    if (rows === null) setRows(null)
     /* Clear selections: a pick made in one range may have no rows in the next,
        which left an open panel headed by a label nothing on screen matched. */
     setPick(null)
     setOpen(null)
     fetchRange(hours).then(r => { if (alive) setRows(r) })
     return () => { alive = false }
-  }, [hours])
+  }, [hours, nonce])
 
 
   if (!isConfigured()) {
@@ -704,7 +728,7 @@ export const Insights = memo(function Insights() {
                           <td className="num">{pct(subtotal, a.total).toFixed(1)}%</td>
                         </tr>
                         {list.map(r => {
-                          const id = `${g.name}:${r.key}`
+                          const id = `${g.name}:${r.key}`.replace(/[^A-Za-z0-9_-]/g, '_')   // ids may not contain spaces
                           const isOpen = open === id
                           return (
                             <Fragment key={id}>

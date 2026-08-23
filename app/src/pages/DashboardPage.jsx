@@ -215,6 +215,7 @@ export default function DashboardPage() {
     const total = [...m.values()].reduce((x, c) => x + c.n, 0)
     return [...m.entries()]
       .sort((a, b) => b[1].n - a[1].n)
+      .filter(([, c]) => c.n >= 5)     // below this, direction is noise wearing a colour
       .map(([syn, c]) => ({
         syndrome: syn,
         label: SYNDROME_LABELS[syn] ?? syn,
@@ -358,7 +359,7 @@ export default function DashboardPage() {
           fetches on mount, so unmounting made every tab switch blank the page
           and re-page the entire range. It has no interval of its own, so
           leaving it mounted costs nothing. */}
-      {seenDeep && <div hidden={view !== 'deep'}><Insights /></div>}
+      {seenDeep && <div hidden={view !== 'deep'}><Insights visible={view === 'deep'} /></div>}
 
       {view === 'live' && <>
       <div className="kpi">
@@ -410,7 +411,8 @@ export default function DashboardPage() {
                     <b className="dr-n">{d.n}</b>
                     <span className={`dr-dir dr-${d.dir}`}>
                       <span aria-hidden="true">{d.dir === 'rising' ? '▲' : d.dir === 'easing' ? '▼' : '—'}</span>
-                      {d.dir}
+                      <span className="sr-only">{d.dir}</span>
+                      <span aria-hidden="true">{d.dir}</span>
                     </span>
                   </div>
                 ))}

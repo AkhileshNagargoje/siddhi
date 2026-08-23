@@ -6,7 +6,8 @@ Seven minutes. Every number here is verified; sources at the bottom.
 - Laptop: three tabs — `/replay`, `/dashboard`, `/dashboard` (spare). Hard-refresh each.
 - Phone: `/entry`, signed in with PIN 1111, browser storage cleared so it reads "0 today".
 - Open `/demo` and press **Clear the board**. Check the dashboard says **0 open alerts**.
-- Do **not** click a sector tile on stage — the detail panel is a teammate task and still renders nothing.
+- Clicking a sector tile is safe now — it names the sector and its six-hour count,
+  and says the fuller breakdown is still being built. It used to do nothing at all.
 - Clearing the board suppresses re-alerts in the sectors it closed for six hours.
   That is deliberate, and the outbreak injector overrides it for the sector it
   fires into, so the demo beat still works. Verified end to end on 23 Aug.
@@ -47,11 +48,16 @@ Open `/replay`, press **Play**. Say only these three lines, timed to the screen:
 
 Then, before you move on — say this, because someone will check:
 
-> That's a scripted scenario. But it runs the exact detection rule the live system runs: a six-hour window, three sigma, minimum eight cases. Here's that rule running right now.
+> That's an animation of one scenario — scripted, with the timings the detector
+> produces. The rule itself is a six-hour window, three sigma, minimum eight
+> cases. Here it is running for real.
 
 ---
 
-## 2:20 — 3:20 · The live dashboard.
+## 1:55 — 3:20 · The live dashboard.
+
+*(You have ~25 seconds of slack here. Use it to let the board settle and to
+point, not to add sentences.)*
 
 Switch to `/dashboard`.
 
@@ -63,7 +69,7 @@ and will look small if you cleared the board an hour ago.)*
 
 Point at three things and no more:
 
-1. **The sector grid** — "shaded by case load. Grey means a clinic has gone quiet, which is different from calm, and we treat it that way."
+1. **The sector grid** — "shaded by case load. Grey means that whole sector has stopped reporting, which is different from calm, and we treat it that way. Individual quiet clinics are named under the grid."
 2. **The curve** — "cases per hour, with the expected line."
 3. **The second tab** — "and there's a second tab on this screen: rankings, the case mix, how each illness is moving. We'll leave it, but it's there." *(One sentence. Do not open it — the live board is the story.)*
 4. **Click a resolved alert** — "and every alert shows its own arithmetic. Observed, expected, how many standard deviations. An officer can argue with this. That's deliberate — they ignore anything they can't argue with."
@@ -99,7 +105,11 @@ whatever it prints — rehearsals on 23 Aug gave "35 cases against 5.3 expected,
 >
 > Pharmacy stalls tally what they sell. Rehydration sales in that sector are several times normal — read the actual figure off the screen. People self-medicate before they consult, so this signal *leads* clinic cases — and it catches the people who never reach a clinic at all, which is our biggest blind spot.
 >
-> Different reporters. Different act — a purchase, not a consultation. Different failure modes. **Two independent signals agreeing is evidence. One signal shouting twice isn't.**
+> Different reporters. Different act — a purchase, not a consultation. Different
+> failure modes. **Two independent signals agreeing is evidence; one signal
+> shouting twice isn't.** Be straight if pressed: in this demo both streams are
+> simulated and one command writes both, so what you are seeing is the
+> architecture, not the evidence for it.
 
 *(If asked what happens when they disagree:)*
 
@@ -209,4 +219,7 @@ Hold up the printed referral card.
 - **31% antibiotic prescribing** — [Shaikh et al., *JMIR Public Health and Surveillance* 2023](https://publichealth.jmir.org/2023/1/e45121)
 - **2,000+ visits on day one, 30+ clinics** — [Harvard Mittal South Asia Institute](https://mittalsouthasiainstitute.harvard.edu/2018/05/the-jana-swasthya-project-at-the-2015-kumbh-mela/)
 - **7h lag / 8 vs 33 cases / 1.5 act-tier false alarms** — `worker/eval/RESULTS.txt`, reproducible with `cd worker && node eval/harness.mjs --trials 1000`
-- **600 → 35 cases** — a modelled counterfactual, and say so if pressed. The model is in `ReplayPage.jsx`.
+- **600 → 35 cases** — do NOT quote this on stage. It is a logistic curve fitted
+  to nothing, and it sits in the same seven minutes as the measured 33 → 8 from
+  the harness. Two counterfactuals an order of magnitude apart invites the one
+  question you cannot answer well. Let the harness own every number in the deck.

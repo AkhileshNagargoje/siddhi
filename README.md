@@ -32,8 +32,8 @@ The contaminated tap gets shut on day one evening instead of day four.
 | Health official | `/dashboard` | — | Sector map, epidemic curve, alerts, dispatch |
 | Field responder | `/crew` | `3333` | Assigned jobs: acknowledge → resolve |
 
-Plus `/replay` — a scripted scenario running the live detection rule on a
-compressed clock; `/r#…` — what a home-district clinician sees after scanning a
+Plus `/replay` — a scripted animation of one scenario on a compressed clock. It
+uses the timings the detector produces; it does not itself run the detector; `/r#…` — what a home-district clinician sees after scanning a
 referral card; `/public` — the pilgrim-facing advisory page reached from a
 printed poster; `/demo` — the presenter's console; `/about` — the sourced
 one-pager; and `/insights` — the analysis view, which is also the second tab on
@@ -52,15 +52,16 @@ in the analysis tab.
 **In-depth analysis** — a second tab on the health official's own dashboard,
 because they are the person who needs it and sending them to a different address
 to find it was the wrong shape. Live stays the default tab, so the control room
-keeps the glanceability that matters during an incident. Ranked bars for diagnoses and sectors, one horizontal
-stacked bar for the syndrome mix, meters for antibiotic share, small multiples
-for how each illness is moving, and a table grouped by category with per-group subtotals, where every row
+keeps the glanceability that matters during an incident. Ranked bars for diagnoses, small multiples for how each
+illness is moving, a pie beside a horizontal stacked bar for the syndrome mix,
+meters for antibiotic share, severity and age, and a table grouped by category with per-group subtotals, where every row
 expands into a computed breakdown. A 6h / 24h / 3-day selector scopes all of it. Forms are picked by the
 job: ranking uses one hue with length carrying magnitude, part-to-whole uses a
 shared baseline with printed shares, and a ratio against a
 reference uses a meter. A pie sits beside the stacked bar for the syndrome mix —
 the pie makes "one illness dominates" immediate, the shared baseline is what you
-use to compare the small slices. Every mark is interactive: hovering or focusing a
+use to compare the small slices. Every mark on the ranking, pie and stacked bar is interactive (the small
+multiples and the meters are not): hovering or focusing a
 slice, segment or bar gives a readout with the value leading and the label
 following, and clicking one opens a breakdown of the rows behind it — where it
 is, how severe, the antibiotic rate, and its per-hour trend. Selection is shared,
@@ -116,6 +117,9 @@ npm run dev
 cd ../simulator
 npm install
 node simulate.js backfill        # ~84h of realistic traffic
+node simulate.js pharmacy        # ~84h of pharmacy sales — WITHOUT THIS the
+                                 # corroboration signal has no baseline and the
+                                 # second-signal demo shows nothing
 node detect.js once              # run one detection scan
 node simulate.js outbreak 5      # inject a growing outbreak in sector 5
 # NOTE: `node simulate.js reset` no longer works — db/harden.sql removed DELETE
