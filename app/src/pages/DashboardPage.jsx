@@ -363,7 +363,7 @@ export default function DashboardPage() {
                   </span>
                   <StatusBadge
                     status={a.status === 'resolved' ? 'good' : a.tier === 'act' ? 'critical' : 'warning'}
-                    label={a.status}
+                    label={a.status === 'resolved' ? 'resolved' : `${a.status} · ${a.tier}`}
                   />
                 </button>
               ))}
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                     </>
                   ) : advisoryDraft !== null ? (
                     <div className="resolve">
-                      <textarea rows={5} value={advisoryDraft}
+                      <textarea aria-label="Advisory wording shown to pilgrims" rows={5} value={advisoryDraft}
                                 onChange={e => setAdvisoryDraft(e.target.value)} />
                       <p className="chart-sub" style={{ margin: 0 }}>
                         Goes to every pilgrim who scans a poster. Say what to do, not what to fear.
@@ -476,7 +476,7 @@ export default function DashboardPage() {
 
                 {sel.status === 'open' && (
                   <div className="assign">
-                    <select value={unit} onChange={e => setUnit(e.target.value)}>
+                    <select aria-label="Response unit to dispatch" value={unit} onChange={e => setUnit(e.target.value)}>
                       {RESPONSE_UNITS.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
                     <button className="btn btn-accent" onClick={() => assign(sel)}>Dispatch</button>

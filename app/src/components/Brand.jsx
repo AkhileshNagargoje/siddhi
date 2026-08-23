@@ -14,25 +14,3 @@ export function Mark({ size = 22 }) {
 
 /* Shared top bar: mark + wordmark + context, with quiet cross-links so a judge
    exploring the product can reach every surface without the address bar. */
-export function TopBar({ context, right, links = true }) {
-  return (
-    <div className="topbar">
-      <Link to="/" className="brand-lockup">
-        <Mark />
-        <b>Siddhi</b>
-        {context && <span>{context}</span>}
-      </Link>
-      <div className="topbar-right">
-        {links && (
-          <nav className="topnav" aria-label="Sections">
-            <Link to="/entry">Entry</Link>
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/crew">Crew</Link>
-            <Link to="/replay">Replay</Link>
-          </nav>
-        )}
-        {right}
-      </div>
-    </div>
-  )
-}

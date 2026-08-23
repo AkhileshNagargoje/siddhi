@@ -44,7 +44,6 @@ export const CLINICS = [
 export const USERS = [
   { pin: '1111', role: 'worker',   name: 'Dr. Meena',    clinicId: 'C07' },
   { pin: '1112', role: 'worker',   name: 'Dr. Arjun',    clinicId: 'C01' },
-  { pin: '2222', role: 'official', name: 'Mr. Patil' },
   { pin: '3333', role: 'crew',     name: 'Sanitation Team 3', unit: 'SAN-3' },
   { pin: '3334', role: 'crew',     name: 'Mobile Medical 2',  unit: 'MED-2' },
 ]
@@ -56,12 +55,7 @@ export const RESPONSE_UNITS = [
   { id: 'MED-4', name: 'Mobile Medical Unit 4' },
 ]
 
-// Detection thresholds (PROJECT.md: exact spec)
-export const DETECTION = {
-  windowHours: 6,
-  baselineHours: 72,
-  zThreshold: 3,
-  zActThreshold: 4,
-  minCount: 8,
-  intervalMinutes: 5,
-}
+// Detection thresholds live in worker/src/index.js (WINDOW_H, Z_WATCH, Z_ACT,
+// MIN_COUNT) — that is the only code that scores anything. A mirrored copy used
+// to sit here looking authoritative while being wired to nothing, so editing it
+// changed no behaviour. Change the worker.

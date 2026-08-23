@@ -158,8 +158,8 @@
 }
 .btn:hover { opacity: 0.86; }
 .btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.btn-accent { background: var(--series-1); color: #fff; }
-.btn-good { background: var(--good); color: #fff; }
+.btn-accent { background: var(--accent-solid); color: #fff; }
+.btn-good { background: var(--good-solid); color: #fff; }
 .btn-wide { width: 100%; }
 
 /* ---------- dashboard layout ---------- */
@@ -204,11 +204,11 @@
 .sync.pending i { background: var(--warning); }
 
 .field { margin-bottom: var(--s-4); }
-.field > label {
+.field > .field-cap, .field > label {
   display: block; font-size: var(--t-xs); text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: var(--s-2);
 }
-.field > label em { font-style: normal; color: var(--critical-ink); }
+.field > .field-cap em, .field > label em { font-style: normal; color: var(--critical-ink); }
 .chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .chip {
   background: var(--surface-1); border: 1px solid var(--border-strong);
@@ -219,8 +219,8 @@
 }
 .chip small { font-size: var(--t-xs); color: var(--ink-3); }
 .chip:active { transform: scale(0.97); }
-.chip.on { background: var(--series-1); border-color: var(--series-1); color: #fff; }
-.chip.on small { color: rgba(255, 255, 255, 0.8); }
+.chip.on { background: var(--accent-solid); border-color: var(--accent-solid); color: #fff; }
+.chip.on small { color: rgba(255, 255, 255, 0.93); }
 .chip.abx.on { background: var(--serious); border-color: var(--serious); color: #3d1a08; }
 
 .savebar {
@@ -292,7 +292,11 @@
 .nudge p { margin: 0; font-size: var(--t-sm); line-height: 1.5; }
 .nudge-acts { grid-column: 2; display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .nudge-acts .btn { padding: 7px 14px; font-size: var(--t-sm); }
-.btn-quiet {
+/* Scoped, not global. This used to be a second bare `.btn-quiet` rule, which
+   lost to the neutral one further down purely on source order — so the nudge's
+   amber never rendered, and every secondary button in the product was one
+   reorder away from looking like a warning. */
+.nudge .btn-quiet {
   background: transparent;
   color: var(--warning-ink);
   border: 1px solid var(--warning);
@@ -412,10 +416,6 @@
 /* ---------- replay ---------- */
 
 .replay-bar { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-2); }
-.scrub { flex: 1; height: 6px; background: var(--surface-sunk); border: 1px solid var(--border); border-radius: var(--r-pill); overflow: hidden; }
-.scrub i { display: block; height: 100%; background: var(--series-1); }
-.replay-clock { font-variant-numeric: tabular-nums; font-size: var(--t-md); color: var(--ink-2); min-width: 62px; text-align: right; }
-.replay-note { margin: 0 0 var(--s-4); font-size: var(--t-sm); color: var(--ink-3); }
 
 .beat {
   display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4);
@@ -424,8 +424,6 @@
 }
 .beat p { margin: 0; font-size: var(--t-md); line-height: 1.45; }
 .beat .badge { flex: none; }
-.scrub { cursor: pointer; }
-.scrub:focus-visible { outline: 2px solid var(--series-1); outline-offset: 2px; }
 
 /* ---- 60-second replay ---- */
 .replay { max-width: 1180px; margin: 0 auto; padding: var(--s-4); }
@@ -481,7 +479,7 @@
 
 .replay-foot { margin-top: var(--s-6); font-size: var(--t-xs); color: var(--ink-3); }
 .replay-foot a { color: var(--series-1); }
-.field > label { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.field > .field-cap, .field > label { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
 .clear {
   background: none; border: 0; color: var(--ink-2); cursor: pointer;
   font-family: inherit; font-size: var(--t-xs); text-transform: uppercase;
@@ -527,18 +525,6 @@
 
 .home-foot { margin-top: var(--s-6); font-size: var(--t-xs); color: var(--ink-3); }
 .home-foot a { color: var(--ink-2); }
-
-.brand-lockup {
-  display: inline-flex; align-items: baseline; gap: var(--s-2);
-  color: var(--ink-1); text-decoration: none;
-}
-.brand-lockup svg { color: var(--series-1); align-self: center; }
-.brand-lockup b { font-size: var(--t-lg); letter-spacing: -0.02em; }
-.brand-lockup span { font-size: var(--t-sm); color: var(--ink-3); }
-.topbar-right { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
-.topnav { display: flex; gap: var(--s-3); }
-.topnav a { font-size: var(--t-sm); color: var(--ink-2); text-decoration: none; }
-.topnav a:hover { color: var(--ink-1); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- dataviz polish ---------- */
 
@@ -777,7 +763,7 @@
    up, one-handed, sometimes by someone wearing gloves. */
 @media (pointer: coarse) {
   .btn, .demo-controls select, .pub-other, .pub-change { min-height: 44px; }
-  .pub-fold summary, .dash-details summary { min-height: 44px; display: flex; align-items: center; }
+  .pub-fold summary { min-height: 44px; display: flex; align-items: center; }
 }
 
 /* Citation links on About are small text by design, but they are still links —

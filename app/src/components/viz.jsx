@@ -285,7 +285,12 @@ export function SectorGrid({ sectors, counts, alertTier, onPick, selected, clini
           const n = counts.get(sec.id) ?? 0
           const tier = alertTier.get(sec.id)
           const silent = silentSectors.has(sec.id)
-          const dark = !silent && n / max > 0.55
+          /* Text colour comes from the STEP, not from n/max. The old rule
+             flipped to white at 55% of the peak, which landed on --seq-3 —
+             white on that measured 2.5:1, so the busiest sectors on the wall
+             were the least readable ones. Each step now names its own ink. */
+          const step = stepFor(n)
+          const stepInk = `var(${step}-ink)`
           return (
             <button
               key={sec.id}
@@ -294,17 +299,17 @@ export function SectorGrid({ sectors, counts, alertTier, onPick, selected, clini
                  count is stale information, so the tile becomes a blind spot. */
               style={silent
                 ? { background: 'var(--surface-sunk)', color: 'var(--ink-3)' }
-                : { background: `var(${stepFor(n)})`, color: dark ? '#fff' : 'var(--ink-1)' }}
+                : { background: `var(${step})`, color: stepInk }}
               onClick={() => onPick?.(sec.id)}
               title={silent
                 ? `${sec.name} — no clinic has reported for 3 hours`
                 : `${sec.name} — ${n} cases in last 6h`}
             >
-              <span className="sector-id" style={{ color: dark ? 'rgba(255,255,255,0.75)' : 'var(--ink-3)' }}>
+              <span className="sector-id" style={{ color: stepInk }}>
                 S{sec.id}
               </span>
               <span className="sector-count">{silent ? '—' : n}</span>
-              <span className="sector-name" style={{ color: dark ? 'rgba(255,255,255,0.85)' : 'var(--ink-2)' }}>
+              <span className="sector-name" style={{ color: stepInk }}>
                 {silent ? 'no reports 3h+' : sec.name}
               </span>
               {tier && (

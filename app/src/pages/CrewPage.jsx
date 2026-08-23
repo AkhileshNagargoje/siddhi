@@ -71,6 +71,7 @@ export default function CrewPage() {
           <h2>Field crew sign in</h2>
           <p>Enter your 4-digit PIN</p>
           <input type="password" inputMode="numeric" maxLength={4} value={pin} autoFocus
+                 aria-label="4-digit PIN"
                  onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
                  onKeyDown={e => e.key === 'Enter' && login()} />
           <button className="btn btn-wide" onClick={login} disabled={pin.length !== 4}>Enter</button>
@@ -128,10 +129,10 @@ export default function CrewPage() {
               <button className="btn btn-wide" onClick={() => ack(task)}>Acknowledge</button>
             ) : resolving === task.id ? (
               <div className="resolve">
-                <select value={outcome} onChange={e => setOutcome(e.target.value)}>
+                <select aria-label="What you found" value={outcome} onChange={e => setOutcome(e.target.value)}>
                   {OUTCOMES.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
-                <textarea rows={2} placeholder="One line — what did you find?"
+                <textarea rows={2} aria-label="Note on what you found" placeholder="One line — what did you find?"
                           value={note} onChange={e => setNote(e.target.value)} />
                 <button className="btn btn-good btn-wide" onClick={() => resolve(task)}>Submit</button>
               </div>
