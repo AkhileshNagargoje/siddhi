@@ -62,6 +62,11 @@ One warning from the project's values: whatever the doctor gets back must never 
 
 ## Problem 4 — The official who can't see inside
 
+> Note: the dashboard now has an **In-depth analysis** tab covering the festival
+> as a whole — rankings, case mix, trends. This problem is still open and still
+> yours: it is about clicking **one sector tile** and seeing inside *that*
+> sector. Do not rebuild the festival-wide view.
+
 The control room shows twelve sector tiles with case counts. An official sees Sector 5 running hot. Their next questions are immediate: *What kind of illness? Who is it hitting — children, the elderly, everyone? Which clinics are seeing it? What's physically in that sector that could be the source?*
 
 The dashboard cannot answer any of that today. The official is looking at a number when they need the shape of a problem.

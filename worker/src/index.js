@@ -375,26 +375,36 @@ async function scan(env, bypass = null) {
   // exactly the failure this guard exists to prevent, and it got worse the
   // slower the response.
   const cooldownFrom = new Date(now - WINDOW_H * 3600_000).toISOString()
-  const closedTasks = await sbGet(env, `tasks?select=alert_id&resolved_at=gte.${cooldownFrom}`)
+  const closedTasks = await sbGet(env, `tasks?select=alert_id&resolved_at=gte.${cooldownFrom}&limit=5000`)
   /* A task only exists if the alert was DISPATCHED. An alert closed any other
      way — dismissed, bulk-cleared before a demo — left nothing to anchor the
      cooldown to, so the very next scan raised it again seconds later. Observed
      live: resolved 02:14, re-fired 02:15. Fall back to alerts.resolved_at when
      the column exists, and tolerate its absence so this deploy does not depend
      on the migration having been run. */
-  let closedIds = [...new Set(closedTasks.map(t => t.alert_id).filter(Boolean))]
+  const closedIds = [...new Set(closedTasks.map(t => t.alert_id).filter(Boolean))]
+  const inCooldown = new Set()
+
+  /* Ask the alerts table for sector/syndrome DIRECTLY, rather than collecting
+     ids and posting them back in an `id=in.(...)` filter.
+     A uuid costs ~37 characters in a URL, so a few hundred of them overflow the
+     gateway's header limit — and sbGet throws on a non-2xx, which sits outside
+     the try/catch below, so the whole scan would 500 and detection would stop.
+     A bulk board-clear before a demo is exactly what produces a few hundred
+     resolutions inside one window, so this was reachable on stage. */
   try {
-    const closedDirect = await sbGet(env, `alerts?select=id&resolved_at=gte.${cooldownFrom}`)
-    closedIds = [...new Set([...closedIds, ...closedDirect.map(a => a.id)])]
+    const closedDirect = await sbGet(
+      env, `alerts?select=sector,syndrome&resolved_at=gte.${cooldownFrom}&limit=5000`)
+    for (const a of closedDirect) inCooldown.add(`${a.sector}|${a.syndrome}`)
   } catch {
     /* alerts.resolved_at not migrated yet — task-anchored cooldown still applies. */
   }
-  const inCooldown = new Set()
-  if (closedIds.length) {
+  /* The task-derived ids still need a round trip, so chunk them: the same URL
+     limit applies here. 100 uuids is ~3.7 KB, comfortably inside any gateway. */
+  for (let i = 0; i < closedIds.length; i += 100) {
+    const chunk = closedIds.slice(i, i + 100)
     const closedAlerts = await sbGet(
-      env,
-      `alerts?select=sector,syndrome&id=in.(${closedIds.join(',')})`,
-    )
+      env, `alerts?select=sector,syndrome&id=in.(${chunk.join(',')})`)
     for (const a of closedAlerts) inCooldown.add(`${a.sector}|${a.syndrome}`)
   }
   if (bypass) inCooldown.delete(bypass)

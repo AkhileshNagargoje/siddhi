@@ -90,7 +90,7 @@ So the delay doesn't only hurt the people with the infection. **It breaks the pa
 
 This is the strongest point, because it proves the problem is real.
 
-In 2013 and 2015, a Harvard project at the Kumbh solved the genuinely hard part: it proved that **busy health workers will enter data on tablets** — 30,000 visits recorded — even though everyone predicted doctors would find it annoying.
+In 2013 and 2015, a Harvard project at the Kumbh solved the genuinely hard part: it proved that **busy health workers will enter data on tablets** — 2,000+ visits on the first day alone, across 30+ clinics — even though everyone predicted doctors would find it annoying.
 
 But what they built on top was **a reporting tool, not a response system.** Charts that a human had to stare at and correctly understand. No automatic detection. No alerts. Nobody assigned. No record of whether anything was done.
 
@@ -178,6 +178,46 @@ So when a doctor picks an antibiotic for something that usually doesn't need one
 **It never blocks them.** One tap and they carry on. This is a rule, not a compromise — a system that argues with doctors gets abandoned by lunchtime, and then everything downstream stops working too.
 
 But it is recorded either way. So for the first time you can see which clinics give too many antibiotics. That 31% problem was invisible before for exactly the same reason the outbreaks were: **nobody was adding it up.**
+
+## 5b. A second, independent signal — the part nobody else has
+
+Every signal above comes from one place: a doctor typing at a clinic. If clinics
+under-report, or people do not go to one at all, the whole system goes quiet and
+we would never know.
+
+So we watch a second stream that has nothing to do with clinics: **what pharmacy
+stalls sell.** A spike in rehydration sales in one sector is scored exactly the
+same way a spike in cases is — against that sector's own recent history.
+
+Two reasons this matters more than it sounds:
+
+- **It leads.** People buy something and try to treat themselves before they
+  decide to see anyone. So the sales spike shows up *before* the clinic cases.
+- **It sees people we otherwise miss.** Someone who never reaches a clinic is
+  invisible to every other part of this system, but they still buy ORS.
+
+When both signals rise together, that is real evidence — different reporters, a
+different act (a purchase, not a consultation), different ways of going wrong.
+One signal shouting twice is not evidence. And when they *disagree* it is still
+useful: clinic cases rising with no rehydration spike suggests it may not be
+waterborne, which changes where you send the crew first.
+
+On screen this appears as a corroboration line on the alert. In code it is
+`generatePharmacy` / `scanPharmacy` in `worker/src/index.js`, backed by
+`db/pharmacy.sql`.
+
+## 5c. Telling the public, carefully
+
+An officer can publish a short piece of advice to a pilgrim-facing page
+(`/public`), reached by scanning a printed poster — no app, no login.
+
+The care is in what does *not* go out. Affected areas are named, because hiding
+them would be useless to someone trying to take precautions. But **no case
+counts and no severity scores, ever** — a number invites comparison between
+areas, and comparison moves a crowd. At an event where a crowd crush has killed
+people, moving a crowd is more dangerous than the pathogen. Every status ends in
+an instruction, and the page repeats that every area has its own free clinic so
+nobody concludes they must travel.
 
 ## 6. Following the patient home
 

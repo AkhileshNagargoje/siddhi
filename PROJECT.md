@@ -11,7 +11,7 @@
 
 **The solution:** Capture every patient in ~10 seconds → pool all clinics into one live picture → let software detect the cluster → turn the alert into an assigned job that someone must close. The contaminated tap gets shut on day 1 evening instead of day 4. Result: ~35 cases instead of ~600.
 
-**Historical basis:** The 2015 Harvard "Jana Swasthya" project at Nashik Kumbh proved health workers WILL enter data at scale (30,000 visits logged on tablets) — but it only drew charts. No detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters — recorded, never acted on. Siddhi is everything that should happen in the ten minutes AFTER the data is entered.
+**Historical basis:** The 2015 Harvard "Jana Swasthya" project at Nashik Kumbh proved health workers WILL enter data at scale (2,000+ visits logged on tablets on the first day, across 30+ clinics) — but it only drew charts. No detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters — recorded, never acted on. Siddhi is everything that should happen in the ten minutes AFTER the data is entered.
 
 ## The 90-second demo story (this is what we optimize for)
 
@@ -49,7 +49,13 @@
 9. Polish: 60-second replay choreography of the demo story
 
 ### TIER 3 — roadmap only (mention in pitch, do NOT build)
-Voice entry (Hindi/Marathi), SMS fallback, morning feedback card, demand forecasting, ORS-velocity pharmacy signal, water-test fusion, LLM daily bulletin, IDSP export, rumor inbox, stampede triage mode, LoRa mesh, wearables, baseline transfer between festivals.
+Voice entry (Hindi/Marathi), SMS fallback, morning feedback card, demand forecasting, water-test fusion, LLM daily bulletin, IDSP export, rumor inbox, stampede triage mode, LoRa mesh, wearables, baseline transfer between festivals.
+
+**Built anyway, deliberately, after the tiers were agreed:** the ORS-velocity
+pharmacy signal (a second independent stream — worker/src/index.js), the
+officer-approved public advisory page (/public), and the in-depth analysis tab
+on the dashboard. Each was requested explicitly; this note exists so the tier
+list stops contradicting the shipped app.
 
 ## Design rules (non-negotiable — do not "improve" these)
 
@@ -57,12 +63,12 @@ Voice entry (Hindi/Marathi), SMS fallback, morning feedback card, demand forecas
 2. **Explainable maths only.** No ML in detection. Every alert shows observed, expected, and the threshold. Officials must be able to argue with an alert.
 3. **Entry must stay ≤ 10 seconds.** Any feature that slows the entry form is rejected.
 4. **Offline-first.** Entry form writes to localStorage first, syncs when possible. Records carry client-generated UUIDs so retried uploads never duplicate.
-5. **Silence ≠ calm.** A sector that stops reporting must never render as healthy. IMPLEMENTED at sector level (the KPI shows "N of 12 sectors reporting"). NOT YET per-clinic: clinics.last_report_at exists in the schema and is not written or read.
+5. **Silence ≠ calm.** A sector that stops reporting must never render as healthy. IMPLEMENTED at sector level (the KPI shows "N of 12 sectors reporting") AND per-clinic, derived from the encounter stream rather than from clinics.last_report_at — see DashboardPage.jsx and viz.jsx, which name the quiet clinics. clinics.last_report_at remains unused.
 6. **No pilgrim login.** Ever.
 7. **Simulator writes through the same API as real clients.** Rows carry a simulated flag for cleanup only; detection does not read it, so synthetic and real traffic score identically.
-8. **Config-driven festival.** Sectors, clinics, symptoms live in config. KNOWN GAP: DETECTION thresholds in config/festival.js are unused — the worker and simulator each hardcode their own copy. Changing a threshold means editing worker/src/index.js.
+8. **Config-driven festival.** Sectors, clinics, symptoms live in config. The mirrored DETECTION block was REMOVED from config/festival.js — it looked authoritative while being wired to nothing. Thresholds live in worker/src/index.js only; the simulator keeps its own copy for offline runs.
 
-## Data model (6 tables, Supabase Postgres)
+## Data model (9 tables, Supabase Postgres)
 
 ```sql
 encounters   id uuid PK, ts timestamptz, clinic_id, sector int, age_band text,
@@ -84,7 +90,7 @@ referrals    id uuid PK, encounter_id FK, risk_type text, qr_token text,
 
 ## Stack
 
-- **Frontend:** React + Vite, plain CSS (no UI framework — keep it light). One codebase, three routes: `/entry`, `/dashboard`, `/crew`.
+- **Frontend:** React + Vite, plain CSS (no UI framework — keep it light). One codebase, ten routes — `/`, `/entry`, `/dashboard`, `/crew`, `/r`, `/replay`, `/demo`, `/about`, `/public`, `/insights`.
 - **Backend:** Supabase — Postgres, Realtime (dashboard live updates), simple role handling. Detection runs as a scheduled/manually-invocable function.
 - **Simulator:** Node script in `/simulator`, writes via Supabase client (same API as app).
 - **Hosting:** Cloudflare Workers static assets (app) + a Cloudflare Worker with cron triggers (engine).
@@ -94,9 +100,9 @@ referrals    id uuid PK, encounter_id FK, risk_type text, qr_token text,
 
 - 12 sectors (numbered 1–12), each with name, water points (e.g. W-7), kitchens (K-3)
 - 17 clinics across 12 sectors (1–2 each, mix of fixed/mobile). Sectors 2, 4, 6, 7, 9, 10, 12 have a single clinic.
-- Symptom chips: fever, loose motions, vomiting, cough, breathlessness, injury, dizziness, rash, weakness (EN/HI/MR labels)
+- Symptom chips: fever, loose motions, vomiting, cough, breathlessness, injury, dizziness, rash, weakness, dehydration (EN/HI/MR labels)
 - Diagnoses: acute gastroenteritis, acute respiratory infection, heat exhaustion, injury/trauma, skin infection, fever of unknown origin, hypertension finding, diabetes finding, other
-- Syndrome mapping for detection: diagnosis → syndrome group (GI, respiratory, heat, injury, other)
+- Syndrome mapping for detection: diagnosis → syndrome group (GI, respiratory, heat, fever, injury, other). Screening findings (hypertension, diabetes) map to a seventh value that detection deliberately ignores.
 - Drugs list incl. which are antibiotics (for Tier 2 nudge)
 
 ## Detection algorithm (exact spec)

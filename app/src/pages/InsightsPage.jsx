@@ -215,7 +215,8 @@ function Meter({ value, reference, label, hint }) {
 /* Small multiples beat six lines on one axis. Each panel is its own hue and
    its own scale is stated, so nobody reads across panels by height. */
 function Trend({ label, hue, values }) {
-  const max = Math.max(...values, 1)
+  const peak = Math.max(...values, 0)      // what we SAY
+  const max = Math.max(peak, 1)            // what we divide by
   const w = 132, h = 34
   const x = i => (i / Math.max(values.length - 1, 1)) * (w - 2) + 1
   const y = v => h - 2 - (v / max) * (h - 6)
@@ -223,11 +224,11 @@ function Trend({ label, hue, values }) {
   return (
     <div className="tr">
       <span className="tr-label"><i style={{ background: hue }} />{label}</span>
-      <svg width={w} height={h} role="img" aria-label={`${label}: peak ${max} in one hour`}>
+      <svg width={w} height={h} role="img" aria-label={`${label}: peak ${peak} in one hour`}>
         <path d={`${line} L${x(values.length - 1)} ${h} L${x(0)} ${h} Z`} fill={hue} opacity="0.13" />
         <path d={line} fill="none" stroke={hue} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
       </svg>
-      <span className="tr-peak">peak {max}/h</span>
+      <span className="tr-peak">peak {peak}/h</span>
     </div>
   )
 }
@@ -268,9 +269,12 @@ export function Insights() {
     const buckets = new Map()
     const now = Date.now()
     for (const r of clinical) {
+      /* Clamp rather than drop: a clock a few seconds ahead on one tablet
+         would otherwise remove its rows from the trend while leaving them in
+         every total, so the parts silently stopped summing to the whole. */
       const hAgo = Math.floor((now - new Date(r.ts).getTime()) / 3600_000)
-      const idx = hours - 1 - hAgo
-      if (idx < 0 || idx >= hours) continue
+      const idx = Math.min(hours - 1, hours - 1 - hAgo)
+      if (idx < 0) continue
       if (!buckets.has(r.syndrome)) buckets.set(r.syndrome, new Array(hours).fill(0))
       buckets.get(r.syndrome)[idx]++
     }
@@ -300,6 +304,10 @@ export function Insights() {
       severeRate: pct(bySev.get('severe') ?? 0, total),
     }
   }, [rows, hours])
+
+  if (!isConfigured()) {
+    return <div className="empty">Supabase is not configured — check the app's .env file.</div>
+  }
 
   return (
     <div className="insights">
