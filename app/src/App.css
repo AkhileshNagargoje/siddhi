@@ -791,3 +791,112 @@
   font-size: var(--t-sm); color: var(--ink-2);
 }
 .mc-trend b { color: var(--ink-1); font-weight: 600; }
+
+/* ================= in-depth analysis ================= */
+
+.ins-filters {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-3); margin-bottom: var(--s-4); flex-wrap: wrap;
+}
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: var(--r-md); overflow: hidden; }
+.seg button {
+  padding: 8px 14px; font-size: var(--t-sm); background: var(--surface-1);
+  color: var(--ink-2); border: 0; cursor: pointer; border-right: 1px solid var(--border);
+}
+.seg button:last-child { border-right: 0; }
+.seg button.on { background: var(--accent-solid); color: #fff; }
+
+.ins-grid > section { min-width: 0; }
+.ins-grid { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: start; }
+@media (max-width: 900px) { .ins-grid { grid-template-columns: 1fr; } }
+.ins-note {
+  margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--grid);
+  font-size: var(--t-xs); color: var(--ink-3); line-height: 1.55;
+}
+.ins-sub {
+  margin: var(--s-4) 0 var(--s-2); font-size: var(--t-xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3);
+}
+.ins-sub:first-of-type { margin-top: 0; }
+
+/* ranked bars — one hue, magnitude by length, value always printed */
+.rank { display: flex; flex-direction: column; gap: 7px; }
+.rank-row {
+  display: grid; grid-template-columns: 18px minmax(0, 1.25fr) minmax(0, 2.2fr) auto 40px;
+  align-items: center; gap: var(--s-2); font-size: var(--t-sm); min-width: 0;
+}
+/* Below a phone's width there is no room for a rank number and a share column
+   as well as the bar. Drop the ornament, keep the number that carries meaning. */
+@media (max-width: 430px) {
+  .rank-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) auto; }
+  .rank-pos, .rank-share { display: none; }
+}
+.rank-pos { color: var(--ink-3); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+.rank-label { color: var(--ink-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-track { background: var(--surface-sunk); border-radius: var(--r-sm); height: 15px; overflow: hidden; }
+.rank-track i { display: block; height: 100%; border-radius: 0 4px 4px 0; }
+.rank-n { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-1); }
+.rank-share { font-variant-numeric: tabular-nums; color: var(--ink-3); text-align: right; font-size: var(--t-xs); }
+
+/* part-to-whole — shared baseline, printed shares, legend always present */
+.share-bar {
+  display: flex; height: 40px; border-radius: var(--r-md); overflow: hidden;
+  background: var(--surface-sunk); gap: 2px;   /* 2px surface gap between fills */
+}
+.share-seg { display: grid; place-items: center; min-width: 2px; transition: opacity 0.12s; }
+.share-seg:hover { opacity: 0.86; }
+.share-seg b {
+  font-size: var(--t-xs); font-weight: 700; color: #fff;
+  /* A text-shadow does not create contrast, it only softens the edge. A solid
+     scrim does: white over this composites to >= 7:1 on every slot in the
+     categorical set, in both themes, so the label never depends on the hue. */
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1px 5px; border-radius: var(--r-sm); line-height: 1.4;
+}
+.share-key { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); margin-top: var(--s-3); }
+.share-item { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-xs); color: var(--ink-2); }
+.share-item i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.share-item b { color: var(--ink-1); font-variant-numeric: tabular-nums; }
+
+/* meter — a ratio against a reference, never a two-slice pie */
+.meter { margin-bottom: var(--s-4); }
+.meter:last-of-type { margin-bottom: 0; }
+.meter-head { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t-sm); color: var(--ink-2); }
+.meter-head b { font-size: var(--t-lg); color: var(--ink-1); font-variant-numeric: tabular-nums; }
+.meter-track {
+  position: relative; height: 12px; margin: 6px 0 5px;
+  background: var(--surface-sunk); border-radius: var(--r-pill); overflow: visible;
+}
+.meter-track i { display: block; height: 100%; background: var(--series-1); border-radius: var(--r-pill); }
+.meter-ref {
+  position: absolute; top: -3px; width: 2px; height: 18px;
+  background: var(--ink-1); border-radius: 1px;
+}
+.meter-hint { font-size: var(--t-xs); color: var(--ink-3); line-height: 1.5; }
+
+/* small multiples */
+.tr-wrap { display: flex; flex-direction: column; gap: var(--s-2); }
+.tr { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--s-3); }
+.tr-label { display: inline-flex; align-items: center; gap: 7px; font-size: var(--t-sm); color: var(--ink-2); min-width: 0; }
+.tr-label i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.tr-peak { font-size: var(--t-xs); color: var(--ink-3); font-variant-numeric: tabular-nums; text-align: right; }
+
+/* table view — obligatory relief for the light-mode contrast warning */
+.ins-table { margin-top: var(--s-4); }
+.table-scroll { overflow-x: auto; }
+.ins-table table { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+.ins-table th {
+  text-align: left; font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ink-3); font-weight: 600; padding: 6px var(--s-3) 6px 0; border-bottom: 1px solid var(--border-strong);
+}
+.ins-table td { padding: 6px var(--s-3) 6px 0; border-bottom: 1px solid var(--grid); color: var(--ink-2); }
+.ins-table td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-1); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.topbar-links { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
+.topbar-links a { font-size: var(--t-sm); color: var(--series-1); text-decoration: none; }
+.topbar-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
