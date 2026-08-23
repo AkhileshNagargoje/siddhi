@@ -39,7 +39,8 @@ export default function DashboardPage() {
   const [pharmacy, setPharmacy] = useState([])
   const [selected, setSelected] = useState(null)
   const [unit, setUnit] = useState(RESPONSE_UNITS[0].id)
-  const [pickedSector, setPickedSector] = useState(null) // sector tile clicked → detail panel (TASK 4)
+  const [pickedSector, setPickedSector] = useState(null)
+  const [advisoryDraft, setAdvisoryDraft] = useState(null) // null = composer closed // sector tile clicked → detail panel (TASK 4)
 
   useEffect(() => {
     if (!isConfigured()) return
@@ -216,6 +217,41 @@ export default function DashboardPage() {
     )
     return { quiet, silentSectors, total: CLINICS.length }
   }, [encounters])
+
+  /* Suggested wording only — the officer edits and approves it. Written to
+     be useful without being frightening: it never says a sector is dangerous,
+     never gives a case count, and tells people what to DO. Naming a sector as
+     infected to a dense crowd moves that crowd, and crowd movement is what
+     kills at mass gatherings. */
+  function suggestAdvisory(alert) {
+    const sec = FESTIVAL.sectors.find(s => s.id === alert.sector)
+    const water = sec?.waterPoints?.length ? ` Use the treated water points (${sec.waterPoints.join(', ')}).` : ''
+    if (alert.syndrome === 'gi') {
+      return `Health teams are checking the water supply in ${sec?.name ?? 'this area'} as a precaution.`
+        + ` Please drink only treated or sealed water and wash your hands before eating.${water}`
+        + ` If you have loose motions, start ORS straight away — it is free at every clinic.`
+    }
+    return `Health teams are active in ${sec?.name ?? 'this area'} as a precaution.`
+      + ` Please follow the usual advice: treated water only, wash hands before eating,`
+      + ` and visit any festival clinic if you feel unwell. Care is free.`
+  }
+
+  async function publishAdvisory(alert, text) {
+    const { error } = await supabase.from('alerts').update({
+      advisory: text,
+      advisory_at: new Date().toISOString(),
+      advisory_by: 'Festival health office',
+    }).eq('id', alert.id)
+    if (error) console.error('publish failed:', error.message)
+    setAdvisoryDraft(null)
+  }
+
+  async function withdrawAdvisory(alert) {
+    const { error } = await supabase.from('alerts')
+      .update({ advisory: null, advisory_at: null, advisory_by: null })
+      .eq('id', alert.id)
+    if (error) console.error('withdraw failed:', error.message)
+  }
 
   async function assign(alert) {
     await supabase.from('tasks').insert({ alert_id: alert.id, assigned_unit: unit })
@@ -400,6 +436,43 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Public communication is a deliberate, human act. The system
+                    drafts; an officer edits, approves and can withdraw. Nothing
+                    reaches a pilgrim automatically. */}
+                <div>
+                  <h4>Public advisory</h4>
+                  {sel.advisory ? (
+                    <>
+                      <StatusBadge status="good" label="published" />
+                      <p style={{ marginTop: 'var(--s-2)' }}>{sel.advisory}</p>
+                      <button className="btn btn-quiet" onClick={() => withdrawAdvisory(sel)}>Withdraw</button>
+                    </>
+                  ) : advisoryDraft !== null ? (
+                    <div className="resolve">
+                      <textarea rows={5} value={advisoryDraft}
+                                onChange={e => setAdvisoryDraft(e.target.value)} />
+                      <p className="chart-sub" style={{ margin: 0 }}>
+                        Goes to every pilgrim who scans a poster. Say what to do, not what to fear.
+                      </p>
+                      <div style={{ display: 'flex', gap: 'var(--s-2)' }}>
+                        <button className="btn btn-quiet" onClick={() => setAdvisoryDraft(null)}>Cancel</button>
+                        <button className="btn btn-accent" onClick={() => publishAdvisory(sel, advisoryDraft)}>
+                          Publish to pilgrims
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="chart-sub" style={{ marginTop: 0 }}>
+                        Nothing published. Pilgrims see general advice only.
+                      </p>
+                      <button className="btn btn-quiet" onClick={() => setAdvisoryDraft(suggestAdvisory(sel))}>
+                        Draft an advisory
+                      </button>
+                    </>
+                  )}
+                </div>
 
                 {sel.status === 'open' && (
                   <div className="assign">
