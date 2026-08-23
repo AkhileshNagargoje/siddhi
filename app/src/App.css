@@ -821,8 +821,18 @@
 .seg button:last-child { border-right: 0; }
 .seg button.on { background: var(--accent-solid); color: #fff; }
 
+/* Cards in a row share a height, so their bottom edges line up instead of
+   leaving a ragged void beside the taller one — measured at 141px under the
+   ranking panel and 81px under the trends panel. Panels are also ordered so
+   each pair is close in height, which keeps the shared row from padding much. */
 .ins-grid > section { min-width: 0; }
-.ins-grid { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: start; }
+.ins-grid { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: stretch; }
+/* An odd panel out would leave half a row empty — 347px of it. Span instead. */
+.ins-wide { grid-column: 1 / -1; }
+@media (min-width: 901px) {
+  .ins-wide .ins-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); }
+  .ins-wide .ins-sub:first-of-type { margin-top: 0; }
+}
 @media (max-width: 900px) { .ins-grid { grid-template-columns: 1fr; } }
 .ins-note {
   margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--grid);
