@@ -6,6 +6,7 @@ import { riskFlags, makeToken } from '../lib/referral'
 import { uuid } from '../lib/uuid'
 import { ReferralCard } from '../components/ReferralCard'
 import { MorningCard } from '../components/MorningCard'
+import { MyClinic } from '../components/MyClinic'
 
 // Offline-first: every record lands in localStorage first, a background loop
 // pushes it up. Client-generated UUIDs make retries duplicate-proof.
@@ -123,6 +124,9 @@ export default function EntryPage() {
      Sample props for now — main dev wires live figures once the component
      ships. The stub renders null, so this mounts invisibly until then. */
   const [showMorning, setShowMorning] = useState(false)
+  // Entry is the default and stays one tap away. The clinic view is a
+  // separate tab precisely so the ten-second path never renders it.
+  const [tab, setTab] = useState('entry')
 
   function login() {
     const u = USERS.find(u => u.pin === pin && u.role === 'worker')
@@ -245,6 +249,19 @@ export default function EntryPage() {
         </span>
       </div>
 
+      <div className="tabs" role="tablist">
+        <button role="tab" aria-selected={tab === 'entry'}
+                className={tab === 'entry' ? 'tab on' : 'tab'}
+                onClick={() => setTab('entry')}>New patient</button>
+        <button role="tab" aria-selected={tab === 'clinic'}
+                className={tab === 'clinic' ? 'tab on' : 'tab'}
+                onClick={() => setTab('clinic')}>My clinic</button>
+      </div>
+
+      {tab === 'clinic' && <MyClinic clinic={clinic} sector={clinic?.sector} />}
+
+      {tab === 'entry' && (
+      <>
       <Field label="Age" required>
         {AGE_BANDS.map(a => (
           <button key={a} className={form.age_band === a ? 'chip on' : 'chip'} onClick={() => toggle('age_band', a)}>{a}</button>
@@ -332,11 +349,16 @@ export default function EntryPage() {
         </p>
       )}
 
+      </>
+      )}
+
+      {tab === 'entry' && (
       <div className="savebar">
         <button className={`btn btn-wide${flash ? ' btn-good' : ''}`} disabled={!ready} onClick={save}>
           {flash ? '✓ Saved' : willRefer ? 'Save & print referral' : 'Save patient'}
         </button>
       </div>
+      )}
 
       {referral && <ReferralCard referral={referral} onClose={() => setReferral(null)} />}
 
