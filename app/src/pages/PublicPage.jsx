@@ -2,243 +2,204 @@ import { useEffect, useState } from 'react'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL } from '../config/festival'
 
-/* What a pilgrim sees. Reached by scanning a printed poster in their sector —
- * no app, no login, nothing to install.
+/* What a pilgrim sees. Reached by scanning a printed poster — no app, no login.
  *
- * THE DESIGN CONSTRAINT THAT SHAPES EVERYTHING HERE
+ * BUILT FOR A PHONE HELD IN A CROWD, NOT A PAGE TO READ
  *
- * This page is read by people standing in a dense crowd. Telling them a sector
- * is infected moves that crowd, and crowd movement is what kills at mass
- * gatherings — the 2025 Maha Kumbh had a fatal crush. Panic also fills clinics
- * with the worried well exactly when capacity is needed for the sick.
+ * The reader is standing up, in sun, possibly with one hand free, and wants one
+ * answer: am I alright here, and what should I do? So the first screen is their
+ * area and nothing else. Everything else is folded away behind taps.
  *
- * So this page never displays a raw alert, never names a sector as dangerous,
- * never shows a case count, and never ranks sectors against each other. It
- * shows advice that is useful whether or not anything is wrong, plus whatever
- * an officer has deliberately chosen to publish, in the officer's own words.
+ * Each poster carries its own sector in the QR — /public?s=5 — so most people
+ * never choose anything. The picker only appears if we do not know.
  *
- * Framing is positive throughout: where safe water IS, not where it is not.
- * "Use the treated water points" moves nobody; "avoid sector 5" empties a
- * sector into its neighbours.
+ * SAFETY, WHICH LIVES IN THE PRESENTATION RATHER THAN IN OMISSION
+ *
+ * Affected areas ARE shown; withholding them would be useless to someone trying
+ * to take precautions. But no case counts and no severity scores anywhere: a
+ * number invites comparison between areas, and comparison moves a crowd. Every
+ * status ends in an instruction, because an instruction calms and a warning
+ * does not — and the page repeats that every area has a free clinic, so nobody
+ * concludes they must travel to be seen.
  */
 
-const ALWAYS = [
-  {
-    en: 'Drink only treated or sealed water',
-    hi: 'केवल शुद्ध या सीलबंद पानी पिएँ',
-    mr: 'फक्त शुद्ध किंवा सीलबंद पाणीच प्या',
-    detail: 'Treated water points are marked in blue. Bottled water should have an unbroken seal.',
-  },
-  {
-    en: 'Wash hands before eating',
-    hi: 'खाने से पहले हाथ धोएँ',
-    mr: 'जेवण्यापूर्वी हात धुवा',
-    detail: 'Soap points are next to every community kitchen.',
-  },
-  {
-    en: 'Loose motions? Start ORS immediately',
-    hi: 'दस्त हों तो तुरंत ओआरएस लें',
-    mr: 'जुलाब झाल्यास लगेच ओआरएस घ्या',
-    detail: 'ORS is free at every clinic and medical stall. Start it before you feel weak — not after.',
-  },
-  {
-    en: 'Look after the elderly in your group',
-    hi: 'अपने साथ के बुज़ुर्गों का ध्यान रखें',
-    mr: 'सोबतच्या ज्येष्ठांची काळजी घ्या',
-    detail: 'Older pilgrims dehydrate faster and often say nothing until it is serious.',
-  },
-]
-
-/* What each kind of alert means for someone standing there, and what they can
-   actually do about it. No case counts anywhere: a number invites comparison
-   between sectors, and comparison is what starts a movement. Every entry ends
-   in an action, because an instruction calms and a warning does not. */
 const ISSUE = {
   gi: {
-    label: 'Water being checked',
-    hi: 'पानी की जाँच जारी है',
-    mr: 'पाण्याची तपासणी सुरू आहे',
-    doThis: 'Use the treated water points listed below. If anyone has loose motions, start ORS straight away.',
+    label: 'Water is being checked here',
+    hi: 'यहाँ पानी की जाँच हो रही है',
+    mr: 'इथे पाण्याची तपासणी सुरू आहे',
+    do: 'Drink only from the treated water points below. If anyone has loose motions, start ORS now — free at every clinic.',
   },
   respiratory: {
     label: 'More coughs and colds than usual',
     hi: 'खाँसी-ज़ुकाम सामान्य से अधिक',
     mr: 'नेहमीपेक्षा जास्त खोकला-सर्दी',
-    doThis: 'Cover your mouth when you cough, wash hands often, and keep a little distance from anyone coughing.',
+    do: 'Cover your mouth when you cough and wash your hands often.',
   },
   heat: {
-    label: 'Heat affecting people here',
-    hi: 'गर्मी का असर',
-    mr: 'उष्णतेचा त्रास',
-    doThis: 'Drink water regularly even when not thirsty, rest in shade, and watch the elderly closely.',
+    label: 'Heat is affecting people here',
+    hi: 'यहाँ गर्मी का असर है',
+    mr: 'इथे उष्णतेचा त्रास होत आहे',
+    do: 'Drink water before you feel thirsty, rest in shade, and check on the elderly with you.',
   },
   fever: {
     label: 'More fever than usual',
     hi: 'बुखार सामान्य से अधिक',
     mr: 'नेहमीपेक्षा जास्त ताप',
-    doThis: 'See a clinic if fever lasts more than a day, and keep drinking fluids.',
+    do: 'Keep drinking fluids. See a clinic if fever lasts more than a day.',
   },
   injury: {
     label: 'More injuries than usual',
     hi: 'चोटें सामान्य से अधिक',
     mr: 'नेहमीपेक्षा जास्त जखमा',
-    doThis: 'Take care underfoot, especially near ghats and in crowds. Any clinic will dress a wound free.',
+    do: 'Take care underfoot near the ghats and in crowds. Any clinic will dress a wound free.',
   },
   other: {
     label: 'Health teams are active here',
-    hi: 'स्वास्थ्य दल सक्रिय',
-    mr: 'आरोग्य पथक कार्यरत',
-    doThis: 'Follow the general advice below and visit any clinic if you feel unwell.',
+    hi: 'स्वास्थ्य दल सक्रिय हैं',
+    mr: 'आरोग्य पथक कार्यरत आहे',
+    do: 'Follow the usual advice and visit any clinic if you feel unwell.',
   },
 }
 
-const SEE_A_DOCTOR = [
-  'Loose motions more than four or five times',
-  'Vomiting that will not stop',
-  'Very little urine, or dizziness on standing',
-  'Any of the above in a child or an elderly person',
+const ALWAYS = [
+  { en: 'Treated or sealed water only', hi: 'केवल शुद्ध या सीलबंद पानी', mr: 'फक्त शुद्ध किंवा सीलबंद पाणी' },
+  { en: 'Wash hands before eating', hi: 'खाने से पहले हाथ धोएँ', mr: 'जेवण्यापूर्वी हात धुवा' },
+  { en: 'Loose motions? Start ORS at once', hi: 'दस्त हों तो तुरंत ओआरएस', mr: 'जुलाब झाल्यास लगेच ओआरएस' },
+  { en: 'Watch the elderly with you', hi: 'बुज़ुर्गों का ध्यान रखें', mr: 'ज्येष्ठांची काळजी घ्या' },
 ]
 
+const SEE_A_DOCTOR = [
+  'Loose motions four or five times',
+  'Vomiting that will not stop',
+  'Very little urine, or dizzy standing up',
+  'Any of these in a child or an elderly person',
+]
+
+const STORE_KEY = 'siddhi_my_sector'
+
 export default function PublicPage() {
-  const [advisories, setAdvisories] = useState([])
-  const [sector, setSector] = useState('')
+  const [alerts, setAlerts] = useState([])
+  // The poster's QR carries its own sector, so most readers never pick one.
+  const [sector, setSector] = useState(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get('s')
+    return fromUrl || localStorage.getItem(STORE_KEY) || ''
+  })
 
   useEffect(() => {
     if (!isConfigured()) return
     let alive = true
     async function load() {
-      // Only rows an officer has actually published. A missing advisory column
-      // (before the migration runs) simply yields nothing, which is the safe
-      // failure direction for a public page.
       const { data } = await supabase
         .from('alerts')
-        .select('sector, syndrome, advisory, advisory_at')
+        .select('sector, syndrome, advisory')
         .neq('status', 'resolved')
-        .order('ts', { ascending: false })
-      if (alive && data) setAdvisories(data)
+      if (alive && data) setAlerts(data)
     }
     load()
     const t = setInterval(load, 60_000)
     return () => { alive = false; clearInterval(t) }
   }, [])
 
+  function choose(id) {
+    setSector(String(id))
+    try { localStorage.setItem(STORE_KEY, String(id)) } catch { /* private mode */ }
+  }
+
   const sec = FESTIVAL.sectors.find(s => String(s.id) === sector)
-  const mine = sector ? advisories.filter(a => String(a.sector) === sector) : advisories
+  const hit = sec ? alerts.find(a => a.sector === sec.id) : null
+  const issue = hit ? (ISSUE[hit.syndrome] ?? ISSUE.other) : null
+
+  /* First run, no sector known: one screen, one job, big targets. */
+  if (!sec) {
+    return (
+      <div className="pub">
+        <header className="pub-head"><b>Siddhi</b><span>Health information</span></header>
+        <h2 className="pub-ask">Which area are you in?</h2>
+        <div className="pub-pick">
+          {FESTIVAL.sectors.map(s => (
+            <button key={s.id} onClick={() => choose(s.id)}>{s.name}</button>
+          ))}
+        </div>
+        <p className="pub-detail">The poster you scanned usually sets this for you.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="pub">
       <header className="pub-head">
         <b>Siddhi</b>
-        <span>{FESTIVAL.name} · health information</span>
+        <button className="pub-change" onClick={() => choose('')}>{sec.name} ▾</button>
       </header>
 
-      {/* An officer's words, or nothing. Never a raw alert. */}
-      {mine.filter(a => a.advisory).length > 0 ? (
-        mine.filter(a => a.advisory).map((a, i) => (
-          <div key={i} className="pub-notice">
-            <h2>Health advice for your area</h2>
-            <p>{a.advisory}</p>
-            <small>Issued by the festival health office{a.advisory_at ? ` · ${new Date(a.advisory_at).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}` : ''}</small>
-          </div>
-        ))
-      ) : (
-        advisories.length > 0 ? (
-          <div className="pub-notice">
-            <h2>Health teams are active in {advisories.length} {advisories.length === 1 ? 'area' : 'areas'}</h2>
-            <p>
-              Checks are under way as a precaution. Every area below shows what is being
-              looked at and what you can do. All clinics are open as normal.
-            </p>
-          </div>
+      {/* The whole answer, above the fold. */}
+      <div className={issue ? 'pub-hero care' : 'pub-hero clear'}>
+        <span className="pub-hero-status">{issue ? 'Take care here' : 'All clear here'}</span>
+        <h1>{sec.name}</h1>
+        {issue ? (
+          <>
+            <p className="pub-hero-issue">{issue.label}</p>
+            <p className="pub-hero-lang">{issue.hi}<br />{issue.mr}</p>
+            <p className="pub-hero-do">{hit.advisory ?? issue.do}</p>
+          </>
         ) : (
-          <div className="pub-calm">
-            <h2>No health advisory right now</h2>
-            <p>Health teams are monitoring every area. The advice below is worth following anyway.</p>
-          </div>
-        )
-      )}
+          <>
+            <p className="pub-hero-issue">Nothing unusual reported in your area.</p>
+            <p className="pub-hero-lang">आपके क्षेत्र में कुछ असामान्य नहीं<br />तुमच्या भागात काही असामान्य नाही</p>
+          </>
+        )}
+      </div>
 
-      {/* Every sector is listed, not only the affected ones. A list of twelve
-          with two marked reads as information; a list of two reads as a place
-          to get away from — and moving a dense crowd is the real danger here. */}
-      <section className="pub-block">
-        <h3>Every area right now</h3>
-        <div className="pub-areas">
-          {FESTIVAL.sectors.map(s => {
-            const hit = advisories.find(a => a.sector === s.id)
-            const issue = hit ? (ISSUE[hit.syndrome] ?? ISSUE.other) : null
-            return (
-              <div key={s.id} className={issue ? 'pub-area is-flagged' : 'pub-area'}>
-                <div className="pub-area-head">
-                  <b>{s.name}</b>
-                  <span className={issue ? 'pub-pill flagged' : 'pub-pill clear'}>
-                    {issue ? 'take care' : 'all clear'}
-                  </span>
-                </div>
-                {issue && (
-                  <>
-                    <span className="pub-issue">{issue.label}</span>
-                    <span className="pub-lang">{issue.hi} · {issue.mr}</span>
-                    <span className="pub-detail">{hit.advisory ?? issue.doThis}</span>
-                    {s.waterPoints.length > 0 && hit.syndrome === 'gi' && (
-                      <span className="pub-detail"><b>Treated water here:</b> {s.waterPoints.join(', ')}</span>
-                    )}
-                  </>
-                )}
-              </div>
-            )
-          })}
+      {/* Two things people need in a hurry. */}
+      <div className="pub-quick">
+        <div>
+          <span>Treated water here</span>
+          <b>{sec.waterPoints.length ? sec.waterPoints.join(', ') : 'Ask any volunteer'}</b>
         </div>
-        <p className="pub-detail" style={{ marginTop: 'var(--s-3)' }}>
-          Every area has a clinic. Care is free and no documents are needed — you do
-          not need to travel to a different area to be seen.
-        </p>
-      </section>
+        <div>
+          <span>Nearest clinic</span>
+          <b>In this area · free · no documents</b>
+        </div>
+      </div>
 
-      <section className="pub-block">
-        <h3>Stay well</h3>
-        <ul className="pub-list">
-          {ALWAYS.map(item => (
-            <li key={item.en}>
-              <b>{item.en}</b>
-              <span className="pub-lang">{item.hi} · {item.mr}</span>
-              <span className="pub-detail">{item.detail}</span>
+      {/* Everything else folded away. Native details — no JS, works offline. */}
+      <details className="pub-fold">
+        <summary>When to see a doctor</summary>
+        <ul>{SEE_A_DOCTOR.map(x => <li key={x}>{x}</li>)}</ul>
+      </details>
+
+      <details className="pub-fold">
+        <summary>Staying well</summary>
+        <ul>
+          {ALWAYS.map(a => (
+            <li key={a.en}>
+              <b>{a.en}</b>
+              <span className="pub-lang">{a.hi} · {a.mr}</span>
             </li>
           ))}
         </ul>
-      </section>
+      </details>
 
-      <section className="pub-block">
-        <h3>Where you are</h3>
-        <select value={sector} onChange={e => setSector(e.target.value)} aria-label="Choose your sector">
-          <option value="">Choose your sector…</option>
-          {FESTIVAL.sectors.map(s => (
-            <option key={s.id} value={String(s.id)}>Sector {s.id} — {s.name}</option>
-          ))}
-        </select>
-        {sec && (
-          <div className="pub-sector">
-            <p><b>Treated water points:</b> {sec.waterPoints.length ? sec.waterPoints.join(', ') : 'ask any volunteer'}</p>
-            <p><b>Community kitchens:</b> {sec.kitchens.length ? sec.kitchens.join(', ') : 'none in this sector'}</p>
-            <p className="pub-detail">
-              Every sector has a clinic with free ORS and a doctor. Ask any volunteer
-              in a marked vest and they will walk you there.
-            </p>
-          </div>
-        )}
-      </section>
+      <details className="pub-fold">
+        <summary>Other areas</summary>
+        <div className="pub-others">
+          {FESTIVAL.sectors.filter(s => s.id !== sec.id).map(s => {
+            const h = alerts.find(a => a.sector === s.id)
+            return (
+              <button key={s.id} className="pub-other" onClick={() => choose(s.id)}>
+                <span>{s.name}</span>
+                <i className={h ? 'flagged' : 'clear'}>{h ? 'take care' : 'all clear'}</i>
+              </button>
+            )
+          })}
+        </div>
+        <p className="pub-detail">
+          Every area has its own clinic. There is no need to travel to another area to be seen.
+        </p>
+      </details>
 
-      <section className="pub-block pub-urgent">
-        <h3>See a doctor if</h3>
-        <ul>
-          {SEE_A_DOCTOR.map(x => <li key={x}>{x}</li>)}
-        </ul>
-        <p className="pub-detail">Care at every festival clinic is free. You do not need any document.</p>
-      </section>
-
-      <footer className="pub-foot">
-        Nothing you do on this page is recorded, and no account is needed.
-      </footer>
+      <footer className="pub-foot">Nothing here is recorded. No account needed.</footer>
     </div>
   )
 }
