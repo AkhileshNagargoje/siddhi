@@ -49,6 +49,49 @@ const ALWAYS = [
   },
 ]
 
+/* What each kind of alert means for someone standing there, and what they can
+   actually do about it. No case counts anywhere: a number invites comparison
+   between sectors, and comparison is what starts a movement. Every entry ends
+   in an action, because an instruction calms and a warning does not. */
+const ISSUE = {
+  gi: {
+    label: 'Water being checked',
+    hi: 'पानी की जाँच जारी है',
+    mr: 'पाण्याची तपासणी सुरू आहे',
+    doThis: 'Use the treated water points listed below. If anyone has loose motions, start ORS straight away.',
+  },
+  respiratory: {
+    label: 'More coughs and colds than usual',
+    hi: 'खाँसी-ज़ुकाम सामान्य से अधिक',
+    mr: 'नेहमीपेक्षा जास्त खोकला-सर्दी',
+    doThis: 'Cover your mouth when you cough, wash hands often, and keep a little distance from anyone coughing.',
+  },
+  heat: {
+    label: 'Heat affecting people here',
+    hi: 'गर्मी का असर',
+    mr: 'उष्णतेचा त्रास',
+    doThis: 'Drink water regularly even when not thirsty, rest in shade, and watch the elderly closely.',
+  },
+  fever: {
+    label: 'More fever than usual',
+    hi: 'बुखार सामान्य से अधिक',
+    mr: 'नेहमीपेक्षा जास्त ताप',
+    doThis: 'See a clinic if fever lasts more than a day, and keep drinking fluids.',
+  },
+  injury: {
+    label: 'More injuries than usual',
+    hi: 'चोटें सामान्य से अधिक',
+    mr: 'नेहमीपेक्षा जास्त जखमा',
+    doThis: 'Take care underfoot, especially near ghats and in crowds. Any clinic will dress a wound free.',
+  },
+  other: {
+    label: 'Health teams are active here',
+    hi: 'स्वास्थ्य दल सक्रिय',
+    mr: 'आरोग्य पथक कार्यरत',
+    doThis: 'Follow the general advice below and visit any clinic if you feel unwell.',
+  },
+}
+
 const SEE_A_DOCTOR = [
   'Loose motions more than four or five times',
   'Vomiting that will not stop',
@@ -69,10 +112,9 @@ export default function PublicPage() {
       // failure direction for a public page.
       const { data } = await supabase
         .from('alerts')
-        .select('sector, advisory, advisory_at')
-        .not('advisory', 'is', null)
+        .select('sector, syndrome, advisory, advisory_at')
         .neq('status', 'resolved')
-        .order('advisory_at', { ascending: false })
+        .order('ts', { ascending: false })
       if (alive && data) setAdvisories(data)
     }
     load()
@@ -91,8 +133,8 @@ export default function PublicPage() {
       </header>
 
       {/* An officer's words, or nothing. Never a raw alert. */}
-      {mine.length > 0 ? (
-        mine.map((a, i) => (
+      {mine.filter(a => a.advisory).length > 0 ? (
+        mine.filter(a => a.advisory).map((a, i) => (
           <div key={i} className="pub-notice">
             <h2>Health advice for your area</h2>
             <p>{a.advisory}</p>
@@ -100,11 +142,58 @@ export default function PublicPage() {
           </div>
         ))
       ) : (
-        <div className="pub-calm">
-          <h2>No health advisory right now</h2>
-          <p>Health teams are monitoring every sector. The advice below is worth following anyway.</p>
-        </div>
+        advisories.length > 0 ? (
+          <div className="pub-notice">
+            <h2>Health teams are active in {advisories.length} {advisories.length === 1 ? 'area' : 'areas'}</h2>
+            <p>
+              Checks are under way as a precaution. Every area below shows what is being
+              looked at and what you can do. All clinics are open as normal.
+            </p>
+          </div>
+        ) : (
+          <div className="pub-calm">
+            <h2>No health advisory right now</h2>
+            <p>Health teams are monitoring every area. The advice below is worth following anyway.</p>
+          </div>
+        )
       )}
+
+      {/* Every sector is listed, not only the affected ones. A list of twelve
+          with two marked reads as information; a list of two reads as a place
+          to get away from — and moving a dense crowd is the real danger here. */}
+      <section className="pub-block">
+        <h3>Every area right now</h3>
+        <div className="pub-areas">
+          {FESTIVAL.sectors.map(s => {
+            const hit = advisories.find(a => a.sector === s.id)
+            const issue = hit ? (ISSUE[hit.syndrome] ?? ISSUE.other) : null
+            return (
+              <div key={s.id} className={issue ? 'pub-area is-flagged' : 'pub-area'}>
+                <div className="pub-area-head">
+                  <b>{s.name}</b>
+                  <span className={issue ? 'pub-pill flagged' : 'pub-pill clear'}>
+                    {issue ? 'take care' : 'all clear'}
+                  </span>
+                </div>
+                {issue && (
+                  <>
+                    <span className="pub-issue">{issue.label}</span>
+                    <span className="pub-lang">{issue.hi} · {issue.mr}</span>
+                    <span className="pub-detail">{hit.advisory ?? issue.doThis}</span>
+                    {s.waterPoints.length > 0 && hit.syndrome === 'gi' && (
+                      <span className="pub-detail"><b>Treated water here:</b> {s.waterPoints.join(', ')}</span>
+                    )}
+                  </>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <p className="pub-detail" style={{ marginTop: 'var(--s-3)' }}>
+          Every area has a clinic. Care is free and no documents are needed — you do
+          not need to travel to a different area to be seen.
+        </p>
+      </section>
 
       <section className="pub-block">
         <h3>Stay well</h3>

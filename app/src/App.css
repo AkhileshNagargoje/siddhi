@@ -644,3 +644,22 @@
 .pub-urgent ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
 .pub-urgent li { font-size: var(--t-sm); }
 .pub-foot { margin-top: var(--s-5); padding-top: var(--s-4); border-top: 1px solid var(--border); font-size: var(--t-xs); color: var(--ink-3); }
+
+/* ---------- public: per-area status ---------- */
+
+.pub-areas { display: flex; flex-direction: column; gap: var(--s-2); }
+.pub-area {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: var(--s-3) var(--s-4);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.pub-area.is-flagged { border-color: var(--warning); background: var(--warning-wash); }
+.pub-area-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.pub-area-head b { font-size: var(--t-md); }
+.pub-pill {
+  font-size: var(--t-xs); font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; padding: 3px 9px; border-radius: var(--r-pill); white-space: nowrap;
+}
+.pub-pill.clear { background: var(--good-wash); color: var(--good-ink); }
+.pub-pill.flagged { background: var(--warning); color: #4a3600; }
+.pub-issue { font-size: var(--t-sm); font-weight: 500; color: var(--warning-ink); }
