@@ -15,15 +15,12 @@ createRoot(document.getElementById('root')).render(
 
    Escape hatch: open the app with ?nosw to tear it out entirely. If anything
    about caching ever looks wrong five minutes before a demo, that is the fix. */
-if ('serviceWorker' in navigator) {
-  if (new URLSearchParams(location.search).has('nosw')) {
-    navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()))
-    caches.keys().then(ks => ks.forEach(k => caches.delete(k)))
-  } else {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        /* No offline shell. The app still works exactly as before. */
-      })
+/* ?nosw is handled by an inline script in index.html, which runs even when the
+   bundle itself cannot load — see the comment there. */
+if ('serviceWorker' in navigator && location.search.indexOf('nosw') === -1) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* No offline shell. The app still works exactly as before. */
     })
-  }
+  })
 }

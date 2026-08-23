@@ -108,7 +108,13 @@ export default function EntryPage() {
         }
       }
       if (refs.length) {
-        const { error } = await supabase.from('referrals').insert(refs)
+        /* Upsert, not insert — same reasoning as the encounters batch above.
+       A plain multi-row insert is atomic, so a single id left over from a
+       half-delivered attempt rolls the whole batch back with 23505, and the
+       branch below reads 23505 as success and clears the queue. Referrals are
+       the record that a card was handed to a patient, so the loss is silent. */
+    const { error } = await supabase.from('referrals')
+      .upsert(refs, { onConflict: 'id', ignoreDuplicates: true })
         if (!error || error.code === '23505') {
           const sent = new Set(refs.map(r => r.id))
           saveRefs(loadRefs().filter(r => !sent.has(r.id)))

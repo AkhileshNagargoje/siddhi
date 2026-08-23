@@ -20,12 +20,6 @@ const TITLES = {
   '/public': 'Health information · Siddhi',
 }
 
-function ClearChunkRetry() {
-  /* The app rendered, so whatever went wrong is over. Disarm the one-shot. */
-  useEffect(() => { try { sessionStorage.removeItem(RETRIED) } catch { /* private mode */ } }, [])
-  return null
-}
-
 function Title() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -45,17 +39,28 @@ function Title() {
    correct chunk names. The sessionStorage flag makes it strictly once, so a
    genuinely offline user gets the offline shell instead of a reload loop. */
 const RETRIED = 'siddhi_chunk_retry'
+
+/* sessionStorage throws, it does not return null, when storage is denied —
+   Safari Lockdown, "block all cookies", a third-party iframe. An unguarded
+   read on the SUCCESS path would turn a chunk that loaded perfectly into a
+   rejected promise and crash every route into the error boundary. */
+const flag = {
+  get()   { try { return sessionStorage.getItem(RETRIED) } catch { return 'blocked' } },
+  set()   { try { sessionStorage.setItem(RETRIED, '1') } catch { /* no retry available */ } },
+  clear() { try { sessionStorage.removeItem(RETRIED) } catch { /* nothing to clear */ } },
+}
+
 function route(load) {
   return lazy(() =>
     load()
-      .then(m => { sessionStorage.removeItem(RETRIED); return m })
+      .then(m => { flag.clear(); return m })   // disarm only on a REAL success
       .catch(err => {
-        if (!sessionStorage.getItem(RETRIED)) {
-          sessionStorage.setItem(RETRIED, '1')
-          window.location.reload()
-          return new Promise(() => {})    // hold the render until the reload lands
-        }
-        throw err
+        /* If storage is blocked, get() returns 'blocked' — truthy — so we
+           rethrow instead of reloading. A visible error beats a silent loop. */
+        if (flag.get()) throw err
+        flag.set()
+        window.location.reload()
+        return new Promise(() => {})    // hold the render until the reload lands
       })
   )
 }
@@ -154,7 +159,6 @@ export default function App() {
       {/* Deliberately plain: a spinner that appears for 80ms reads as jank.
           A quiet line that only shows if the chunk is genuinely slow is calmer,
           which matters most on exactly the connection this is built for. */}
-      <ClearChunkRetry />
       <Title />
       <Suspense fallback={<div className="route-wait">Loading…</div>}>
       <Routes>

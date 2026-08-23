@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FESTIVAL } from '../config/festival'
-import { supabase, isConfigured } from '../lib/supabase'
+import { supabase, isConfigured, resolveAlerts } from '../lib/supabase'
 
 /* The presenter's console.
  *
@@ -85,9 +85,10 @@ export default function DemoPage() {
     if (busy) return
     setBusy('reset')
     try {
-      const { data, error } = await supabase.from('alerts')
-        .update({ status: 'resolved', advisory: null, advisory_at: null, advisory_by: null })
-        .neq('status', 'resolved').select('id')
+      const { data, error } = await resolveAlerts(
+        patch => supabase.from('alerts').update(patch).neq('status', 'resolved').select('id'),
+        { advisory: null, advisory_at: null, advisory_by: null },
+      )
       if (error) throw new Error(error.message)
       const now = new Date().toISOString()
       await supabase.from('tasks')

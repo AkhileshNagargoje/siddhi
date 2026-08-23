@@ -41,6 +41,18 @@ self.addEventListener('activate', e => {
   )
 })
 
+/* Content-hashed filenames change every build, so nothing here is ever
+   overwritten — one cache name would otherwise accumulate every build a phone
+   has ever visited until the origin hits its quota, at which point put() starts
+   failing silently and offline boot degrades with no signal. Keys come back in
+   insertion order, so dropping from the front discards the oldest builds. */
+const MAX_ASSETS = 80
+async function trim(cache) {
+  const keys = await cache.keys()
+  if (keys.length <= MAX_ASSETS) return
+  for (const k of keys.slice(0, keys.length - MAX_ASSETS)) await cache.delete(k)
+}
+
 self.addEventListener('fetch', e => {
   const req = e.request
   if (req.method !== 'GET') return
@@ -63,7 +75,7 @@ self.addEventListener('fetch', e => {
         const type = res.headers.get('Content-Type') || ''
         if (res.ok && !type.includes('text/html')) {
           const copy = res.clone()
-          caches.open(ASSETS).then(c => c.put(req, copy))
+          caches.open(ASSETS).then(c => c.put(req, copy).then(() => trim(c)))
         }
         return res
       }))
@@ -76,7 +88,13 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       fetch(req)
         .then(res => {
-          if (res.ok) { const copy = res.clone(); caches.open(SHELL).then(c => c.put('/', copy)) }
+          /* A redirected response cannot be replayed to a navigation later:
+             caches.match() hands it back and the browser throws TypeError, so
+             the offline fallback dies exactly when it is needed. */
+          if (res.ok && !res.redirected) {
+            const copy = res.clone()
+            caches.open(SHELL).then(c => c.put('/', copy))
+          }
           return res
         })
         .catch(() => caches.match('/').then(hit => hit || new Response(

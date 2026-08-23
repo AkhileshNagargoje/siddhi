@@ -118,11 +118,11 @@ Latest run — full output in [`worker/eval/RESULTS.txt`](worker/eval/RESULTS.tx
 
 | outbreak | caught | median lag | cases when we alert | cases if unaided |
 |---|---|---|---|---|
-| tiny (~1 case/hour) | 99% | 16.0h | 9 | 26 |
+| tiny (~1 case/hour) | 98% | 15.0h | 9 | 26 |
 | small, self-limiting | 100% | 9.0h | 8 | 48 |
-| slow (doubles every 6h) | 100% | 10.0h | 9 | 39 |
+| slow (doubles every 6h) | 100% | 10.0h | 9 | 41 |
 | typical (doubles every 4h) | 100% | 7.0h | 8 | 33 |
-| fast (doubles every 2.5h) | 100% | 5.0h | 8 | 27 |
+| fast (doubles every 2.5h) | 100% | 5.0h | 8 | 28 |
 
 **A typical waterborne outbreak is caught a median of 7 hours after the first
 case, at 8 cases — against 33 cases before the cluster would be obvious to
@@ -132,7 +132,7 @@ False alarms on festivals where nothing is wrong, split by what they cost:
 
 | tier | what it does | per festival-day |
 |---|---|---|
-| act | dispatches a crew | **1.4** |
+| act | dispatches a crew | **1.5** |
 | watch | appears on the dashboard, nobody is sent | 5.4 |
 
 The harness also sweeps the threshold, so the trade is explicit rather than

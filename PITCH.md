@@ -5,7 +5,12 @@ Seven minutes. Every number here is verified; sources at the bottom.
 **Setup before you stand up**
 - Laptop: three tabs — `/replay`, `/dashboard`, `/dashboard` (spare). Hard-refresh each.
 - Phone: `/entry`, signed in with PIN 1111, browser storage cleared so it reads "0 today".
-- Run `db/cleanup.sql`. Check the dashboard says **0 open alerts**.
+- **Once, ever:** run `db/resolved-at.sql` in the Supabase SQL editor. Without it,
+  clearing the board does not stick — every alert re-fires within five minutes,
+  because the engine's cooldown has nothing to anchor to. Verified: cleared 7,
+  rescanned, got the same 7 straight back.
+- Open `/demo` and press **Clear the board**. Check the dashboard says **0 open alerts**.
+- Do **not** click a sector tile on stage — the detail panel is a teammate task and still renders nothing.
 - Phone on the projector too if the venue allows. If not, hold it up and narrate.
 
 ---
@@ -33,7 +38,7 @@ Seven minutes. Every number here is verified; sources at the bottom.
 Open `/replay`, press **Play**. Say only these three lines, timed to the screen:
 
 - *(early, tiles showing 3 and 2)* — "Three cases at one post. Two at another. Every doctor is seeing a normal handful."
-- *(the alert fires)* — "There. Thirty-six against eight expected. The software saw it, not a person."
+- *(the alert fires)* — "There. Fourteen against four expected. The software saw it, not a person."
 - *(resolved)* — "A crew found a cracked pipe beside a drain and chlorinated it. Ninety minutes."
 
 **Do not oversell it while it plays.** The silence is doing work.
@@ -80,7 +85,7 @@ Trigger an outbreak (`/demo`, or ask a teammate to fire it), then click the new 
 
 > Now — this alert is corroborated.
 >
-> Pharmacy stalls tally what they sell. Rehydration sales in that sector are three and a half times normal. People self-medicate before they consult, so this signal *leads* clinic cases — and it catches the people who never reach a clinic at all, which is our biggest blind spot.
+> Pharmacy stalls tally what they sell. Rehydration sales in that sector are several times normal — read the actual figure off the screen. People self-medicate before they consult, so this signal *leads* clinic cases — and it catches the people who never reach a clinic at all, which is our biggest blind spot.
 >
 > Different reporters. Different act — a purchase, not a consultation. Different failure modes. **Two independent signals agreeing is evidence. One signal shouting twice isn't.**
 
@@ -112,7 +117,7 @@ Hold up the printed referral card.
 >
 > False alarms: **1.5 a day** dispatch a crew. Five a day appear on the dashboard and send nobody. We report those separately because they cost completely different things.
 >
-> And we got to check the model against reality: the engine ran unattended for a week and produced 6.4 alerts a day. The simulation predicted 6.8.
+> And the trade is explicit rather than asserted — the harness sweeps the threshold, so we can show what a different one would have cost.
 
 ---
 
@@ -134,7 +139,7 @@ Hold up the printed referral card.
 > A dashboard is where this stops for everyone else. Ours turns every alert into an assigned job a named crew has to close — which is why we can measure time-to-response at all. That's the whole difference.
 
 **"Why no AI?"**
-> Deliberately. A district health officer will act on "thirty-six against eight expected, three sigma" and will ignore a black box. Explainability is an adoption feature here, not a limitation. And honestly — twelve sectors and six syndromes is seventy-two series with no labelled outbreak history. There's nothing for a model to learn that arithmetic doesn't already give you.
+> Deliberately. A district health officer will act on "fourteen against four expected, four sigma" and will ignore a black box. Explainability is an adoption feature here, not a limitation. And honestly — twelve sectors and six syndromes is seventy-two series with no labelled outbreak history. There's nothing for a model to learn that arithmetic doesn't already give you.
 
 **"Your data is fake."**
 > Yes — say it first. It's synthetic, generated through the same API a real tablet writes to, so the detector can't distinguish it. That's what let us measure detection performance across a thousand festivals instead of asserting it.

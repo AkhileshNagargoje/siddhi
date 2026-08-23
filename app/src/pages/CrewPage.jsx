@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase, isConfigured } from '../lib/supabase'
+import { supabase, isConfigured, resolveAlerts } from '../lib/supabase'
 import { FESTIVAL, USERS } from '../config/festival'
 import { SYNDROME_LABELS } from '../config/medical'
 import { StatusBadge } from '../components/viz'
@@ -60,7 +60,8 @@ export default function CrewPage() {
 
   async function resolve(task) {
     await supabase.from('tasks').update({ resolved_at: new Date().toISOString(), outcome, note }).eq('id', task.id)
-    await supabase.from('alerts').update({ status: 'resolved' }).eq('id', task.alert_id)
+    await resolveAlerts(patch =>
+      supabase.from('alerts').update(patch).eq('id', task.alert_id))
     setResolving(null); setNote(''); setOutcome('fixed')
   }
 

@@ -11,6 +11,24 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Emergency escape hatch, inline and BEFORE the bundle.
+         This used to live in main.jsx — which is itself a file the service
+         worker serves, so in the one emergency it exists for (the caches are
+         what's broken, the bundle never executes) it could not run. It also
+         has to reload: unregister() does not stop the already-controlling
+         worker from serving the current page. -->
+    <script>
+      if (location.search.indexOf('nosw') > -1 && 'serviceWorker' in navigator) {
+        Promise.all([
+          navigator.serviceWorker.getRegistrations().then(function (rs) {
+            return Promise.all(rs.map(function (r) { return r.unregister() }))
+          }),
+          self.caches ? caches.keys().then(function (ks) {
+            return Promise.all(ks.map(function (k) { return caches.delete(k) }))
+          }) : null,
+        ]).then(function () { location.replace(location.pathname) })
+      }
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

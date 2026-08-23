@@ -153,7 +153,7 @@ Three guards matter more than the maths:
 
 **Two levels.** "Watch" only shows on screen. "Act" sends a team. Sending a team costs something, and a wasted trip is how you lose a crew's trust forever.
 
-**Every alert shows its own maths.** Not to be polite — because an officer will act on "36 cases, normally 8" and will ignore a computer that just says *trust me*.
+**Every alert shows its own maths.** Not to be polite — because an officer will act on "14 cases, normally 4" and will ignore a computer that just says *trust me*.
 
 **Why no AI?** Honest answer: we have 12 sectors and 6 illness types. There is nothing an AI could learn that simple counting doesn't already show. And an alert nobody can question is an alert nobody uses.
 
