@@ -327,7 +327,16 @@ async function fetchRecent(env, sinceIso) {
   }
 }
 
-async function scan(env) {
+/* `bypass` is a "sector|syndrome" key the cooldown must ignore for this scan.
+   Only the /outbreak injector sets it: that endpoint is an operator explicitly
+   asserting "there is an outbreak here, now", which is exactly the statement
+   the cooldown is not entitled to overrule.
+
+   Without this the demo sabotaged itself. The pre-demo checklist says clear the
+   board, which puts every recently-alerting sector into a six-hour cooldown —
+   so firing the demo outbreak two minutes later raised nothing at all, on
+   stage. Verified: cleared, injected 28 cases into sector 5, got zero alerts. */
+async function scan(env, bypass = null) {
   const now = Date.now()
   // need 3 days back so the phase-matched baseline has its comparison windows
   const since = new Date(now - (72 + WINDOW_H) * 3600_000).toISOString()
@@ -388,6 +397,7 @@ async function scan(env) {
     )
     for (const a of closedAlerts) inCooldown.add(`${a.sector}|${a.syndrome}`)
   }
+  if (bypass) inCooldown.delete(bypass)
   const baselines = []
   const fired = []
 
@@ -503,7 +513,8 @@ export default {
         const raw = Math.floor(Number(url.searchParams.get('n') ?? 25))
         const n = Number.isFinite(raw) ? Math.min(Math.max(raw, 1), 100) : 25
         const inserted = await injectOutbreak(env, sector, n)
-        const result = await scan(env)
+        // injectOutbreak writes gi cases, so that is the pair to un-suppress.
+        const result = await scan(env, `${sector}|gi`)
         return json({ injected: inserted, sector, scan: result })
       }
 
