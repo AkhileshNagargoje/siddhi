@@ -46,6 +46,8 @@ Plus `/replay` — a scripted scenario running the live detection rule, on a com
 
 **Treatment quality** — a non-blocking prompt when an antibiotic is chosen for a diagnosis that usually doesn't need one, plus a per-clinic prescribing panel against the festival median.
 
+**Corroborate** — a second, independent stream. Pharmacy stalls tally rehydration sales, scored by the same function against the same phase-matched baseline. People self-medicate before they consult, so it leads clinic cases and catches those who never reach a clinic at all. A clinical alert is shown as corroborated or not: two signals with different reporters and different failure modes agreeing is evidence in a way one signal repeated is not — and *not* corroborated is useful too, since clinic cases rising without a rehydration spike is a hint that the cluster may not be waterborne.
+
 **Continuity** — high BP / high sugar / TB signs auto-flag and print a QR referral card. The QR carries the referral itself rather than a lookup key, so a village health centre can read it with no network and no app.
 
 ## Stack

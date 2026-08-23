@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const [encounters, setEncounters] = useState([])
   const [alerts, setAlerts] = useState([])
   const [tasks, setTasks] = useState([])
+  const [pharmacy, setPharmacy] = useState([])
   const [selected, setSelected] = useState(null)
   const [unit, setUnit] = useState(RESPONSE_UNITS[0].id)
   const [pickedSector, setPickedSector] = useState(null) // sector tile clicked → detail panel (TASK 4)
@@ -55,6 +56,11 @@ export default function DashboardPage() {
       setEncounters(enc)
       if (al.data) setAlerts(al.data)
       if (tk.data) setTasks(tk.data)
+      // Second, independent signal. Failure here must never blank the
+      // dashboard, so it is fetched separately and defaults to empty.
+      supabase.from('pharmacy_signals').select('*').then(r => {
+        if (alive && r.data) setPharmacy(r.data)
+      })
     }
     load()
 
@@ -213,6 +219,11 @@ export default function DashboardPage() {
   }
 
   const selSector = sel ? FESTIVAL.sectors.find(s => s.id === sel.sector) : null
+  // Only meaningful for diarrhoeal alerts — rehydration sales say nothing
+  // about a respiratory or injury cluster.
+  const selPharmacy = sel && sel.syndrome === 'gi'
+    ? pharmacy.find(p => p.sector === sel.sector) ?? null
+    : null
   const selCases = sel ? recent.filter(e => e.sector === sel.sector && e.syndrome === sel.syndrome) : []
   const selClinics = [...new Set(selCases.map(c => c.clinic_id))]
   const selTasks = sel ? tasks.filter(t => t.alert_id === sel.id) : []
@@ -332,6 +343,37 @@ export default function DashboardPage() {
                     doctor saw more than a normal handful.
                   </p>
                 </div>
+
+                {/* An independent stream: what people bought before they came in.
+                    Agreement between two signals with different reporters and
+                    different failure modes is evidence; one signal repeated is not. */}
+                {selPharmacy && (
+                  <div>
+                    <h4>Second signal — pharmacy</h4>
+                    {selPharmacy.elevated ? (
+                      <>
+                        <StatusBadge status="critical" label="corroborated" />
+                        <p style={{ marginTop: 'var(--s-2)' }}>
+                          Rehydration sales in this sector are{' '}
+                          <b>{(selPharmacy.observed / Math.max(selPharmacy.expected, 1)).toFixed(1)}x normal</b>{' '}
+                          — {selPharmacy.observed} units against {Number(selPharmacy.expected).toFixed(0)} expected
+                          ({Number(selPharmacy.score).toFixed(1)}σ). People were treating themselves
+                          before they reached a clinic.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <StatusBadge status="warning" label="not corroborated" />
+                        <p style={{ marginTop: 'var(--s-2)' }}>
+                          Rehydration sales here are normal ({selPharmacy.observed} units against{' '}
+                          {Number(selPharmacy.expected).toFixed(0)} expected). Clinic cases are up
+                          without a matching rise in self-treatment — worth confirming this is
+                          waterborne before chasing a water point.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {selSector && (
                   <div>

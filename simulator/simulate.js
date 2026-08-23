@@ -167,9 +167,60 @@ async function reset() {
   console.log('Done.')
 }
 
+
+/* Pharmacy history. The signal compares the last 6h against the same 6h slot
+   on the previous 3 days, so with an empty table every baseline is zero and z
+   collapses to the raw count — a normal busy afternoon would read as a spike.
+   This lays down the history that makes "normal" mean something. */
+
+const STALLS = [
+  { id: 'P01', sector: 1 }, { id: 'P02', sector: 1 }, { id: 'P03', sector: 2 },
+  { id: 'P04', sector: 3 }, { id: 'P05', sector: 3 }, { id: 'P06', sector: 4 },
+  { id: 'P07', sector: 5 }, { id: 'P08', sector: 5 }, { id: 'P09', sector: 6 },
+  { id: 'P10', sector: 7 }, { id: 'P11', sector: 8 }, { id: 'P12', sector: 8 },
+  { id: 'P13', sector: 9 }, { id: 'P14', sector: 10 }, { id: 'P15', sector: 11 },
+  { id: 'P16', sector: 11 }, { id: 'P17', sector: 12 },
+]
+const REHYDRATION = ['ors', 'zinc', 'antidiarrheal']
+const OTHER_ITEMS = ['paracetamol', 'orsyp']
+const PHARM_PEAK_PER_STALL_HOUR = 9
+
+async function pharmacyBackfill() {
+  console.log('Backfilling 84h of pharmacy sales...')
+  const rows = []
+  const now = Date.now()
+  for (let h = 84; h >= 1; h--) {
+    const hourStart = new Date(now - h * 3600_000)
+    const f = hourFactor(hourStart)
+    for (const stall of STALLS) {
+      const n = Math.round(PHARM_PEAK_PER_STALL_HOUR * f * (0.6 + Math.random() * 0.8))
+      for (let i = 0; i < n; i++) {
+        const rehydration = Math.random() < 0.45
+        rows.push({
+          id: crypto.randomUUID(),
+          ts: new Date(hourStart.getTime() + Math.random() * 3600_000).toISOString(),
+          sector: stall.sector,
+          stall_id: stall.id,
+          item: rehydration
+            ? pick(REHYDRATION)
+            : pick(OTHER_ITEMS),
+          qty: 1 + Math.floor(Math.random() * 3),
+          simulated: true,
+        })
+      }
+    }
+  }
+  for (let i = 0; i < rows.length; i += 500) {
+    const { error } = await supabase.from('pharmacy_sales').insert(rows.slice(i, i + 500))
+    if (error) { console.error('insert error:', error.message); process.exit(1) }
+  }
+  console.log(`Inserted ${rows.length} pharmacy sales over 84h.`)
+}
+
 const cmd = process.argv[2]
 if (cmd === 'backfill') await backfill()
 else if (cmd === 'live') await live()
 else if (cmd === 'outbreak') await outbreak(process.argv[3] ?? 5)
+else if (cmd === 'pharmacy') await pharmacyBackfill()
 else if (cmd === 'reset') await reset()
-else console.log('Usage: node simulate.js backfill | live | outbreak <sector> | reset')
+else console.log('Usage: node simulate.js backfill | pharmacy | live | outbreak <sector> | reset')
