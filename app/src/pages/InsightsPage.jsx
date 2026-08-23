@@ -129,6 +129,68 @@ function ShareBar({ rows, total }) {
   )
 }
 
+/* Pie chart.
+ *
+ * Requested explicitly, so it is here. Built to be the most readable version of
+ * the form rather than the default one, because the things that make pies hard
+ * to read are mostly fixable:
+ *
+ *   - slices ordered largest first, clockwise from 12 o'clock, so rank is
+ *     positional and the reader is not comparing angles across the circle
+ *   - labels OUTSIDE the arc in ordinary ink, not white text on the fill —
+ *     which sidesteps the contrast problem entirely
+ *   - a 2px surface-coloured gap between slices, so adjacent hues never touch
+ *   - a legend carrying the exact figure, since an angle cannot be read to a
+ *     number and should not be guessed at
+ *
+ * The stacked bar beneath it shows the same data on a shared baseline. Keeping
+ * both is deliberate: the pie gives the immediate impression of "one thing
+ * dominates", the bar is what you use to compare the small slices to each other.
+ */
+function PieChart({ rows, total, size = 210 }) {
+  const r = size / 2 - 26
+  const cx = size / 2, cy = size / 2
+  let angle = -Math.PI / 2          // start at 12 o'clock
+  const slices = rows.map(row => {
+    const frac = total ? row.n / total : 0
+    const start = angle
+    const end = angle + frac * Math.PI * 2
+    angle = end
+    const mid = (start + end) / 2
+    const large = end - start > Math.PI ? 1 : 0
+    const p = (ang, rad) => [cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad]
+    const [x1, y1] = p(start, r), [x2, y2] = p(end, r)
+    // A full-circle single category cannot be drawn as an arc — draw a disc.
+    const d = frac >= 0.999
+      ? `M${cx} ${cy - r} A${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r} Z`
+      : `M${cx} ${cy} L${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`
+    const [lx, ly] = p(mid, r + 14)
+    return { ...row, d, frac, lx, ly, mid }
+  })
+
+  return (
+    <div className="pie-wrap">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="pie"
+           role="img"
+           aria-label={`Case mix: ${rows.map(x => `${x.label} ${pct(x.n, total).toFixed(0)}%`).join(', ')}`}>
+        {slices.map(sl => (
+          <path key={sl.key} d={sl.d} fill={sl.hue}
+                stroke="var(--surface-1)" strokeWidth="2" strokeLinejoin="round">
+            <title>{`${sl.label} — ${fmt(sl.n)} (${(sl.frac * 100).toFixed(1)}%)`}</title>
+          </path>
+        ))}
+        {slices.filter(sl => sl.frac >= 0.07).map(sl => (
+          <text key={sl.key} x={sl.lx} y={sl.ly}
+                textAnchor={Math.cos(sl.mid) > 0.15 ? 'start' : Math.cos(sl.mid) < -0.15 ? 'end' : 'middle'}
+                dominantBaseline="middle" className="pie-label">
+            {(sl.frac * 100).toFixed(0)}%
+          </text>
+        ))}
+      </svg>
+    </div>
+  )
+}
+
 /* A single ratio against a reference. Explicitly not a two-slice pie. */
 function Meter({ value, reference, label, hint }) {
   const v = Math.min(value, 100)
@@ -306,11 +368,17 @@ export default function InsightsPage() {
                 <h3>What the festival is made of</h3>
                 <span className="chart-sub">share of all clinical cases</span>
               </div>
-              <ShareBar rows={a.synRows} total={a.total} />
+              <div className="mix">
+                <PieChart rows={a.synRows} total={a.total} />
+                <div className="mix-bar">
+                  <ShareBar rows={a.synRows} total={a.total} />
+                </div>
+              </div>
               <p className="ins-note">
-                A stacked bar rather than a pie: every segment shares one baseline,
-                so the reader compares lengths instead of estimating angles — and
-                each share is printed rather than inferred.
+                Two views of the same numbers on purpose. The pie shows at a glance
+                that one illness dominates; the bar below shares a single baseline,
+                which is what you want when comparing the smaller slices to each
+                other. Exact figures are in the legend and in the table view.
               </p>
             </section>
 
