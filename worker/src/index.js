@@ -347,7 +347,12 @@ async function scan(env) {
   // Matching on status=open alone meant that dispatching a crew (open ->
   // assigned) hid the alert from the next scan, which then raised a duplicate
   // for the same sector and syndrome every five minutes until it was resolved.
-  const openAlerts = await sbGet(env, 'alerts?select=id,sector,syndrome,observed&status=neq.resolved')
+  /* `status=neq.resolved` is NULL-unsafe: PostgREST emits SQL <>, so a row with
+     a NULL status is invisible to this dedup check and re-fires every five
+     minutes forever. `or=(status.is.null,status.neq.resolved)` catches both.
+     The explicit limit stops Supabase's default max-rows silently truncating
+     the dedup set on a busy festival, which would also cause duplicates. */
+  const openAlerts = await sbGet(env, 'alerts?select=id,sector,syndrome,observed,tier&or=(status.is.null,status.neq.resolved)&limit=5000')
 
   // Cooldown after a crew closes an alert. The cases that triggered it are
   // still inside the 6-hour window, so without this the very next scan raises
@@ -362,7 +367,19 @@ async function scan(env) {
   // slower the response.
   const cooldownFrom = new Date(now - WINDOW_H * 3600_000).toISOString()
   const closedTasks = await sbGet(env, `tasks?select=alert_id&resolved_at=gte.${cooldownFrom}`)
-  const closedIds = [...new Set(closedTasks.map(t => t.alert_id).filter(Boolean))]
+  /* A task only exists if the alert was DISPATCHED. An alert closed any other
+     way — dismissed, bulk-cleared before a demo — left nothing to anchor the
+     cooldown to, so the very next scan raised it again seconds later. Observed
+     live: resolved 02:14, re-fired 02:15. Fall back to alerts.resolved_at when
+     the column exists, and tolerate its absence so this deploy does not depend
+     on the migration having been run. */
+  let closedIds = [...new Set(closedTasks.map(t => t.alert_id).filter(Boolean))]
+  try {
+    const closedDirect = await sbGet(env, `alerts?select=id&resolved_at=gte.${cooldownFrom}`)
+    closedIds = [...new Set([...closedIds, ...closedDirect.map(a => a.id)])]
+  } catch {
+    /* alerts.resolved_at not migrated yet — task-anchored cooldown still applies. */
+  }
   const inCooldown = new Set()
   if (closedIds.length) {
     const closedAlerts = await sbGet(
@@ -388,7 +405,11 @@ async function scan(env) {
       if (!existing && inCooldown.has(`${sector}|${syndrome}`)) continue
       if (tier) {
         if (existing) {
-          if (observed !== existing.observed) {
+          /* Also patch when the TIER moved. Gating purely on the count meant a
+             live alert whose 6h count was steady but whose baseline decayed
+             would cross into act and never be written back: the dashboard kept
+             showing watch and no crew was ever dispatched. */
+          if (observed !== existing.observed || tier !== existing.tier) {
             await sbPatch(env, 'alerts', `id=eq.${existing.id}`,
               { observed, expected: Number(mean.toFixed(2)), score: Number(z.toFixed(2)), tier })
           }

@@ -103,17 +103,31 @@ alter table alerts enable row level security;
 alter table tasks enable row level security;
 alter table referrals enable row level security;
 
+-- SELECT + INSERT + UPDATE only. Deliberately NOT `for all`, which includes
+-- DELETE: this file used to grant it, so re-running setup.sql after harden.sql
+-- ("let me just re-seed the clinics") silently handed the public key the
+-- ability to erase the whole demo. The grants here now match harden.sql, so
+-- the two files can be run in any order, any number of times.
 do $$
 declare t text;
 begin
   foreach t in array array['clinics','encounters','baselines','alerts','tasks','referrals'] loop
     execute format('drop policy if exists demo_all on %I', t);
-    execute format('create policy demo_all on %I for all to anon, authenticated using (true) with check (true)', t);
+    execute format('create policy demo_read on %I for select to anon, authenticated using (true)', t);
+    execute format('create policy demo_write on %I for insert to anon, authenticated with check (true)', t);
+    execute format('create policy demo_edit on %I for update to anon, authenticated using (true) with check (true)', t);
   end loop;
+exception when duplicate_object then null;
 end $$;
 
 -- 4. Realtime ----------------------------------------------------
 
-alter publication supabase_realtime add table encounters;
-alter publication supabase_realtime add table alerts;
-alter publication supabase_realtime add table tasks;
+-- Wrapped: re-adding a table already in the publication raises duplicate_object
+-- and prints a red error that makes a perfectly good run look failed.
+do $$
+begin
+  alter publication supabase_realtime add table encounters;
+  alter publication supabase_realtime add table alerts;
+  alter publication supabase_realtime add table tasks;
+exception when duplicate_object then null;
+end $$;

@@ -10,10 +10,22 @@
 --   2025 Maha Kumbh had a fatal crush. Panic also floods clinics with the
 --   worried well, which is precisely when you need capacity for the sick.
 --
---   So nothing reaches the public automatically. An officer publishes, in
---   words they approve, and the public page carries ADVICE rather than
---   alarm: where to find safe water, what to watch for, when to seek help.
---   Detection stays internal; only the instruction goes out.
+--   What the public page actually does, stated precisely, because an earlier
+--   version of this comment claimed more than the code delivers:
+--
+--     - An open alert DOES automatically flip its sector to "take care here"
+--       and name the syndrome in three languages. That is deliberate. A page
+--       that hid which areas are affected would be useless to someone trying
+--       to take precautions, and people notice illness around them anyway.
+--     - What never goes out automatically is a NUMBER. No case counts, no
+--       severity score, no ranking between areas -- a number invites
+--       comparison, and comparison moves a crowd.
+--     - Every status ends in an instruction, and the page repeats that every
+--       area has its own free clinic, so nobody concludes they must travel.
+--     - This column overrides the closing advice with wording an officer
+--       approved. It is a UI convention, not a database guarantee: with no
+--       auth, nothing at this layer distinguishes an officer's write from
+--       anyone else's.
 --
 --   This mirrors how real health departments work: surveillance is internal,
 --   public communication is deliberate, attributed and calm.
