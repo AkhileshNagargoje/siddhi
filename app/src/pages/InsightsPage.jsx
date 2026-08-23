@@ -575,14 +575,9 @@ export const Insights = memo(function Insights() {
               <span className="tile-hint">last {hours}h · excludes screening</span>
             </div>
             <div className="tile">
-              <span className="tile-label">Sectors reporting</span>
-              <strong className="tile-value">{a.sectorsReporting}<small> / 12</small></strong>
-              <span className="tile-hint">silence is not calm</span>
-            </div>
-            <div className="tile">
-              <span className="tile-label">Severe</span>
-              <strong className="tile-value">{a.severeRate.toFixed(0)}%</strong>
-              <span className="tile-hint">of clinical cases</span>
+              <span className="tile-label">Distinct diagnoses</span>
+              <strong className="tile-value">{a.diagRows.length}</strong>
+              <span className="tile-hint">in this range</span>
             </div>
             <div className="tile">
               <span className="tile-label">Screening visits</span>
@@ -620,15 +615,6 @@ export const Insights = memo(function Insights() {
                 Hover, focus or click any slice, segment or bar for a breakdown.
               </p>
               {drill('Syndrome')}
-            </section>
-
-            <section className="panel">
-              <div className="chart-head">
-                <h3>Busiest sectors</h3>
-                <span className="chart-sub">ranked by case count</span>
-              </div>
-              <RankedBars rows={a.sectorRows} total={a.total} mark={marker('Sector')} />
-              {drill('Sector')}
             </section>
 
             <section className="panel">

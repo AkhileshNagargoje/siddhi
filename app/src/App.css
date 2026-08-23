@@ -1028,3 +1028,24 @@ button.share-item.is-picked { background: var(--surface-2); outline: 1px solid v
 }
 @media (pointer: coarse) { .drill-head button { min-height: 44px; } }
 .drill .rd { padding: var(--s-3) 0 0; background: none; }
+
+/* ---- "what's driving it" (live board) ---- */
+.driving { display: flex; flex-direction: column; gap: 7px; }
+.dr-row {
+  display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.7fr) auto 74px;
+  align-items: center; gap: var(--s-2); font-size: var(--t-sm); min-width: 0;
+}
+.dr-label { color: var(--ink-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dr-track { background: var(--surface-sunk); border-radius: var(--r-sm); height: 14px; overflow: hidden; }
+.dr-track i { display: block; height: 100%; background: var(--series-1); border-radius: 0 4px 4px 0; }
+.dr-n { font-variant-numeric: tabular-nums; color: var(--ink-1); }
+/* Direction is never colour alone — the glyph and the word both carry it. */
+.dr-dir { display: inline-flex; align-items: center; gap: 4px; font-size: var(--t-xs); }
+.dr-dir span { font-size: 9px; }
+.dr-rising { color: var(--critical-ink); }
+.dr-easing { color: var(--good-ink); }
+.dr-steady { color: var(--ink-3); }
+@media (max-width: 430px) {
+  .dr-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; }
+  .dr-dir { display: none; }
+}

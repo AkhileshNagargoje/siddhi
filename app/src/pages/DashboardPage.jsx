@@ -182,6 +182,32 @@ export default function DashboardPage() {
 
   /* Live props for the teammate-built components. Data is computed here so
      the components stay pure display (TEAM-TASKS: "fetch nothing"). */
+  /* What is actually driving the current load, and which way each part is
+     moving. Six hours split in half is a crude direction, deliberately: this is
+     a glance-level readout during an incident, not the analysis tab. */
+  const driving = useMemo(() => {
+    if (!recent.length) return []
+    const half = Date.now() - 3 * 3600_000
+    const m = new Map()
+    for (const e of recent) {
+      if (e.syndrome === 'screening') continue
+      if (!m.has(e.syndrome)) m.set(e.syndrome, { n: 0, early: 0, late: 0 })
+      const c = m.get(e.syndrome)
+      c.n++
+      if (new Date(e.ts).getTime() >= half) c.late++; else c.early++
+    }
+    const total = [...m.values()].reduce((x, c) => x + c.n, 0)
+    return [...m.entries()]
+      .sort((a, b) => b[1].n - a[1].n)
+      .map(([syn, c]) => ({
+        syndrome: syn,
+        label: SYNDROME_LABELS[syn] ?? syn,
+        n: c.n,
+        share: total ? (c.n / total) * 100 : 0,
+        dir: c.late > c.early * 1.35 ? 'rising' : c.late < c.early * 0.65 ? 'easing' : 'steady',
+      }))
+  }, [recent])
+
   const ageData = useMemo(() => {
     const c = new Map(AGE_BANDS.map(b => [b, 0]))
     for (const e of recent) c.set(e.age_band, (c.get(e.age_band) ?? 0) + 1)
@@ -344,6 +370,32 @@ export default function DashboardPage() {
             title={sel ? `Sector ${sel.sector} — ${SYNDROME_LABELS[sel.syndrome] ?? sel.syndrome}` : 'All cases'}
             subtitle={sel ? 'cases per hour vs expected' : 'cases per hour, last 24 hours'}
           />
+          {/* Directly under the curve, because it answers the question the
+              curve raises: the line is going up — up with WHAT? */}
+          {driving.length > 0 && (
+            <div className="panel">
+              <div className="chart-head">
+                <h3>What's driving it</h3>
+                <span className="chart-sub">last 6 hours · share and direction</span>
+              </div>
+              <div className="driving">
+                {driving.map(d => (
+                  <div className="dr-row" key={d.syndrome}>
+                    <span className="dr-label">{d.label}</span>
+                    <span className="dr-track">
+                      <i style={{ width: `${Math.max(d.share, 1.5)}%` }} />
+                    </span>
+                    <b className="dr-n">{d.n}</b>
+                    <span className={`dr-dir dr-${d.dir}`}>
+                      <span aria-hidden="true">{d.dir === 'rising' ? '▲' : d.dir === 'easing' ? '▼' : '—'}</span>
+                      {d.dir}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <SectorGrid
             sectors={FESTIVAL.sectors}
             counts={bySector}
