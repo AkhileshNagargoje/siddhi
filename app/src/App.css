@@ -963,3 +963,57 @@
 }
 /* Inside the detail there is no rank number or share column. */
 .rd-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr) auto; }
+
+/* ---- hover layer ---- */
+.tip {
+  position: fixed; z-index: 200; pointer-events: none;
+  display: grid; grid-template-columns: auto 1fr; align-items: baseline;
+  gap: 2px var(--s-2); max-width: 190px;
+  padding: 7px 10px; border-radius: var(--r-md);
+  background: var(--ink-1); color: var(--surface-1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  font-size: var(--t-xs); line-height: 1.4;
+}
+/* A short stroke, not a filled box: at this size a box is data-weight ink. */
+.tip-key { width: 10px; height: 2px; border-radius: 1px; align-self: center; }
+/* Value leads, label follows — the legend's hierarchy inverted. */
+.tip b { font-size: var(--t-md); font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip-label { grid-column: 2; opacity: 0.88; }
+.tip-sub { grid-column: 2; opacity: 0.68; }
+
+/* ---- interactive marks ---- */
+.rank-row[role="button"] { cursor: pointer; border-radius: var(--r-sm); }
+.rank-row[role="button"]:hover .rank-track i,
+.rank-row[role="button"]:focus-visible .rank-track i { filter: brightness(1.12); }
+.rank-row.is-picked .rank-label { font-weight: 600; color: var(--ink-1); }
+.rank-row.is-picked .rank-track { outline: 2px solid var(--ink-1); outline-offset: 1px; }
+
+.share-seg[role="button"] { cursor: pointer; }
+.share-seg[role="button"]:hover, .share-seg[role="button"]:focus-visible { filter: brightness(1.14); }
+.share-seg.is-picked { outline: 2px solid var(--ink-1); outline-offset: -2px; }
+
+.pie-slice[role="button"] { cursor: pointer; }
+.pie-slice[role="button"]:hover, .pie-slice[role="button"]:focus-visible { filter: brightness(1.12); }
+.pie-slice.is-picked { stroke: var(--ink-1); stroke-width: 3; }
+
+button.share-item {
+  background: none; border: 0; padding: 3px 6px; margin: -3px -6px;
+  border-radius: var(--r-sm); cursor: pointer; font: inherit;
+}
+button.share-item:hover { background: var(--surface-2); }
+button.share-item.is-picked { background: var(--surface-2); outline: 1px solid var(--border-strong); }
+
+/* ---- drill-down under a chart ---- */
+.drill {
+  margin-top: var(--s-4); padding-top: var(--s-3);
+  border-top: 1px solid var(--border-strong);
+}
+.drill-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.drill-head b { font-size: var(--t-md); color: var(--ink-1); }
+.drill-head button {
+  background: var(--surface-2); border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm); padding: 5px 11px; font-size: var(--t-xs);
+  color: var(--ink-2); cursor: pointer; min-height: 30px;
+}
+@media (pointer: coarse) { .drill-head button { min-height: 44px; } }
+.drill .rd { padding: var(--s-3) 0 0; background: none; }
