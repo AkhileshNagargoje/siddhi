@@ -48,7 +48,8 @@ because they are the person who needs it and sending them to a different address
 to find it was the wrong shape. Live stays the default tab, so the control room
 keeps the glanceability that matters during an incident. Ranked bars for diagnoses and sectors, one horizontal
 stacked bar for the syndrome mix, meters for antibiotic share, small multiples
-for how each illness is moving, and a full table view. Forms are picked by the
+for how each illness is moving, and a table grouped by category with per-group subtotals, where every row
+expands into a computed breakdown. A 6h / 24h / 3-day selector scopes all of it. Forms are picked by the
 job: ranking uses one hue with length carrying magnitude, part-to-whole uses a
 shared baseline with printed shares, and a ratio against a
 reference uses a meter. A pie sits beside the stacked bar for the syndrome mix —
@@ -168,11 +169,12 @@ False alarms on festivals where nothing is wrong, split by what they cost:
 | tier | what it does | per festival-day |
 |---|---|---|
 | act | dispatches a crew | **1.5** |
-| watch | appears on the dashboard, nobody is sent | 5.4 |
+| watch | appears on the dashboard, nobody is sent | **5.4** |
 
 The harness also sweeps the threshold, so the trade is explicit rather than
-asserted: dropping to z ≥ 2 buys about 3 hours of lag and costs 17.7 alerts a
-day; raising to z ≥ 5 cuts alerts to 0.8 a day and costs 3 hours. z ≥ 3 is
+asserted: dropping to z ≥ 2 buys **one hour** of lag (7.0h → 6.0h) and costs
+2.6× the alerts (6.8 → 17.7 a day); raising to z ≥ 5 saves alerts (0.8 a day)
+and costs two hours (7.0h → 9.0h). z ≥ 3 is
 where we chose to sit, and the table is why.
 
 **What it does not prove.** The festivals are synthetic, generated from the same

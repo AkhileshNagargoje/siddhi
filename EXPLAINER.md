@@ -219,6 +219,34 @@ people, moving a crowd is more dangerous than the pathogen. Every status ends in
 an instruction, and the page repeats that every area has its own free clinic so
 nobody concludes they must travel.
 
+## 5d. Giving the doctor something back
+
+A doctor enters 180 patients a day. If the system only ever takes, data entry
+turns careless in week three — and careless entry is how surveillance quietly
+dies, long before anyone notices.
+
+So the entry screen has a second tab, "My clinic", showing the thing they could
+never see: **the whole sector's total across every clinic in it**, and how much
+of that was theirs. Three cases here and four there only become fourteen if
+somebody adds them up, and this is that number handed back to the person who
+generated part of it. Plus their own day, a 12-hour trend answering "is this
+building?", and their antibiotic share beside the festival median — with no
+verdict attached, because the moment it feels like surveillance *of them* they
+stop trusting the whole system.
+
+It lives behind a tab, so the ten-second entry path never renders it.
+
+## 5e. Looking at the whole festival
+
+The control room has a second tab too: **in-depth analysis**. Which illness is
+biggest, what the festival is made of, which sectors are busiest, how each
+illness is moving hour by hour, antibiotic rates, and a table of every figure.
+
+Every chart is interactive — hovering or focusing a slice or bar gives its
+number, and clicking one opens a breakdown of the rows behind it: where it is
+happening, how severe, and its trend. The live board stays the default tab,
+because during an incident that screen has to be readable at a glance.
+
 ## 6. Following the patient home
 
 If someone has high BP, high sugar, or TB signs, the system spots it while they are still sitting there — the only moment they exist to the system at all.

@@ -28,6 +28,10 @@ Ask the main dev for the two `.env` values. The app is React + plain CSS; look a
 
 ## Problem 1 — The presenter
 
+> Note: a presenter console shipped at `/demo` (clear the board, inject an
+> outbreak, run a scan). This problem is still worth solving *better* — but read
+> what exists first, and improve it rather than rebuilding it.
+
 In a few days we demonstrate this system live, on stage, in front of judges. The demonstration needs an outbreak to happen while people watch: patients arriving, the alert firing, a crew responding.
 
 Today, making that happen requires typing commands into a terminal. The person on stage will be nervous, the screen will be mirrored to a projector, and there may be no terminal at all. If the demo stumbles for ninety seconds, we lose the room.
@@ -37,6 +41,9 @@ Today, making that happen requires typing commands into a terminal. The person o
 ---
 
 ## Problem 2 — The judge
+
+> Note: an `/about` page shipped, with three sourced numbers and a list of what
+> was deliberately not built. Still yours to improve; do not start from nothing.
 
 A hackathon judge gives each project a few minutes. They click around the app, form an impression — *real product* or *student exercise* — and move on. Right now, nothing anywhere in the app tells them what this is, why the problem matters, who built it, or that the numbers behind our story are real.
 
@@ -49,6 +56,11 @@ Verified facts you may want, with sources:
 ---
 
 ## Problem 3 — The doctor who gets nothing back
+
+> Note: a "My clinic" tab shipped on the entry screen — the sector alert, the
+> sector-wide total across all clinics, this clinic's day, a 12-hour trend, and
+> antibiotic share against the festival median. The MorningCard stub is still
+> empty and still yours; it is the once-a-day version of this.
 
 A doctor at a festival clinic enters 180 patients a day into our system. The system takes and takes and gives nothing back. The doctor never learns what their data caught, never sees what happened in their sector, never gets a reason to keep caring.
 

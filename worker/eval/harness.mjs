@@ -270,6 +270,13 @@ console.log('')
 // Threshold sweep
 {
   const N = Math.min(TRIALS, 200)
+  /* Look the scenario up by name rather than by index. This block is headed
+     "typical outbreak" but passed SEVERITIES[1], which is the small
+     self-limiting one — so the sweep reported 10.0h for the shipped threshold
+     while the table above it reported 7.0h for the same detector on the same
+     outbreak. The contradiction was visible in the published output. */
+  const TYPICAL = SEVERITIES.find(s => s.label.startsWith('typical'))
+  if (!TYPICAL) throw new Error('typical scenario missing from SEVERITIES')
   console.log('THRESHOLD SWEEP  (typical outbreak - what a different z buys and costs)')
   console.log(rule(76))
   console.log('  z threshold   caught   median lag   false alarms/day (all tiers)')
@@ -277,7 +284,7 @@ console.log('')
   for (const z of [2, 2.5, 3, 3.5, 4, 5]) {
     const r1 = mulberry32(SEED)
     const rows = []
-    for (let i = 0; i < N; i++) rows.push(trialWithOutbreak(r1, SEVERITIES[1], { zWatch: z, minCount: 8 }))
+    for (let i = 0; i < N; i++) rows.push(trialWithOutbreak(r1, TYPICAL, { zWatch: z, minCount: 8 }))
     const r2 = mulberry32(SEED + 1)
     const fa = []
     for (let i = 0; i < N; i++) fa.push(trialQuiet(r2, { zWatch: z, minCount: 8 }).length / (EVAL_H / 24))
