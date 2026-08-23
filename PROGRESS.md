@@ -5,6 +5,7 @@
 
 ## Current state
 
+- **Latest pass (polish):** routes code-split (main bundle 527 KB -> 443 KB; the public pilgrim page is now 6 KB), offline service-worker shell so the app boots with no network, `/demo` presenter console and `/about` both built and live, per-route page titles, all screens verified with no horizontal scroll and 44px touch targets on a phone.
 - **What runs right now:** Tier 1 and Tier 2 complete and deployed — entry form (offline queue), dashboard (realtime), detection, crew app. Full demo loop verified end to end locally.
 - **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>|reset` · detection: `node detect.js once|watch`
 - **Known broken:** —

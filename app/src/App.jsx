@@ -1,16 +1,45 @@
-import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom'
 import { supabase, isConfigured } from './lib/supabase'
 import { Mark } from './components/Brand'
-import EntryPage from './pages/EntryPage'
-import DashboardPage from './pages/DashboardPage'
-import CrewPage from './pages/CrewPage'
-import ReferralPage from './pages/ReferralPage'
-import ReplayPage from './pages/ReplayPage'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import DemoPage from './pages/DemoPage'
-import AboutPage from './pages/AboutPage'
-import PublicPage from './pages/PublicPage'
+
+/* Per-route document title.
+   A judge ends the evening with a dozen tabs open and every one of them saying
+   "Siddhi". Naming the screen in the tab is the cheapest possible way to stay
+   findable, and it is also what a screen reader announces on navigation. */
+const TITLES = {
+  '/': 'Siddhi — outbreak early warning',
+  '/entry': 'Record a patient · Siddhi',
+  '/dashboard': 'Control room · Siddhi',
+  '/crew': 'Response crew · Siddhi',
+  '/r': 'Referral card · Siddhi',
+  '/replay': 'An outbreak, caught · Siddhi',
+  '/demo': 'Demo console · Siddhi',
+  '/about': 'About Siddhi',
+  '/public': 'Health information · Siddhi',
+}
+
+function Title() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    document.title = TITLES[pathname] ?? TITLES['/']
+  }, [pathname])
+  return null
+}
+
+/* Split per route. This product's whole premise is working on a saturated
+   festival network, so a doctor's phone should not download the control room's
+   charts, the replay's animation and the QR encoder just to record a patient.
+   Each screen now fetches only its own code. */
+const EntryPage = lazy(() => import('./pages/EntryPage'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const CrewPage = lazy(() => import('./pages/CrewPage'))
+const ReferralPage = lazy(() => import('./pages/ReferralPage'))
+const ReplayPage = lazy(() => import('./pages/ReplayPage'))
+const DemoPage = lazy(() => import('./pages/DemoPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const PublicPage = lazy(() => import('./pages/PublicPage'))
 import './styles/tokens.css'
 import './App.css'
 
@@ -90,6 +119,11 @@ export default function App() {
   return (
     <ErrorBoundary>
     <BrowserRouter>
+      {/* Deliberately plain: a spinner that appears for 80ms reads as jank.
+          A quiet line that only shows if the chunk is genuinely slow is calmer,
+          which matters most on exactly the connection this is built for. */}
+      <Title />
+      <Suspense fallback={<div className="route-wait">Loading…</div>}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/entry" element={<EntryPage />} />
@@ -102,6 +136,7 @@ export default function App() {
         <Route path="/public" element={<PublicPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
     </ErrorBoundary>
   )
