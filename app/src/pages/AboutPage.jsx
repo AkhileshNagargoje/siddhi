@@ -82,6 +82,7 @@ export default function AboutPage() {
           <li><b>No app for pilgrims.</b> Elderly, rural, transient visitors will not install software for a three-day trip. They get a printed card and a poster.</li>
           <li><b>No machine learning in detection.</b> Twelve sectors and six syndromes is seventy-two series with no labelled outbreak history. There is nothing for a model to learn that arithmetic does not already give you — and an alert nobody can question is an alert nobody uses.</li>
           <li><b>No public map of infected areas.</b> At a festival where a crowd crush has killed people, moving a dense crowd is more dangerous than the pathogen. Areas are shown with instructions, never with case counts, and an officer approves the wording.</li>
+          <li><b>No Aadhaar or identity capture.</b> Aadhaar returns demographics, not medical history, so it would give us a name we do not want and none of the history people assume it carries. Detection counts cases against a sector's own history — a z-score does not care who anyone is. Requiring ID would cost the ten-second entry and turn away the elderly and rural pilgrims whose biometrics fail, who are the people most at risk.</li>
           <li><b>Nothing that blocks a doctor.</b> The antibiotic prompt is a question with two buttons. Their judgement always wins.</li>
         </ul>
       </section>

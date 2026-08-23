@@ -137,13 +137,41 @@ Hold up the printed referral card.
 
 ---
 
-# The five questions you will get
+# The questions you will get
 
 **"Isn't this just a dashboard?"**
 > A dashboard is where this stops for everyone else. Ours turns every alert into an assigned job a named crew has to close — which is why we can measure time-to-response at all. That's the whole difference.
 
 **"Why no AI?"**
 > Deliberately. A district health officer will act on "fourteen against four expected, four sigma" and will ignore a black box. Explainability is an adoption feature here, not a limitation. And honestly — twelve sectors and six syndromes is seventy-two series with no labelled outbreak history. There's nothing for a model to learn that arithmetic doesn't already give you.
+
+**"Why not scan Aadhaar and pull the patient's details?"**
+> Three reasons, and the first one is the one that settles it: Aadhaar does not
+> hold medical history. Authentication returns demographics — name, address, date
+> of birth — so scanning it would give us a name we deliberately do not want, and
+> none of the clinical history you are imagining. The system that *does* hold
+> health records is ABHA, under the Ayushman Bharat Digital Mission.
+>
+> Second, we could not do it lawfully anyway. Since the 2025 rules, a private
+> entity has to route each use case through a Union or State ministry, which
+> forwards it to UIDAI, which assesses it against their security standards. That
+> is a governmental process, not an integration.
+>
+> Third — and this is the real answer — identity adds nothing to what we do. We
+> detect clusters by counting cases per sector against that sector's own history.
+> A z-score does not care who anyone is. Adding identity would cost us the ten-
+> second entry, and at a Kumbh it would turn away the elderly and rural pilgrims
+> whose fingerprints fail authentication, who are exactly the people most at risk.
+>
+> The one thing identity would genuinely buy — the patient's finding following
+> them home — we solved with the printed QR card instead. It carries the record
+> itself, not a lookup key, so a village clinic reads it with no network, no app
+> and no ID system.
+
+*(If they push on scale:)*
+> If this went real, ABHA is the right rail and it already exists — consent-based
+> record linking, with a public sandbox at `sandbox.abdm.gov.in`. We would attach
+> to that rather than to Aadhaar directly. But it changes nothing about detection.
 
 **"Your data is fake."**
 > Yes — say it first. It's synthetic, generated through the same API a real tablet writes to, so the detector can't distinguish it. That's what let us measure detection performance across a thousand festivals instead of asserting it.
