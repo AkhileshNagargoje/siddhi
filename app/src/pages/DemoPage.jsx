@@ -26,7 +26,13 @@ export default function DemoPage() {
   const [live, setLive] = useState(null)
   const alive = useRef(true)
 
-  useEffect(() => () => { alive.current = false }, [])
+  /* Re-arm on mount. StrictMode mounts, unmounts and remounts in development;
+     without the `= true` the first throwaway unmount permanently disables this
+     page in `npm run dev` while production looks perfectly fine. */
+  useEffect(() => {
+    alive.current = true
+    return () => { alive.current = false }
+  }, [])
 
   /* A small live readout, so the presenter can see the state they are about to
      change without switching tabs to the dashboard. */
@@ -52,8 +58,9 @@ export default function DemoPage() {
     return () => clearInterval(t)
   }, [refresh])
 
+  const seq = useRef(0)
   function note(entry) {
-    setLog(l => [{ ...entry, at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }, ...l].slice(0, 6))
+    setLog(l => [{ ...entry, id: ++seq.current, at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }, ...l].slice(0, 6))
   }
 
   async function run(key, path, describe) {
@@ -127,7 +134,7 @@ export default function DemoPage() {
           </p>
           <div className="demo-controls">
             <label>
-              <span>Sector</span>
+              <span>Sector to seed</span>
               <select value={sector} onChange={e => setSector(Number(e.target.value))}>
                 {FESTIVAL.sectors.map(s => <option key={s.id} value={s.id}>{s.id} — {s.name}</option>)}
               </select>
@@ -190,8 +197,8 @@ export default function DemoPage() {
           <p className="chart-sub" style={{ margin: 0 }}>Nothing yet. Press a button above.</p>
         ) : (
           <div className="demo-log">
-            {log.map((l, i) => (
-              <div key={i} className={l.ok ? 'demo-line' : 'demo-line bad'}>
+            {log.map(l => (
+              <div key={l.id} className={l.ok ? 'demo-line' : 'demo-line bad'}>
                 <time>{l.at}</time>
                 <span>{l.text}</span>
               </div>

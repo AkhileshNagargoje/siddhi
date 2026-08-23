@@ -30,9 +30,6 @@ export const DIAGNOSES = [
   { id: 'other',      en: 'Other',                     syndrome: 'other' },
 ]
 
-// Syndromes the detection engine tracks (screening excluded — not outbreak-relevant)
-export const SYNDROMES = ['gi', 'respiratory', 'heat', 'fever', 'injury', 'other']
-
 export const SYNDROME_LABELS = {
   gi: 'Acute diarrhoeal illness',
   respiratory: 'Respiratory illness',

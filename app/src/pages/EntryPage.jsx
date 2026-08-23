@@ -36,22 +36,30 @@ function bumpSyncedToday(by) {
 
 const EMPTY = { age_band: null, sex: null, symptoms: [], diagnosis: null, drugs: [], severity: 'mild' }
 
+/* The "control" here is a row of chip buttons, not a form input, so a <label>
+   labels nothing and is never read out with the chips. A named group is the
+   correct shape — and it also gets the Clear button out of the label, where
+   tapping the caption text was firing Clear. */
+let fieldSeq = 0
 function Field({ label, required, onClear, children }) {
+  const [id] = useState(() => `fld-${++fieldSeq}`)
   return (
     <div className="field">
-      <label>
-        {label}{required && <em> *</em>}
+      <span className="field-cap">
+        <span id={id}>{label}{required && <em> *</em>}</span>
         {/* Only offered once something is selected — an always-visible Clear
             on an empty list is noise on a screen that must stay scannable. */}
         {onClear && <button className="clear" onClick={onClear}>Clear</button>}
-      </label>
-      <div className="chips">{children}</div>
+      </span>
+      <div className="chips" role="group" aria-labelledby={id}>{children}</div>
     </div>
   )
 }
 
 export default function EntryPage() {
   const [user, setUser] = useState(null)
+  const flashTimer = useRef(null)
+  useEffect(() => () => clearTimeout(flashTimer.current), [])
   const [pin, setPin] = useState('')
   const [form, setForm] = useState(EMPTY)
   const [flash, setFlash] = useState(false)
@@ -213,7 +221,9 @@ export default function EntryPage() {
         },
       })
     } else {
-      setFlash(true); setTimeout(() => setFlash(false), 1100)
+      setFlash(true)
+      clearTimeout(flashTimer.current)
+      flashTimer.current = setTimeout(() => setFlash(false), 1100)
     }
 
     flush() // online: lands on the dashboard now, not on the next 5s tick
@@ -228,6 +238,7 @@ export default function EntryPage() {
           <h2>Clinic sign in</h2>
           <p>Enter your 4-digit PIN</p>
           <input type="password" inputMode="numeric" maxLength={4} value={pin} autoFocus
+                 aria-label="4-digit PIN"
                  onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
                  onKeyDown={e => e.key === 'Enter' && login()} />
           <button className="btn btn-wide" onClick={login} disabled={pin.length !== 4}>Enter</button>
@@ -331,12 +342,12 @@ export default function EntryPage() {
           <>
             <label>Vitals <span className="opt">optional</span></label>
             <div className="vitals">
-              <input inputMode="numeric" placeholder="BP sys" value={vitals.sys}
+              <input inputMode="numeric" placeholder="BP sys" aria-label="Blood pressure, systolic" value={vitals.sys}
                      onChange={e => setVitals(v => ({ ...v, sys: e.target.value.replace(/\D/g, '').slice(0, 3) }))} />
               <span>/</span>
-              <input inputMode="numeric" placeholder="dia" value={vitals.dia}
+              <input inputMode="numeric" placeholder="dia" aria-label="Blood pressure, diastolic" value={vitals.dia}
                      onChange={e => setVitals(v => ({ ...v, dia: e.target.value.replace(/\D/g, '').slice(0, 3) }))} />
-              <input inputMode="numeric" placeholder="Sugar mg/dL" value={vitals.sugar}
+              <input inputMode="numeric" placeholder="Sugar mg/dL" aria-label="Blood sugar in mg/dL" value={vitals.sugar}
                      onChange={e => setVitals(v => ({ ...v, sugar: e.target.value.replace(/\D/g, '').slice(0, 3) }))} />
             </div>
           </>

@@ -21,7 +21,7 @@
  */
 
 const SHELL = 'siddhi-shell-v1'
-const ASSETS = 'siddhi-assets-v1'
+const ASSETS = 'siddhi-assets-v2'   // v1 could hold poisoned entries; activate() drops it
 const KEEP = new Set([SHELL, ASSETS])
 
 self.addEventListener('install', e => {
@@ -53,7 +53,18 @@ self.addEventListener('fetch', e => {
   if (url.pathname.startsWith('/assets/')) {
     e.respondWith(
       caches.match(req).then(hit => hit || fetch(req).then(res => {
-        if (res.ok) { const copy = res.clone(); caches.open(ASSETS).then(c => c.put(req, copy)) }
+        /* Only cache something that is actually the asset.
+           A single-page host answers an UNKNOWN /assets/ path with index.html —
+           200 OK, Content-Type text/html. Caching that under a .js URL poisons
+           the entry permanently: cache-first then serves HTML as a module on
+           every future load, and the browser refuses it. That survives
+           redeploys, so it is a self-inflicted outage, not a stale cache.
+           Anything that claims to be HTML under /assets/ is that fallback. */
+        const type = res.headers.get('Content-Type') || ''
+        if (res.ok && !type.includes('text/html')) {
+          const copy = res.clone()
+          caches.open(ASSETS).then(c => c.put(req, copy))
+        }
         return res
       }))
     )

@@ -20,6 +20,12 @@ const TITLES = {
   '/public': 'Health information · Siddhi',
 }
 
+function ClearChunkRetry() {
+  /* The app rendered, so whatever went wrong is over. Disarm the one-shot. */
+  useEffect(() => { try { sessionStorage.removeItem(RETRIED) } catch { /* private mode */ } }, [])
+  return null
+}
+
 function Title() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -28,18 +34,44 @@ function Title() {
   return null
 }
 
+/* Splitting a bundle introduces a failure mode a single bundle does not have.
+   Vite content-hashes every chunk, so after a deploy the OLD index.js in an
+   already-open tab asks for chunk names that no longer exist. The server answers
+   an unknown /assets/ path with index.html, the browser refuses it as a module,
+   and the route hard-crashes into the error boundary.
+
+   That is precisely the tab someone has left open while presenting. So a failed
+   chunk fetch reloads the page once — which pulls fresh HTML and therefore the
+   correct chunk names. The sessionStorage flag makes it strictly once, so a
+   genuinely offline user gets the offline shell instead of a reload loop. */
+const RETRIED = 'siddhi_chunk_retry'
+function route(load) {
+  return lazy(() =>
+    load()
+      .then(m => { sessionStorage.removeItem(RETRIED); return m })
+      .catch(err => {
+        if (!sessionStorage.getItem(RETRIED)) {
+          sessionStorage.setItem(RETRIED, '1')
+          window.location.reload()
+          return new Promise(() => {})    // hold the render until the reload lands
+        }
+        throw err
+      })
+  )
+}
+
 /* Split per route. This product's whole premise is working on a saturated
    festival network, so a doctor's phone should not download the control room's
    charts, the replay's animation and the QR encoder just to record a patient.
    Each screen now fetches only its own code. */
-const EntryPage = lazy(() => import('./pages/EntryPage'))
-const DashboardPage = lazy(() => import('./pages/DashboardPage'))
-const CrewPage = lazy(() => import('./pages/CrewPage'))
-const ReferralPage = lazy(() => import('./pages/ReferralPage'))
-const ReplayPage = lazy(() => import('./pages/ReplayPage'))
-const DemoPage = lazy(() => import('./pages/DemoPage'))
-const AboutPage = lazy(() => import('./pages/AboutPage'))
-const PublicPage = lazy(() => import('./pages/PublicPage'))
+const EntryPage = route(() => import('./pages/EntryPage'))
+const DashboardPage = route(() => import('./pages/DashboardPage'))
+const CrewPage = route(() => import('./pages/CrewPage'))
+const ReferralPage = route(() => import('./pages/ReferralPage'))
+const ReplayPage = route(() => import('./pages/ReplayPage'))
+const DemoPage = route(() => import('./pages/DemoPage'))
+const AboutPage = route(() => import('./pages/AboutPage'))
+const PublicPage = route(() => import('./pages/PublicPage'))
 import './styles/tokens.css'
 import './App.css'
 
@@ -122,6 +154,7 @@ export default function App() {
       {/* Deliberately plain: a spinner that appears for 80ms reads as jank.
           A quiet line that only shows if the chunk is genuinely slow is calmer,
           which matters most on exactly the connection this is built for. */}
+      <ClearChunkRetry />
       <Title />
       <Suspense fallback={<div className="route-wait">Loading…</div>}>
       <Routes>

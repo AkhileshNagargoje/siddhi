@@ -14,7 +14,9 @@
   /* ink */
   --ink-1: #0b0b0b;
   --ink-2: #52514e;
-  --ink-3: #898781;
+  --ink-3: #6b6963;   /* was #898781 — 3.2:1 on the sunk surface, and this
+                         is the colour of every field label on the entry form
+                         and every axis number on the wall display. 4.9:1 now. */
 
   /* lines */
   --grid: #e1e0d9;
@@ -24,6 +26,17 @@
 
   /* series (chart) */
   --series-1: #2a78d6;
+  /* Solid fills that carry white text. Deliberately NOT --series-1: that token
+     is tuned to sit on the page as a line colour, and white on it measures
+     4.42:1 in light and 3.64:1 in dark. These are chosen for the text. */
+  --accent-solid: #1f5fae;   /* white 6.4:1 */
+  --good-solid:   #0a7d0a;   /* white 5.3:1 */
+  /* Ink for each step of the sequential ramp. The tile paints its own
+     background, so its text cannot follow the theme's ink — in dark mode a busy
+     tile is a PALE blue and --ink-1 is near-white, which measured 2.3:1. */
+  --seq-0-ink: #0b1a2e; --seq-1-ink: #0b1a2e; --seq-2-ink: #0b1a2e;
+  --seq-3-ink: #0b1a2e; --seq-4-ink: #0b1a2e;
+  --seq-5-ink: #ffffff; --seq-6-ink: #ffffff;
   --series-1-fill: rgba(42, 120, 214, 0.14);
 
   /* sequential blue — magnitude ramp for the sector heatmap */
@@ -95,13 +108,18 @@
     --border-strong: rgba(255, 255, 255, 0.22);
 
     --series-1: #3987e5;
+    --accent-solid: #256abf;   /* white 5.4:1 */
+    --good-solid:   #0a7d0a;   /* white 5.3:1 */
+    --seq-0-ink: #ffffff; --seq-1-ink: #ffffff; --seq-2-ink: #ffffff;
+    --seq-3-ink: #ffffff; --seq-4-ink: #ffffff;
+    --seq-5-ink: #0b1a2e; --seq-6-ink: #0b1a2e;
     --series-1-fill: rgba(57, 135, 229, 0.20);
 
     --seq-0: #232322;
     --seq-1: #184f95;
     --seq-2: #1c5cab;
     --seq-3: #256abf;
-    --seq-4: #2a78d6;
+    --seq-4: #2874d0;   /* nudged darker: at #2a78d6 NO text colour reached 4.5:1 */
     --seq-5: #3987e5;
     --seq-6: #5598e7;
 
