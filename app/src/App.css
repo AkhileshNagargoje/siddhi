@@ -595,3 +595,52 @@
 .mc-compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
 .mc-compare div { display: flex; flex-direction: column; gap: 2px; }
 .mc-compare b { font-size: var(--t-xl); font-weight: 600; letter-spacing: -0.02em; }
+
+/* ---------- public page (pilgrim-facing, poster QR) ---------- */
+
+.pub { max-width: 560px; margin: 0 auto; padding: var(--s-4) var(--s-4) var(--s-7); }
+.pub-head { display: flex; align-items: baseline; gap: var(--s-2); flex-wrap: wrap; margin-bottom: var(--s-4); }
+.pub-head b { font-size: var(--t-xl); letter-spacing: -0.02em; }
+.pub-head span { font-size: var(--t-sm); color: var(--ink-3); }
+
+.pub-notice {
+  background: var(--warning-wash); border: 1px solid var(--warning);
+  border-radius: var(--r-lg); padding: var(--s-4); margin-bottom: var(--s-4);
+}
+.pub-notice h2 { margin: 0 0 var(--s-2); font-size: var(--t-lg); color: var(--warning-ink); }
+.pub-notice p { margin: 0 0 var(--s-2); font-size: var(--t-md); line-height: 1.6; }
+.pub-notice small { color: var(--ink-2); font-size: var(--t-xs); }
+
+.pub-calm {
+  background: var(--good-wash); border: 1px solid var(--good);
+  border-radius: var(--r-lg); padding: var(--s-4); margin-bottom: var(--s-4);
+}
+.pub-calm h2 { margin: 0 0 var(--s-1); font-size: var(--t-lg); color: var(--good-ink); }
+.pub-calm p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+
+.pub-block { margin-bottom: var(--s-5); }
+.pub-block h3 { font-size: var(--t-md); margin: 0 0 var(--s-3); }
+.pub-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.pub-list li {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: var(--s-3) var(--s-4);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.pub-list b { font-size: var(--t-md); }
+.pub-lang { font-size: var(--t-sm); color: var(--ink-2); }
+.pub-detail { font-size: var(--t-sm); color: var(--ink-3); line-height: 1.5; }
+
+.pub select {
+  width: 100%; padding: 13px; min-height: 48px; font-size: var(--t-md);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md);
+  background: var(--surface-2); color: var(--ink-1); font-family: inherit;
+}
+.pub-sector {
+  margin-top: var(--s-3); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s-4);
+}
+.pub-sector p { margin: 0 0 var(--s-2); font-size: var(--t-sm); }
+
+.pub-urgent ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+.pub-urgent li { font-size: var(--t-sm); }
+.pub-foot { margin-top: var(--s-5); padding-top: var(--s-4); border-top: 1px solid var(--border); font-size: var(--t-xs); color: var(--ink-3); }

@@ -10,6 +10,7 @@ import ReplayPage from './pages/ReplayPage'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import DemoPage from './pages/DemoPage'
 import AboutPage from './pages/AboutPage'
+import PublicPage from './pages/PublicPage'
 import './styles/tokens.css'
 import './App.css'
 
@@ -98,6 +99,7 @@ export default function App() {
         <Route path="/replay" element={<ReplayPage />} />
         <Route path="/demo" element={<DemoPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/public" element={<PublicPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
