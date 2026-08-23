@@ -1,6 +1,8 @@
 /* ---------- shared shell ---------- */
 
 .shell { max-width: 1240px; margin: 0 auto; padding: var(--s-4); }
+@media (min-width: 700px)  { .shell { padding: var(--s-5); } }
+@media (min-width: 1100px) { .shell { padding: var(--s-5) var(--s-6) var(--s-7); } }
 
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
@@ -32,7 +34,7 @@
 
 /* ---------- KPI row ---------- */
 
-.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: var(--s-3); margin-bottom: var(--s-4); }
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: var(--s-4); margin-bottom: var(--s-4); }
 .tile {
   background: var(--surface-1); border: 1px solid var(--border);
   border-radius: var(--r-lg); padding: var(--s-3) var(--s-4);
@@ -557,12 +559,24 @@
 
 /* ---------- entry tabs + my clinic ---------- */
 
-.tabs { display: flex; gap: var(--s-2); margin-bottom: var(--s-4); }
+/* A tab switches the whole screen, so it needs more air beneath it than two
+   sibling panels get from each other — otherwise the control and the content it
+   controls read as the same level. */
+.tabs { display: flex; gap: var(--s-2); margin-bottom: var(--s-5); }
 .tab {
+  /* Full width on a phone, where two targets should fill the thumb's reach.
+     `flex: 1` was written for the entry screen and then inherited by the
+     dashboard, where it stretched two buttons across 1240px. */
   flex: 1; background: var(--surface-1); border: 1px solid var(--border);
-  border-radius: var(--r-md); padding: 10px; font-size: var(--t-sm);
+  border-radius: var(--r-md); padding: 10px var(--s-4); font-size: var(--t-sm);
   color: var(--ink-2); cursor: pointer; min-height: 44px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
+@media (min-width: 560px) {
+  .tab { flex: 0 1 auto; padding: 10px var(--s-5); }
+}
+.tab:hover { border-color: var(--border-strong); color: var(--ink-1); }
+.tab.on:hover { color: var(--surface-1); }
 .tab.on { background: var(--ink-1); border-color: var(--ink-1); color: var(--surface-1); }
 
 .myclinic { display: flex; flex-direction: column; gap: var(--s-3); }
@@ -1049,3 +1063,8 @@ button.share-item.is-picked { background: var(--surface-2); outline: 1px solid v
   .dr-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; }
   .dr-dir { display: none; }
 }
+
+/* Hold the frame while the analysis loads. Without a reserved height the page
+   collapsed on switch and then jumped ~600px when the data landed — two layout
+   shifts for one action, which reads as a glitch. */
+.ins-hold { min-height: 78vh; display: grid; place-items: center; }

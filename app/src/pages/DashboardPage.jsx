@@ -43,6 +43,22 @@ export default function DashboardPage() {
   /* Read through a ref so the polling effect never re-subscribes on a tab switch. */
   const viewRef = useRef('live')
   useEffect(() => { viewRef.current = view }, [view])
+  /* Land at the top of the tab strip on a switch. The two views are very
+     different heights, so keeping the old scroll offset drops the reader into
+     the middle of unrelated content — and letting the collapse yank them there
+     is worse, because it looks like a glitch rather than a decision. */
+  const tabsRef = useRef(null)
+  const switchTo = setView
+  /* Run this as an effect, not inside requestAnimationFrame. rAF does not fire
+     in a backgrounded tab, so the scroll silently never happened there — and
+     "silently never happened" is the worst kind of bug to leave in a control
+     surface. Instant rather than smooth: a view change should land, not glide.
+     Only scrolls when the tab strip has actually gone off the top. */
+  useEffect(() => {
+    const el = tabsRef.current
+    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: 'start' })
+  }, [view])
+
   /* Latches true the first time the analysis tab is opened. */
   const [seenDeep, setSeenDeep] = useState(false)
   useEffect(() => { if (view === 'deep') setSeenDeep(true) }, [view])
@@ -323,13 +339,19 @@ export default function DashboardPage() {
           sending them elsewhere to find it was the wrong shape. Live stays the
           default: during an incident this screen has to be glanceable, and that
           property is worth protecting even from useful additions. */}
-      <div className="tabs" role="tablist">
+      <div className="tabs" role="tablist" ref={tabsRef}>
         <button role="tab" aria-selected={view === 'live'}
                 className={view === 'live' ? 'tab on' : 'tab'}
-                onClick={() => setView('live')}>Live</button>
+                onClick={() => switchTo('live')}>Live</button>
+        {/* Warm it on hover/focus rather than on click. Insights fetches on
+            mount, so mounting it a moment early turns a visible "Reading the
+            last 24 hours..." into content that is simply there. Still not
+            mounted for someone who never goes near the tab. */}
         <button role="tab" aria-selected={view === 'deep'}
                 className={view === 'deep' ? 'tab on' : 'tab'}
-                onClick={() => setView('deep')}>In-depth analysis</button>
+                onPointerEnter={() => setSeenDeep(true)}
+                onFocus={() => setSeenDeep(true)}
+                onClick={() => switchTo('deep')}>In-depth analysis</button>
       </div>
 
       {/* Mounted once visited and then hidden rather than unmounted: Insights
