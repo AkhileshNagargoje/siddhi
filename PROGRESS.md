@@ -1,4 +1,4 @@
-# Siddhi — Progress Tracker
+# Atreya — Progress Tracker
 
 > Update rule: whoever finishes a task updates its line IMMEDIATELY, same sitting.
 > Status values: `todo` / `doing` / `done` / `blocked` / `cut`
@@ -14,8 +14,8 @@
 - **How to run it:** `cd app && npm run dev` → http://localhost:5173 · simulator: `cd simulator && node simulate.js backfill|live|outbreak <sector>` (`reset` no longer works — harden.sql removed DELETE; use /demo → Clear the board, or db/cleanup.sql) · detection: `node detect.js once|watch`
 - **Known broken:** —
 - **Database:** hardened. Public key can SELECT/INSERT/UPDATE only; DELETE is blocked (db/harden.sql). Cleanup therefore runs from the Supabase SQL Editor via db/cleanup.sql, not from a script.
-- **Live URL:** https://siddhi.akhileshnagargoje.in (deploy: cd app && npm run build && npx wrangler deploy)
-- **Engine (cloud):** https://siddhi-engine.akhileshnagargoje.in — Cloudflare Worker, 2 crons: detection every 5 min, live traffic every 1 min. Endpoints: /scan, /traffic, /outbreak?sector=5&n=25
+- **Live URL:** https://health.akhileshnagargoje.in (deploy: cd app && npm run build && npx wrangler deploy)
+- **Engine (cloud):** https://health-engine.akhileshnagargoje.in — Cloudflare Worker, 2 crons: detection every 5 min, live traffic every 1 min. Endpoints: /scan, /traffic, /outbreak?sector=5&n=25
 - **Deploy commands:** app: `cd app && npm run build && npx wrangler deploy` · engine: `cd worker && npx wrangler deploy`
 - **Next up:** open /demo and press "Clear the board" right before presenting. Then: rehearse, and the teammate components (SectorDetail, AgeChart, MorningCard are still stubs). The 31% and Harvard figures are sourced on the About page; the unsourced "30,000 visits" claim has been replaced everywhere with the sourced "2,000+ on day one".
 
@@ -35,7 +35,7 @@
 | 4.1 | Entry form: tap-based, ≤10s | done | Claude | |
 | 4.2 | Entry form: offline queue + sync counter | done | Claude | |
 | 5.1 | Crew app: task list + ack/resolve | done | Claude | |
-| 6.1 | Deploy — Cloudflare Workers static assets | done | Claude | https://siddhi.akhileshnagargoje.in |
+| 6.1 | Deploy — Cloudflare Workers static assets | done | Claude | https://health.akhileshnagargoje.in |
 | 6.2 | End-to-end demo run works | done | all | |
 
 ## Tier 2 — only after ALL Tier 1 is done

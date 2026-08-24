@@ -14,7 +14,7 @@ import { supabase, isConfigured, resolveAlerts } from '../lib/supabase'
  * live database, so each one says what it will do before it does it.
  */
 
-const ENGINE = 'https://siddhi-engine.akhileshnagargoje.in'
+const ENGINE = 'https://health-engine.akhileshnagargoje.in'
 
 const fmt = n => new Intl.NumberFormat().format(n)
 

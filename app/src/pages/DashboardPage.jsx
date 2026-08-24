@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Insights } from './InsightsPage'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL, RESPONSE_UNITS, CLINICS } from '../config/festival'
@@ -391,10 +392,10 @@ export default function DashboardPage() {
   return (
     <div className="shell">
       <div className="topbar">
-        <div className="brand">
-          <b>Siddhi</b>
+        <Link to="/" className="brand" title="Back to all screens">
+          <b>Atreya</b>
           <span>control room · {FESTIVAL.name}</span>
-        </div>
+        </Link>
         <span className="live"><i />live</span>
       </div>
 

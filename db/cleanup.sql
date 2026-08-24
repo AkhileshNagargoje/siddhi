@@ -1,4 +1,4 @@
--- Siddhi — pre-demo reset.
+-- Atreya — pre-demo reset.
 --
 -- Run this in the Supabase SQL Editor shortly before presenting:
 --   https://supabase.com/dashboard/project/ommnjuedmzffiawhkdqi/sql/new

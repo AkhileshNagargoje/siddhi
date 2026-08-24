@@ -1,4 +1,4 @@
--- Siddhi — give an alert its own resolution timestamp.
+-- Atreya — give an alert its own resolution timestamp.
 --
 -- HOW TO RUN: Supabase SQL Editor, paste, Run.
 --   https://supabase.com/dashboard/project/ommnjuedmzffiawhkdqi/sql/new

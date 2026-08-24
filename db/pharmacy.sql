@@ -1,4 +1,4 @@
--- Siddhi — pharmacy signal.
+-- Atreya — pharmacy signal.
 --
 -- HOW TO RUN: Supabase SQL Editor, click into the editor, highlight nothing,
 -- paste this whole file, Run. Read the check at the bottom.

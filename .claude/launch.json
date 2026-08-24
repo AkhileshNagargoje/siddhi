@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "siddhi",
+      "name": "atreya",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",

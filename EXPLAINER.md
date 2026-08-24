@@ -1,4 +1,4 @@
-# Siddhi — the problem and the solution
+# Atreya — the problem and the solution
 
 *In plain language. Written so anyone on the team can read it and explain the project.*
 
@@ -308,4 +308,4 @@ We built the adding up, and the acting.
 
 ---
 
-*Live: [siddhi.akhileshnagargoje.in](https://siddhi.akhileshnagargoje.in) · Full spec in `PROJECT.md` · Build status in `PROGRESS.md`*
+*Live: [health.akhileshnagargoje.in](https://health.akhileshnagargoje.in) · Full spec in `PROJECT.md` · Build status in `PROGRESS.md`*
