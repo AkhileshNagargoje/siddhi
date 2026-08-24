@@ -3,7 +3,23 @@
 
 export const AGE_BANDS = ['0-5', '6-17', '18-39', '40-59', '60+']
 export const SEXES = ['M', 'F', 'Other']
-export const SEVERITIES = ['mild', 'moderate', 'severe']
+/* Severity is the softest field on the form: three bare words, and two
+   clinicians will grade the same patient differently. It is deliberately kept
+   OUT of the detection maths for that reason — alerting counts cases by
+   syndrome, so an inconsistent severity call can neither raise a false alert
+   nor hide a real one.
+
+   It still drives what an officer sees, so a shared anchor is worth more than
+   nothing. These lines are a plain-language prompt, NOT clinical criteria —
+   real deployment needs syndrome-specific definitions signed off by a
+   clinician (dehydration grade for diarrhoeal illness, and so on). The hint
+   says what the grade means for the patient's next step, which is the part a
+   surveillance system actually cares about. */
+export const SEVERITIES = [
+  { id: 'mild',     hint: 'treated and sent on' },
+  { id: 'moderate', hint: 'needs observation or repeat visit' },
+  { id: 'severe',   hint: 'referral, IV fluids, or cannot walk unaided' },
+]
 
 export const SYMPTOMS = [
   { id: 'fever',          en: 'Fever',           hi: 'बुखार',          mr: 'ताप' },

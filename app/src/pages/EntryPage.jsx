@@ -10,27 +10,27 @@ import { MyClinic } from '../components/MyClinic'
 
 // Offline-first: every record lands in localStorage first, a background loop
 // pushes it up. Client-generated UUIDs make retries duplicate-proof.
-const QUEUE_KEY = 'siddhi_queue'
+const QUEUE_KEY = 'atreya_queue'
 const loadQueue = () => { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') } catch { return [] } }
 const saveQueue = q => localStorage.setItem(QUEUE_KEY, JSON.stringify(q))
 
 /* Referrals ride their own queue. The card itself never needs the server — the
    QR carries everything — but the health system still wants a record that one
    was issued, so it syncs whenever the network allows. */
-const REF_KEY = 'siddhi_ref_queue'
+const REF_KEY = 'atreya_ref_queue'
 const loadRefs = () => { try { return JSON.parse(localStorage.getItem(REF_KEY) ?? '[]') } catch { return [] } }
 const saveRefs = q => localStorage.setItem(REF_KEY, JSON.stringify(q))
 
 // Counter is scoped to the local calendar day and rolls over on its own.
 const today = () => new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local
 function readSyncedToday() {
-  if (localStorage.getItem('siddhi_synced_day') !== today()) return 0
-  return Number(localStorage.getItem('siddhi_synced') ?? 0)
+  if (localStorage.getItem('atreya_synced_day') !== today()) return 0
+  return Number(localStorage.getItem('atreya_synced') ?? 0)
 }
 function bumpSyncedToday(by) {
   const n = readSyncedToday() + by
-  localStorage.setItem('siddhi_synced_day', today())
-  localStorage.setItem('siddhi_synced', String(n))
+  localStorage.setItem('atreya_synced_day', today())
+  localStorage.setItem('atreya_synced', String(n))
   return n
 }
 
@@ -146,11 +146,11 @@ export default function EntryPage() {
     const u = USERS.find(u => u.pin === pin && u.role === 'worker')
     if (!u) { setPin(''); return }
     setUser(u)
-    if (localStorage.getItem('siddhi_morning_day') !== today()) setShowMorning(true)
+    if (localStorage.getItem('atreya_morning_day') !== today()) setShowMorning(true)
   }
 
   function closeMorning() {
-    localStorage.setItem('siddhi_morning_day', today())
+    localStorage.setItem('atreya_morning_day', today())
     setShowMorning(false)
   }
 
@@ -334,9 +334,14 @@ export default function EntryPage() {
         <p className="nudge-kept">Antibiotic kept against guidance — recorded, not blocked.</p>
       )}
 
+      {/* The hint under each grade is the whole point: without it two doctors
+          anchor on different things and the field means nothing across clinics. */}
       <Field label="Severity">
         {SEVERITIES.map(s => (
-          <button key={s} className={form.severity === s ? 'chip on' : 'chip'} onClick={() => setForm(f => ({ ...f, severity: s }))}>{s}</button>
+          <button key={s.id} className={form.severity === s.id ? 'chip on' : 'chip'}
+                  onClick={() => setForm(f => ({ ...f, severity: s.id }))}>
+            {s.id}<small>{s.hint}</small>
+          </button>
         ))}
       </Field>
 

@@ -329,6 +329,11 @@ function Trend({ label, hue, values }) {
  * rather than up front, because most rows are never opened.
  */
 const RowDetail = memo(function RowDetail({ subset, group, hours, total }) {
+  /* Tolerate a null subset. It should not happen now the group and key are
+     passed as values, but an expanded row failing to resolve is worth one
+     quiet line — not an exception that takes the entire analysis tab down
+     with it. */
+  if (!subset) return <p className="rd-empty">Could not load this breakdown.</p>
   const n = subset.length
   if (!n) return <p className="rd-empty">No records in this range.</p>
 
@@ -517,15 +522,21 @@ export const Insights = memo(function Insights({ visible = true }) {
     return g ? a.clinical.filter(x => g.match(x, pick.key)) : null
   }, [a, pick])
 
-  /* Same reasoning for the expanded table row. */
+  /* Same reasoning for the expanded table row.
+
+     `open` carries the group and key as values, NOT parsed back out of the DOM
+     id. It used to be the id, split on a colon — but the id is sanitised with
+     /[^A-Za-z0-9_-]/ for use as an HTML id, and that regex eats the colon it
+     was about to be split on. "Diagnosis:age" became "Diagnosis_age",
+     indexOf(':') returned -1, and slice(0, -1) handed back "Diagnosis_ag" — no
+     such group, so this returned null and RowDetail crashed on subset.length.
+     Every "+" in the table was dead. Keys keep their own type too, so sectors
+     no longer need coercing back to Number. */
   const openSubset = useMemo(() => {
     if (!a || !open) return null
-    const [groupName, key] = [open.slice(0, open.indexOf(':')), open.slice(open.indexOf(':') + 1)]
-    const g = GROUPS.find(x => x.name === groupName)
+    const g = GROUPS.find(x => x.name === open.group)
     if (!g) return null
-    /* Sector keys are numbers; the id round-trips them through a string. */
-    const typed = groupName === 'Sector' ? Number(key) : key
-    return a.clinical.filter(x => g.match(x, typed))
+    return a.clinical.filter(x => g.match(x, open.key))
   }, [a, open])
 
   const drill = (group) => {
@@ -728,14 +739,14 @@ export const Insights = memo(function Insights({ visible = true }) {
                           <td className="num">{pct(subtotal, a.total).toFixed(1)}%</td>
                         </tr>
                         {list.map(r => {
-                          const id = `${g.name}:${r.key}`.replace(/[^A-Za-z0-9_-]/g, '_')   // ids may not contain spaces
-                          const isOpen = open === id
+                          const id = `${g.name}-${r.key}`.replace(/[^A-Za-z0-9_-]/g, '_')   // DOM id only — never parsed back
+                          const isOpen = open?.id === id
                           return (
                             <Fragment key={id}>
                               <tr className={isOpen ? 'tg-row is-open' : 'tg-row'}>
                                 <td className="tg-toggle">
                                   <button aria-expanded={isOpen} aria-controls={`d-${id}`}
-                                          onClick={() => setOpen(isOpen ? null : id)}>
+                                          onClick={() => setOpen(isOpen ? null : { id, group: g.name, key: r.key })}>
                                     <span aria-hidden="true">{isOpen ? '−' : '+'}</span>
                                     <span className="sr-only">
                                       {isOpen ? 'Hide' : 'Show'} details for {r.label}

@@ -1,4 +1,4 @@
-// Siddhi detection engine (PROJECT.md exact spec).
+// Atreya detection engine (PROJECT.md exact spec).
 // For each (sector, syndrome): compare current 6h window against the mean/stddev
 // of the twelve 6h windows in the trailing 72h. Fire alert if z >= 3 AND count >= 8.
 //

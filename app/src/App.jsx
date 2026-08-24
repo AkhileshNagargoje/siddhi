@@ -6,19 +6,20 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 
 /* Per-route document title.
    A judge ends the evening with a dozen tabs open and every one of them saying
-   "Siddhi". Naming the screen in the tab is the cheapest possible way to stay
+   "Atreya". Naming the screen in the tab is the cheapest possible way to stay
    findable, and it is also what a screen reader announces on navigation. */
 const TITLES = {
-  '/': 'Siddhi — outbreak early warning',
-  '/entry': 'Record a patient · Siddhi',
-  '/dashboard': 'Control room · Siddhi',
-  '/crew': 'Response crew · Siddhi',
-  '/r': 'Referral card · Siddhi',
-  '/replay': 'An outbreak, caught · Siddhi',
-  '/demo': 'Demo console · Siddhi',
-  '/about': 'About Siddhi',
-  '/public': 'Health information · Siddhi',
-  '/insights': 'In-depth analysis · Siddhi',
+  '/': 'Atreya — outbreak early warning',
+  '/entry': 'Record a patient · Atreya',
+  '/dashboard': 'Control room · Atreya',
+  '/crew': 'Response crew · Atreya',
+  '/r': 'Referral card · Atreya',
+  '/replay': 'An outbreak, caught · Atreya',
+  '/demo': 'Demo console · Atreya',
+  '/about': 'About Atreya',
+  '/public': 'Health information · Atreya',
+  '/stall': 'Medicine stall · Atreya',
+  '/insights': 'In-depth analysis · Atreya',
 }
 
 function Title() {
@@ -39,7 +40,7 @@ function Title() {
    chunk fetch reloads the page once — which pulls fresh HTML and therefore the
    correct chunk names. The sessionStorage flag makes it strictly once, so a
    genuinely offline user gets the offline shell instead of a reload loop. */
-const RETRIED = 'siddhi_chunk_retry'
+const RETRIED = 'atreya_chunk_retry'
 
 /* sessionStorage throws, it does not return null, when storage is denied —
    Safari Lockdown, "block all cookies", a third-party iframe. An unguarded
@@ -79,16 +80,21 @@ const DemoPage = route(() => import('./pages/DemoPage'))
 const AboutPage = route(() => import('./pages/AboutPage'))
 const PublicPage = route(() => import('./pages/PublicPage'))
 const InsightsPage = route(() => import('./pages/InsightsPage'))
+const StallPage = route(() => import('./pages/StallPage'))
 import './styles/tokens.css'
 import './App.css'
 
+/* Landing cards only. /crew and /replay are deliberately NOT listed — they are
+   still routed and still work by URL, because the demo drives the crew screen
+   from a second phone and falls back to the replay if the network dies. This
+   list is what a first-time visitor should be pointed at, not a site map. */
 const ROLES = [
   { to: '/entry', name: 'Health worker', desc: 'Record a patient in ten seconds', pin: 'PIN 1111' },
   { to: '/dashboard', name: 'Health official', desc: 'Live map, alerts, dispatch, in-depth analysis', pin: 'no PIN' },
-  { to: '/crew', name: 'Field crew', desc: 'Accept and close jobs', pin: 'PIN 3333' },
-  // "real" would be a false claim — the replay is a scripted scenario running
-  // the live detection rule, and says so in its own footer.
-  { to: '/replay', name: 'Replay an incident', desc: 'See an outbreak caught and closed', pin: '60 sec' },
+  /* The pilgrim page is normally reached by scanning a poster in a sector, so
+     nothing in the app linked to it and it was unreachable to anyone who did
+     not already know the URL. It is the only role with no login at all. */
+  { to: '/public', name: 'Pilgrim', desc: 'What a visitor sees — no app, no login', pin: 'open' },
 ]
 
 function Home() {
@@ -117,7 +123,7 @@ function Home() {
       <div className="home-inner">
         <header className="home-brand">
           <Mark size={30} />
-          <span>Siddhi</span>
+          <span>Atreya</span>
         </header>
 
         <h1>See the outbreak<br />before it spreads.</h1>
@@ -173,6 +179,7 @@ export default function App() {
         <Route path="/demo" element={<DemoPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/public" element={<PublicPage />} />
+        <Route path="/stall" element={<StallPage />} />
         <Route path="/insights" element={<InsightsPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

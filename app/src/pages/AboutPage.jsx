@@ -39,7 +39,7 @@ export default function AboutPage() {
   return (
     <div className="about">
       <header className="about-head">
-        <h1>Siddhi</h1>
+        <h1>Atreya</h1>
         <p>Outbreak early warning for mass gatherings.</p>
       </header>
 
@@ -111,7 +111,7 @@ export default function AboutPage() {
       <nav className="about-links">
         <Link className="btn btn-accent" to="/dashboard">Open the control room</Link>
         <Link className="btn btn-quiet" to="/replay">Watch an outbreak caught</Link>
-        <a className="btn btn-quiet" href="https://github.com/AkhileshNagargoje/siddhi" target="_blank" rel="noreferrer">Read the code ↗</a>
+        <a className="btn btn-quiet" href="https://github.com/AkhileshNagargoje/atreya" target="_blank" rel="noreferrer">Read the code ↗</a>
       </nav>
 
       <footer className="about-foot">

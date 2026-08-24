@@ -1105,3 +1105,31 @@ button.share-item.is-picked { background: var(--surface-2); outline: 1px solid v
   font-size: var(--t-xs); color: var(--ink-3); line-height: 1.55;
 }
 @media (max-width: 430px) { .resp-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; } .resp-n { display: none; } }
+
+/* Wordmark doubles as the way back to the role picker. */
+.brand, .pub-head a { text-decoration: none; color: inherit; }
+.brand:hover b, .pub-head a:hover b { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- medicine stall tally ---------- */
+
+.stall-lede { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.6; margin: 0 0 var(--s-4); }
+
+.stall-row {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-3); display: grid;
+  grid-template-columns: 1fr auto; gap: var(--s-2) var(--s-3); align-items: center;
+}
+.stall-name b { display: block; font-size: var(--t-md); }
+.stall-name small { color: var(--ink-3); font-size: var(--t-xs); }
+.stall-count {
+  font-size: var(--t-xl); font-weight: 600; min-width: 2.2ch; text-align: right;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+}
+.stall-steps { grid-column: 1 / -1; display: flex; gap: var(--s-2); flex-wrap: wrap; }
+.stall-steps .chip { min-height: 46px; min-width: 56px; padding: 11px 14px; }
+.stall-clear { color: var(--ink-3); }
+.stall-clear:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Severity chips carry their definition, so the chip is two lines not one. */
+.field .chip small { display: block; margin-top: 2px; max-width: 20ch; text-align: center; }

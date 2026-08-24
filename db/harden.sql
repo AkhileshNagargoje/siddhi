@@ -1,4 +1,4 @@
--- Siddhi — pre-demo hardening.
+-- Atreya — pre-demo hardening.
 --
 -- HOW TO RUN
 --   1. Open the Supabase SQL Editor.

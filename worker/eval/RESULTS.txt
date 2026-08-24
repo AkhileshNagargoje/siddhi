@@ -1,5 +1,5 @@
 
-Siddhi - detection evaluation
+Atreya - detection evaluation
 1000 synthetic festivals per row | seed 42 | 96h evaluated each
 Algorithm under test: scoreCell() imported from the deployed worker.
 

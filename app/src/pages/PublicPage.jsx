@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase, isConfigured } from '../lib/supabase'
 import { FESTIVAL } from '../config/festival'
 
@@ -76,7 +77,7 @@ const SEE_A_DOCTOR = [
   'Any of these in a child or an elderly person',
 ]
 
-const STORE_KEY = 'siddhi_my_sector'
+const STORE_KEY = 'atreya_my_sector'
 
 export default function PublicPage() {
   const [alerts, setAlerts] = useState([])
@@ -114,7 +115,7 @@ export default function PublicPage() {
   if (!sec) {
     return (
       <div className="pub">
-        <header className="pub-head"><b>Siddhi</b><span>Health information</span></header>
+        <header className="pub-head"><Link to="/"><b>Atreya</b></Link><span>Health information</span></header>
         <h2 className="pub-ask">Which area are you in?</h2>
         <div className="pub-pick">
           {FESTIVAL.sectors.map(s => (
@@ -129,7 +130,7 @@ export default function PublicPage() {
   return (
     <div className="pub">
       <header className="pub-head">
-        <b>Siddhi</b>
+        <Link to="/"><b>Atreya</b></Link>
         <button className="pub-change" onClick={() => choose('')}>{sec.name} ▾</button>
       </header>
 

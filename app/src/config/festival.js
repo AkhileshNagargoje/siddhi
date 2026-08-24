@@ -1,4 +1,4 @@
-// Festival configuration — Siddhi is config-driven (PROJECT.md rule 8).
+// Festival configuration — Atreya is config-driven (PROJECT.md rule 8).
 // Edit this file to redeploy to a different mass gathering.
 
 export const FESTIVAL = {
@@ -46,6 +46,8 @@ export const USERS = [
   { pin: '1112', role: 'worker',   name: 'Dr. Arjun',    clinicId: 'C01' },
   { pin: '3333', role: 'crew',     name: 'Sanitation Team 3', unit: 'SAN-3' },
   { pin: '3334', role: 'crew',     name: 'Mobile Medical 2',  unit: 'MED-2' },
+  { pin: '4444', role: 'stall',    name: 'Sadhugram East stall', stallId: 'P07' },
+  { pin: '4445', role: 'stall',    name: 'Ramkund medicine stall', stallId: 'P01' },
 ]
 
 export const RESPONSE_UNITS = [
@@ -59,3 +61,30 @@ export const RESPONSE_UNITS = [
 // MIN_COUNT) — that is the only code that scores anything. A mirrored copy used
 // to sit here looking authoritative while being wired to nothing, so editing it
 // changed no behaviour. Change the worker.
+
+/* Medicine stalls — the second signal's reporters. Mirrors STALLS in
+   worker/src/index.js; one per clinic sector so a keeper's tally lands in the
+   same sector the clinical count is measured in. */
+export const STALLS = [
+  { id: 'P01', name: 'Ramkund medicine stall',      sector: 1 },
+  { id: 'P03', name: 'Tapovan medicine stall',      sector: 2 },
+  { id: 'P04', name: 'Panchavati medicine stall',   sector: 3 },
+  { id: 'P06', name: 'Gangapur medicine stall',     sector: 4 },
+  { id: 'P07', name: 'Sadhugram East stall',        sector: 5 },
+  { id: 'P09', name: 'Sadhugram West stall',        sector: 6 },
+  { id: 'P10', name: 'Trimbak Road stall',          sector: 7 },
+  { id: 'P11', name: 'Kushavarta stall',            sector: 8 },
+  { id: 'P13', name: 'Nilparvat stall',             sector: 9 },
+  { id: 'P14', name: 'Anjaneri Camp stall',         sector: 10 },
+  { id: 'P15', name: 'Transit 1 stall',             sector: 11 },
+  { id: 'P17', name: 'Transit 2 stall',             sector: 12 },
+]
+
+/* What a keeper can tally. Only rehydration products carry the diarrhoeal
+   signal — paracetamol and cough syrup are sold for everything and would bury
+   it in noise, which is why the engine counts exactly these three. */
+export const STALL_ITEMS = [
+  { id: 'ors',           en: 'ORS packets',   hi: 'ओआरएस',      mr: 'ओआरएस' },
+  { id: 'zinc',          en: 'Zinc tablets',  hi: 'ज़िंक',        mr: 'झिंक' },
+  { id: 'antidiarrheal', en: 'Anti-diarrhoeal', hi: 'दस्त की दवा', mr: 'जुलाबाची औषध' },
+]
