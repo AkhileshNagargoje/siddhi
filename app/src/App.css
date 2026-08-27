@@ -599,7 +599,7 @@
 
 /* ---------- public page: built for a phone held in a crowd ---------- */
 
-.pub { max-width: 520px; margin: 0 auto; padding: var(--s-3) var(--s-3) var(--s-6); }
+.pub { max-width: 640px; margin: 0 auto; padding: var(--s-3) var(--s-4) var(--s-6); }
 
 .pub-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); margin-bottom: var(--s-3); }
 .pub-head b { font-size: var(--t-lg); letter-spacing: -0.02em; }
@@ -623,12 +623,12 @@
 
 /* the answer, above the fold */
 .pub-hero { border-radius: var(--r-lg); padding: var(--s-5) var(--s-4); margin-bottom: var(--s-3); }
-.pub-hero.clear { background: var(--good-wash); border: 1px solid var(--good); }
+.pub-hero.ok { background: var(--good-wash); border: 1px solid var(--good); }
 .pub-hero.care { background: var(--warning-wash); border: 1px solid var(--warning); }
 .pub-hero-status {
   font-size: var(--t-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
 }
-.pub-hero.clear .pub-hero-status { color: var(--good-ink); }
+.pub-hero.ok .pub-hero-status { color: var(--good-ink); }
 .pub-hero.care .pub-hero-status { color: var(--warning-ink); }
 .pub-hero h1 { font-size: 30px; margin: var(--s-1) 0 var(--s-3); letter-spacing: -0.03em; line-height: 1.1; }
 .pub-hero-issue { font-size: var(--t-lg); margin: 0 0 var(--s-2); line-height: 1.35; }
@@ -679,7 +679,7 @@
 .pub-other i.clear { background: var(--good-wash); color: var(--good-ink); }
 .pub-other i.flagged { background: var(--warning); color: #4a3600; }
 
-.pub-detail { font-size: var(--t-sm); color: var(--ink-3); line-height: 1.5; padding: 0 var(--s-3) var(--s-3); margin: 0; }
+.pub-detail { font-size: var(--t-sm); color: var(--ink-3); line-height: 1.5; margin: var(--s-3) 0 0; }
 .pub-foot { margin-top: var(--s-4); font-size: var(--t-xs); color: var(--ink-3); text-align: center; }
 
 /* ---------- demo console ---------- */
@@ -1133,3 +1133,307 @@ button.share-item.is-picked { background: var(--surface-2); outline: 1px solid v
 
 /* Severity chips carry their definition, so the chip is two lines not one. */
 .field .chip small { display: block; margin-top: 2px; max-width: 20ch; text-align: center; }
+
+/* ---------- pilgrim: who is affected + what to do ---------- */
+
+.pub-target {
+  background: var(--warning-wash); border: 1px solid var(--warning);
+  border-radius: var(--r-lg); padding: var(--s-4); margin-bottom: var(--s-3);
+}
+.pub-target-who {
+  display: inline-block; font-size: var(--t-xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--warning-ink);
+  background: var(--surface-1); border-radius: var(--r-pill);
+  padding: 4px 11px; margin-bottom: var(--s-3);
+}
+.pub-target h2 { margin: 0 0 var(--s-2); font-size: var(--t-lg); line-height: 1.25; color: var(--warning-ink); }
+.pub-target .pub-hero-lang { color: var(--warning-ink); opacity: 0.85; margin: 0 0 var(--s-3); }
+
+.pub-target-steps { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.pub-target-steps li { display: flex; flex-direction: column; gap: 2px; padding-left: var(--s-4); position: relative; }
+.pub-target-steps li::before {
+  content: ''; position: absolute; left: 0; top: 8px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--warning-ink);
+}
+.pub-target-steps b { font-size: var(--t-md); line-height: 1.4; color: var(--ink-1); }
+
+.pub-target-now {
+  margin: 0; padding: var(--s-3) var(--s-4);
+  background: var(--critical-wash); border-radius: var(--r-md);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.pub-target-now b { font-size: var(--t-md); line-height: 1.45; color: var(--critical-ink); }
+.pub-target-now .pub-lang { color: var(--critical-ink); opacity: 0.9; }
+
+/* ---------- pilgrim board ---------- */
+
+.pub-board { margin-bottom: var(--s-4); }
+.pub-board h2 { margin: 0 0 2px; font-size: var(--t-lg); }
+.pub-board-sub { margin: 0 0 var(--s-3); font-size: var(--t-sm); color: var(--ink-3); }
+
+.pub-zones {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-auto-rows: minmax(88px, auto); gap: var(--s-2);
+}
+.pub-zone {
+  font-family: inherit; text-align: left; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface-1); padding: var(--s-3);
+  display: flex; flex-direction: column; gap: 2px; min-height: 88px;
+}
+.pub-zone b { flex: 1; }   /* pushes the status line to a common baseline */
+
+/* THREE levels, not two. The earlier note here argued that any ramp invites a
+   pilgrim to compare areas and move toward the safer one — true, but two states
+   could not separate a watch-tier cough cluster from an act-tier water
+   outbreak, so "take care" meant nothing in particular. The movement risk is
+   answered by .pub-nomove and by keeping the grid in fixed order, not by
+   withholding the difference.
+
+   The left bar is the redundant channel: 0px / 4px / 8px. --warning and
+   --critical are both sub-3:1 on the light surface by design, so the level is
+   also written out in words on every single tile. */
+.pub-zone { border-left: 0 solid transparent; }
+.pub-zone.care {
+  background: var(--warning-wash);
+  border-color: var(--warning);
+  border-left: 4px solid var(--warning);
+}
+.pub-zone.high {
+  background: var(--critical-wash);
+  border-color: var(--critical);
+  border-left: 8px solid var(--critical);
+}
+.pub-zone.high b { font-weight: 700; }
+.pub-zone.high i { color: var(--critical-ink); }
+.pub-zone.is-here { outline: 2px solid var(--ink-1); outline-offset: 1px; }
+.pub-zone b { font-size: var(--t-md); line-height: 1.25; }
+.pub-zone i {
+  font-style: normal; font-size: var(--t-xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3);
+}
+.pub-zone.care i { color: var(--warning-ink); }
+.pub-zone em { font-style: normal; font-size: var(--t-xs); color: var(--ink-2); min-height: 1.25em; }
+
+.pub-ask { margin: var(--s-4) 0; font-size: var(--t-md); color: var(--ink-2); }
+
+/* ---------- pilgrim tabs (mobile first) ---------- */
+
+.pub-tabs {
+  position: sticky; top: 0; z-index: 5;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2);
+  padding: var(--s-2) 0 var(--s-3);
+  background: var(--surface-0);
+}
+.pub-tab {
+  font-family: inherit; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface-1); color: var(--ink-2);
+  padding: 10px 6px; min-height: 52px;          /* thumb-sized, standing in a crowd */
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+}
+.pub-tab b { font-size: 14px; font-weight: 600; line-height: 1.2; }
+.pub-tab small { font-size: 12px; opacity: 0.8; }
+.pub-tab.on { background: var(--ink-1); color: var(--surface-1); border-color: var(--ink-1); }
+
+.pub-h { margin: var(--s-2) 0 2px; font-size: var(--t-lg); }
+.pub-always b { font-weight: 600; }
+.pub-danger li::before { background: var(--critical); }
+
+.pub-inline {
+  font-family: inherit; font-size: var(--t-md); cursor: pointer;
+  background: none; border: 0; padding: 0; color: var(--series-1);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.pub-change-area {
+  display: block; margin: var(--s-4) auto 0; min-height: 44px;
+  color: var(--ink-2); font-size: var(--t-sm);
+}
+
+/* Full-width tiles on a narrow phone — two columns of tiny text is worse than
+   one column a thumb can hit. */
+@media (max-width: 380px) {
+  .pub-zones { grid-template-columns: 1fr; }
+}
+
+/* ---- pilgrim: timing, response, and what the illness looks like ---------- */
+
+/* Sits under the issue line, quieter than it — context, not the headline. */
+.pub-hero-since {
+  margin: var(--s-2) 0 0;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+/* The other illnesses in this area. Deliberately plain: making it a second
+   hero would leave the reader unsure which one to act on. */
+.pub-hero-also {
+  margin: var(--s-3) 0 0;
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+/* Reassurance, so it reads green rather than as another warning. */
+.pub-responding {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: var(--s-4) 0 0;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--good-wash);
+  color: var(--good-ink);
+  font-size: var(--t-md);
+}
+
+.pub-what { margin-top: var(--s-5); }
+
+.pub-dis {
+  margin-top: var(--s-4);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-1);
+}
+
+.pub-dis h3 {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 var(--s-3);
+  font-size: var(--t-lg);
+  line-height: 1.25;
+}
+
+/* Why it spreads the way it does — the reason the advice above is worth
+   following twice. Sunk rather than washed: it is explanation, not alarm. */
+.pub-dis-spread {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: var(--s-3) 0 0;
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--surface-sunk);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.pub-dis-spread b { color: var(--ink-1); font-weight: 600; }
+
+/* Two illnesses in one tile needs room to wrap without clipping. */
+.pub-zone em {
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+
+
+/* ---- pilgrim: how the whole festival looks in one line ------------------- */
+
+/* Read before the grid, so a reader knows whether today is quiet before they
+   start hunting for their own area. Counts AREAS, never cases — an area count
+   cannot be read as "how bad is it there", which is the number that moves
+   people. */
+.pub-tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-3) 0 var(--s-4);
+  padding: 0;
+  list-style: none;
+}
+.pub-tally li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  background: var(--surface-1);
+}
+.pub-tally b { font-size: var(--t-lg); font-weight: 700; line-height: 1; }
+
+.pub-tally-high { background: var(--critical-wash); border-color: var(--critical); }
+.pub-tally-high b { color: var(--critical-ink); }
+.pub-tally-care { background: var(--warning-wash); border-color: var(--warning); }
+.pub-tally-care b { color: var(--warning-ink); }
+.pub-tally-ok   { background: var(--good-wash); border-color: var(--good); }
+.pub-tally-ok b { color: var(--good-ink); }
+
+/* The sentence that stops the board being read as "go somewhere else".
+   Given real weight for that reason — a footnote would not do the job. */
+.pub-nomove {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--s-4);
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface-sunk);
+  border-left: 4px solid var(--ink-1);
+}
+.pub-nomove b { color: var(--ink-1); }
+
+/* The hero carries the same three levels as the tiles, so the word a reader
+   saw on the board is the word they see when they open their area. */
+.pub-hero.high { background: var(--critical-wash); border-color: var(--critical); }
+.pub-hero.high .pub-hero-status { color: var(--critical-ink); }
+
+/* ---- pilgrim: the areas map --------------------------------------------- */
+
+/* The health official's SectorGrid legend runs "fewer -> more cases". This one
+   runs "all clear -> take extra care", because a count scale shown to a crowd
+   is the thing we are avoiding. Same shape, different quantity. */
+.pub-legend {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--s-3); margin: 0 0 var(--s-3); padding: 0; list-style: none;
+  font-size: var(--t-xs); color: var(--ink-2);
+}
+.pub-legend li { display: flex; align-items: center; gap: 6px; }
+.pub-swatch {
+  width: 22px; height: 12px; border-radius: 3px; display: block;
+  border: 1px solid var(--border-strong);
+}
+.pub-swatch.ok   { background: var(--surface-1); }
+.pub-swatch.care { background: var(--warning-wash); border-color: var(--warning); }
+.pub-swatch.high { background: var(--critical-wash); border-color: var(--critical); }
+
+/* Positioning context for the number badge and the you-are-here flag. */
+.pub-zone { position: relative; padding-right: 34px; }
+
+/* The number painted on the poles and printed on the poster — how a lost
+   person matches this screen to where they are standing. Muted so it never
+   competes with the area name for the first read. */
+.pub-zone-id {
+  position: absolute; top: var(--s-2); right: var(--s-2);
+  min-width: 22px; height: 22px; padding: 0 5px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm);
+  background: var(--surface-sunk); color: var(--ink-2);
+  font-size: var(--t-xs); font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pub-zone.care .pub-zone-id,
+.pub-zone.high .pub-zone-id { background: var(--surface-2); }
+
+.pub-zone-you {
+  align-self: flex-start;
+  margin-bottom: 2px; padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--ink-1); color: var(--surface-1);
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+/* The Hindi name under the English one on a tile. Second line, not appended
+   with a separator — three languages on one line wrapped into an unreadable
+   run at 375px. */
+.pub-zone-lang {
+  display: block;
+  margin-top: 1px;
+  color: var(--ink-3);
+}
