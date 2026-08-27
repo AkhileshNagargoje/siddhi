@@ -2,6 +2,17 @@
 // Translations drafted by Claude; Person A verifies against native speakers.
 
 export const AGE_BANDS = ['0-5', '6-17', '18-39', '40-59', '60+']
+
+/* Expected share of patients by age band across the whole festival. Used only
+   to judge whether one group is OVER-represented in a flagged sector — it is
+   never displayed, and it is not a claim about who attends.
+
+   A group is only named when its share of that sector's cases clearly exceeds
+   its share everywhere else; without this, the page would always point at
+   whichever band is simply largest, which is 18-39 by base rate and tells a
+   parent nothing. In a real deployment this should be computed from the live
+   festival-wide mix rather than assumed. */
+export const AGE_MIX = { '0-5': 0.05, '6-17': 0.10, '18-39': 0.30, '40-59': 0.30, '60+': 0.25 }
 export const SEXES = ['M', 'F', 'Other']
 /* Severity is the softest field on the form: three bare words, and two
    clinicians will grade the same patient differently. It is deliberately kept

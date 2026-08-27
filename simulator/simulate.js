@@ -224,7 +224,9 @@ if (cmd === 'backfill') await backfill()
 else if (cmd === 'live') await live()
 else if (cmd === 'outbreak') await outbreak(process.argv[3] ?? 5)
 else if (cmd === 'pharmacy') await pharmacyBackfill()
-else if (cmd === 'reset') console.error('reset is retired: db/harden.sql removed DELETE from the public key.
-Use /demo -> "Clear the board", or run db/cleanup.sql in the Supabase SQL editor.')
-else console.log('Usage: node simulate.js backfill | pharmacy | live | outbreak <sector>
-  (reset is retired: harden.sql removed DELETE. Use /demo -> Clear the board, or db/cleanup.sql.)')
+else if (cmd === 'reset') console.error(
+  `reset is retired: db/harden.sql removed DELETE from the public key.
+Use /demo -> "Clear the board", or run db/cleanup.sql in the Supabase SQL editor.`)
+else console.log(
+  `Usage: node simulate.js backfill | pharmacy | live | outbreak <sector>
+  (reset is retired: harden.sql removed DELETE. Use /demo -> Clear the board, or db/cleanup.sql.)`)
