@@ -1,0 +1,23 @@
+# Git on Windows here runs with core.autocrlf=true, and with no rules it guessed
+# that the PDFs were text. Committing them was safe only by luck - they happened
+# to contain no CRLF, so normalisation was a no-op. A fresh clone would have
+# rewritten line endings INSIDE the files and produced corrupt PDFs and Word
+# documents: exactly the copies HANDOVER.md calls the safe ones.
+
+# Let git normalise line endings for real text.
+* text=auto
+
+# Never touch these. They are byte streams, not lines.
+*.pdf   binary
+*.docx  binary
+*.dotx  binary
+*.xlsx  binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
