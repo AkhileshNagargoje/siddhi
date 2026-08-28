@@ -84,7 +84,7 @@
 .sector-flag {
   position: absolute; top: 6px; right: 6px;
   display: inline-flex; align-items: center; gap: 3px;
-  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  font-size: var(--t-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
   padding: 2px 6px 2px 4px; border-radius: var(--r-pill);
 }
 .sector-flag svg { stroke: currentColor; }
@@ -815,7 +815,7 @@
 }
 .seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: var(--r-md); overflow: hidden; }
 .seg button {
-  padding: 8px 14px; font-size: var(--t-sm); background: var(--surface-1);
+  padding: 8px 14px; min-height: 44px; font-size: var(--t-sm); background: var(--surface-1);
   color: var(--ink-2); border: 0; cursor: pointer; border-right: 1px solid var(--border);
 }
 .seg button:last-child { border-right: 0; }
@@ -838,7 +838,7 @@
 @media (max-width: 900px) { .ins-grid { grid-template-columns: 1fr; } }
 .ins-note {
   margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--grid);
-  font-size: var(--t-xs); color: var(--ink-3); line-height: 1.55;
+  font-size: var(--t-sm); color: var(--ink-3); line-height: 1.55;
 }
 .ins-sub {
   margin: var(--s-4) 0 var(--s-2); font-size: var(--t-xs); font-weight: 600;
@@ -899,7 +899,7 @@
   position: absolute; top: -3px; width: 2px; height: 18px;
   background: var(--ink-1); border-radius: 1px;
 }
-.meter-hint { font-size: var(--t-xs); color: var(--ink-3); line-height: 1.5; }
+.meter-hint { font-size: var(--t-sm); color: var(--ink-3); line-height: 1.5; }
 
 /* small multiples */
 .tr-wrap { display: flex; flex-direction: column; gap: var(--s-2); }
@@ -1436,4 +1436,33 @@ button.share-item.is-picked { background: var(--surface-2); outline: 1px solid v
   display: block;
   margin-top: 1px;
   color: var(--ink-3);
+}
+
+
+/* ---- tap targets ---------------------------------------------------------
+   Three controls measured under 44px on a 375px phone: the chart legend rows
+   (29px), the "live" pill used as a link on /insights (28px), and the home
+   link in the pilgrim header (29px).
+
+   The legend rows get an invisible overlay rather than more padding. They sit
+   in a wrapped flex row, so growing them vertically would push the chart down
+   and re-wrap the legend - the visual density was right, only the hit area
+   was wrong. */
+button.share-item { position: relative; }
+button.share-item::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+a.live { min-height: 44px; }
+
+/* The pilgrim header link is the only way back to the role picker, and it was
+   a 29px target on the screen most likely to be used outdoors, one-handed. */
+.pub-head a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
