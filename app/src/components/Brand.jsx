@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-/* The Atreya mark — an eye, because that is what the word means.
+/* The Siddhi mark — an eye, because that is what the word means.
    Inherits currentColor so it sits correctly on any surface in both themes. */
 export function Mark({ size = 22 }) {
   return (

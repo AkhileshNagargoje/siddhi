@@ -1,11 +1,11 @@
-# Atreya — Team Handbook
+# Siddhi — Team Handbook
 
 Everything about this project, in simple words. If you read only one document,
 read this one.
 
 ## Contents
 
-1. What Atreya is
+1. What Siddhi is
 2. The problem we solve
 3. How it works — six steps
 4. Who uses it
@@ -21,15 +21,15 @@ read this one.
 
 ---
 
-# 1. What Atreya is
+# 1. What Siddhi is
 
 **A system that spots disease outbreaks at big festivals before they spread.**
 
 At the Kumbh Mela, millions of people live in a temporary tent city for weeks.
-Dozens of small clinics treat them. Atreya watches all those clinics at once,
+Dozens of small clinics treat them. Siddhi watches all those clinics at once,
 notices when one area gets unusually sick, and sends a crew to fix the cause.
 
-*Atreya is already built and running live at* **health.akhileshnagargoje.in**
+*Siddhi is already built and running live at* **health.akhileshnagargoje.in**
 
 ---
 
@@ -71,7 +71,7 @@ assigned to respond.
 Its own data even showed antibiotics being given in up to **31% of visits** — a
 real problem it recorded faithfully and never acted on.
 
-> **Atreya is everything that should happen in the ten minutes after the data is
+> **Siddhi is everything that should happen in the ten minutes after the data is
 > entered.**
 
 ---

@@ -18,7 +18,7 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('Atreya render error:', error, info)
+    console.error('Siddhi render error:', error, info)
   }
 
   render() {

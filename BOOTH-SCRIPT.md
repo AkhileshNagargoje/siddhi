@@ -1,4 +1,4 @@
-# Atreya — the booth script
+# Siddhi — the booth script
 
 For judges who walk up to your table. This is **not** the stage pitch. A judge
 arriving at a table has not sat down, has already seen six projects, and will

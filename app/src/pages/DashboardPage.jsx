@@ -393,7 +393,7 @@ export default function DashboardPage() {
     <div className="shell">
       <div className="topbar">
         <Link to="/" className="brand" title="Back to all screens">
-          <b>Atreya</b>
+          <b>Siddhi</b>
           <span>control room · {FESTIVAL.name}</span>
         </Link>
         <span className="live"><i />live</span>

@@ -1,4 +1,4 @@
-// Festival configuration — Atreya is config-driven (PROJECT.md rule 8).
+// Festival configuration — Siddhi is config-driven (PROJECT.md rule 8).
 // Edit this file to redeploy to a different mass gathering.
 
 export const FESTIVAL = {

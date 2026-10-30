@@ -1,4 +1,4 @@
-/* Atreya — detection evaluation harness.
+/* Siddhi — detection evaluation harness.
  *
  *   cd worker && node eval/harness.mjs
  *   cd worker && node eval/harness.mjs --trials 2000 --seed 7
@@ -205,7 +205,7 @@ const SEVERITIES = [
 ]
 
 console.log('')
-console.log('Atreya - detection evaluation')
+console.log('Siddhi - detection evaluation')
 console.log(`${TRIALS} synthetic festivals per row | seed ${SEED} | ${EVAL_H}h evaluated each`)
 console.log('Algorithm under test: scoreCell() imported from the deployed worker.')
 console.log('')

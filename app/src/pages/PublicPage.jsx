@@ -135,7 +135,7 @@ function levelOf(rows) {
   return rows.some(r => r.tier === 'act') ? 'high' : 'care'
 }
 
-const STORE_KEY = 'atreya_my_sector'
+const STORE_KEY = 'siddhi_my_sector'
 
 /* Three tabs, because a pilgrim standing in a crowd has exactly three
    questions: what is happening where I am, is anywhere else affected, and what
@@ -290,7 +290,7 @@ export default function PublicPage() {
   return (
     <div className="pub">
       <header className="pub-head">
-        <Link to="/"><b>Atreya</b></Link>
+        <Link to="/"><b>Siddhi</b></Link>
         <span>{sec ? sec.name : 'Health information'}</span>
       </header>
 

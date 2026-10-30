@@ -1,4 +1,4 @@
-# Atreya — Progress Tracker
+# Siddhi — Progress Tracker
 
 > Update rule: whoever finishes a task updates its line IMMEDIATELY, same sitting.
 > Status values: `todo` / `doing` / `done` / `blocked` / `cut`

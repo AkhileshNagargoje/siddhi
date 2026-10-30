@@ -1,4 +1,4 @@
-# Atreya — frontend, security & privacy Q&A
+# Siddhi — frontend, security & privacy Q&A
 
 Grounded in the actual code. Format: **Q** = question · **Say** = spoken answer
 · **Depth** = the detail that proves you understand it.

@@ -1,4 +1,4 @@
-// Atreya engine — runs in Cloudflare's network, not on anyone's laptop.
+// Siddhi engine — runs in Cloudflare's network, not on anyone's laptop.
 //
 //   */5 * * * *  detection scan (PROJECT.md spec)
 //   *   * * * *  one minute of live clinic traffic, so the demo is always alive
@@ -479,13 +479,13 @@ export default {
       console.log(`scan: ${r.examined} examined, ${r.newAlerts.length} new alerts`,
         r.newAlerts.length ? JSON.stringify(r.newAlerts) : '')
     } catch (e) {
-      console.error(`ATREYA_CRON_FAILED cron=${event.cron}:`, e?.stack ?? e?.message ?? e)
+      console.error(`SIDDHI_CRON_FAILED cron=${event.cron}:`, e?.stack ?? e?.message ?? e)
     }
   },
 
   async fetch(req, env) {
     const url = new URL(req.url)
-    // The app is on atreya.* and this worker is on atreya-engine.* — a
+    // The app is on health.* and this worker is on health-engine.* — a
     // different origin, so without these headers every fetch() from the
     // dashboard or the demo-control page is blocked by the browser. Pasting
     // the URL into the address bar works fine, which makes this a
@@ -529,7 +529,7 @@ export default {
       }
 
       return json({
-        service: 'atreya-engine',
+        service: 'siddhi-engine',
         crons: { detection: '*/5 * * * *', traffic: '* * * * *' },
         trafficEnabled: env.GENERATE_TRAFFIC === 'true',
       })

@@ -1,11 +1,11 @@
-# Atreya — hostile Q&A: the skeptical judge & the stakeholder
+# Siddhi — hostile Q&A: the skeptical judge & the stakeholder
 
 **How to use this:** the spoken answer is what you say. The depth card is what
 you have ready if they push. Where a section says **Honest version**, say the
 honest version — this room has people who have run these systems and will know
 when you're spinning.
 
-**One rule above all:** never claim Atreya is deployed, validated, or approved.
+**One rule above all:** never claim Siddhi is deployed, validated, or approved.
 It is a working prototype on synthetic data. Every strong answer below is strong
 *because* it concedes that first.
 
@@ -147,7 +147,7 @@ path we've read, not one we've walked."
 
 **Say:** The system never dispatches anyone. It raises a signal; a human officer
 clicks Dispatch and owns that decision — an architectural choice, not a
-disclaimer. Atreya never touches treatment: it doesn't diagnose, prescribe or
+disclaimer. Siddhi never touches treatment: it doesn't diagnose, prescribe or
 triage, and the one clinical prompt it has is dismissible in one tap and cannot
 block a doctor. Liability sits exactly where it sits today: with the officer who
 moved the crew.
@@ -252,7 +252,7 @@ officer leaves switched on.
 proved busy health workers *will* enter data on tablets — over 2,000 visits on
 day one across 30+ clinics. But EMcounter was a visual analytics dashboard: it
 showed officials the data in real time and stopped there. Its own data showed
-antibiotics in up to 31% of encounters — recorded, never acted on. Atreya is the
+antibiotics in up to 31% of encounters — recorded, never acted on. Siddhi is the
 ten minutes after entry: automatic detection, a tiered alert with visible
 arithmetic, and a dispatch loop with a closure timestamp.
 
@@ -444,7 +444,7 @@ engineering one.
 ## Drill list before you present
 
 1. Every member states the detection rule in one sentence.
-2. Every member names **one** thing Atreya gets wrong — different ones each.
+2. Every member names **one** thing Siddhi gets wrong — different ones each.
    Available: bathing-day false positives, the cooldown miss, both streams
    simulated by one command, the untimed 10-second claim, no real-data validation.
 3. Never say "deployed", "validated", or "we've talked to the health department".

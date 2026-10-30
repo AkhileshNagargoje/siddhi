@@ -1,4 +1,4 @@
--- Atreya — reset the detection baseline.
+-- Siddhi — reset the detection baseline.
 --
 -- HOW TO RUN
 --   1. Open the Supabase SQL Editor.
