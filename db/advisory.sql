@@ -1,4 +1,4 @@
--- Atreya — public advisories.
+-- Siddhi — public advisories.
 --
 -- HOW TO RUN: Supabase SQL Editor, click in, highlight nothing, paste, Run.
 --   https://supabase.com/dashboard/project/ommnjuedmzffiawhkdqi/sql/new

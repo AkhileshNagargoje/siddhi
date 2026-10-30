@@ -1,6 +1,6 @@
 # Explaining the evaluation harness
 
-The harness is the strongest evidence Atreya has, and almost no hackathon team
+The harness is the strongest evidence Siddhi has, and almost no hackathon team
 brings anything like it. This is how to talk about it.
 
 Run it live: `cd worker && node eval/harness.mjs`

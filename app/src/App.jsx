@@ -6,20 +6,20 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 
 /* Per-route document title.
    A judge ends the evening with a dozen tabs open and every one of them saying
-   "Atreya". Naming the screen in the tab is the cheapest possible way to stay
+   "Siddhi". Naming the screen in the tab is the cheapest possible way to stay
    findable, and it is also what a screen reader announces on navigation. */
 const TITLES = {
-  '/': 'Atreya — outbreak early warning',
-  '/entry': 'Record a patient · Atreya',
-  '/dashboard': 'Control room · Atreya',
-  '/crew': 'Response crew · Atreya',
-  '/r': 'Referral card · Atreya',
-  '/replay': 'An outbreak, caught · Atreya',
-  '/demo': 'Demo console · Atreya',
-  '/about': 'About Atreya',
-  '/public': 'Health information · Atreya',
-  '/stall': 'Medicine stall · Atreya',
-  '/insights': 'In-depth analysis · Atreya',
+  '/': 'Siddhi — outbreak early warning',
+  '/entry': 'Record a patient · Siddhi',
+  '/dashboard': 'Control room · Siddhi',
+  '/crew': 'Response crew · Siddhi',
+  '/r': 'Referral card · Siddhi',
+  '/replay': 'An outbreak, caught · Siddhi',
+  '/demo': 'Demo console · Siddhi',
+  '/about': 'About Siddhi',
+  '/public': 'Health information · Siddhi',
+  '/stall': 'Medicine stall · Siddhi',
+  '/insights': 'In-depth analysis · Siddhi',
 }
 
 function Title() {
@@ -40,7 +40,7 @@ function Title() {
    chunk fetch reloads the page once — which pulls fresh HTML and therefore the
    correct chunk names. The sessionStorage flag makes it strictly once, so a
    genuinely offline user gets the offline shell instead of a reload loop. */
-const RETRIED = 'atreya_chunk_retry'
+const RETRIED = 'siddhi_chunk_retry'
 
 /* sessionStorage throws, it does not return null, when storage is denied —
    Safari Lockdown, "block all cookies", a third-party iframe. An unguarded
@@ -123,7 +123,7 @@ function Home() {
       <div className="home-inner">
         <header className="home-brand">
           <Mark size={30} />
-          <span>Atreya</span>
+          <span>Siddhi</span>
         </header>
 
         <h1>See the outbreak<br />before it spreads.</h1>

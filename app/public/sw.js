@@ -1,4 +1,4 @@
-/* Atreya — offline shell.
+/* Siddhi — offline shell.
  *
  * WHY THIS EXISTS
  *
@@ -20,8 +20,8 @@
  *           it were live.
  */
 
-const SHELL = 'atreya-shell-v1'
-const ASSETS = 'atreya-assets-v2'   // v1 could hold poisoned entries; activate() drops it
+const SHELL = 'siddhi-shell-v1'
+const ASSETS = 'siddhi-assets-v2'   // v1 could hold poisoned entries; activate() drops it
 const KEEP = new Set([SHELL, ASSETS])
 
 self.addEventListener('install', e => {
@@ -100,7 +100,7 @@ self.addEventListener('fetch', e => {
         .catch(() => caches.match('/').then(hit => hit || new Response(
           '<!doctype html><meta charset=utf-8><title>Offline</title>' +
           '<body style="font:16px system-ui;padding:2rem;line-height:1.6">' +
-          '<h1>No network</h1><p>Atreya could not reach the server and has no saved copy yet. ' +
+          '<h1>No network</h1><p>Siddhi could not reach the server and has no saved copy yet. ' +
           'Open it once with a connection and it will work offline after that.</p>',
           { headers: { 'Content-Type': 'text/html' } }
         )))

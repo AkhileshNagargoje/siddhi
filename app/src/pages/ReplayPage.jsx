@@ -58,7 +58,7 @@ const ACTS = [
   // so quoting them here put the caption in visible contradiction with the
   // number rendered right beside it.
   { at: 24, key: 'blind',   label: 'Blind spot', line: 'Three cases here. Two there. Every doctor sees a normal handful — and nobody sees the total.' },
-  { at: 31, key: 'alert',   label: 'Detected', line: 'Atreya adds them up continuously. 14 against 4 expected — the threshold breaks.' },
+  { at: 31, key: 'alert',   label: 'Detected', line: 'Siddhi adds them up continuously. 14 against 4 expected — the threshold breaks.' },
   { at: 38, key: 'dispatch',label: 'Dispatched', line: 'The alert becomes a job on a named crew’s phone. Someone must close it.' },
   // 90, not 80: the alert breaks at 20:00 and this step is stamped 21:30, both
   // visible on screen. A judge who subtracts the two timestamps should get the
@@ -161,7 +161,7 @@ function Curve({ hours, showCounterfactual }) {
                 <path d={path('unchecked')} fill="none" stroke="var(--critical)"
                       strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round" />
                 <text x={x(62)} y={y(hourly(cumUnchecked, 62)) - 10} className="axis-text" fill="var(--critical-ink)">
-                  without Atreya
+                  without Siddhi
                 </text>
               </>
             )}
@@ -248,7 +248,7 @@ export default function ReplayPage() {
     <div className="replay">
       <div className="replay-bar">
         <Link to="/" className="brand" title="Back to all screens">
-          <b>Atreya</b>
+          <b>Siddhi</b>
           <span>the outbreak that never was · replay</span>
         </Link>
         <div className="replay-ctl">

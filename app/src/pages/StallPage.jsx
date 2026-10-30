@@ -22,7 +22,7 @@ import { uuid } from '../lib/uuid'
  * same saturated network the clinics do.
  */
 
-const QUEUE_KEY = 'atreya_stall_queue'
+const QUEUE_KEY = 'siddhi_stall_queue'
 const loadQueue = () => { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') } catch { return [] } }
 const saveQueue = q => localStorage.setItem(QUEUE_KEY, JSON.stringify(q))
 
@@ -35,7 +35,7 @@ export default function StallPage() {
   const [counts, setCounts] = useState(EMPTY)
   const [flash, setFlash] = useState(false)
   const [queue, setQueue] = useState(loadQueue)
-  const [sent, setSent] = useState(() => Number(localStorage.getItem('atreya_stall_sent') ?? 0))
+  const [sent, setSent] = useState(() => Number(localStorage.getItem('siddhi_stall_sent') ?? 0))
   const busy = useRef(false)
 
   const stall = user ? STALLS.find(s => s.id === user.stallId) : null
@@ -55,8 +55,8 @@ export default function StallPage() {
       if (!error || error.code === '23505') {
         const done = new Set(batch.map(r => r.id))
         const rest = loadQueue().filter(r => !done.has(r.id))
-        const n = Number(localStorage.getItem('atreya_stall_sent') ?? 0) + batch.length
-        localStorage.setItem('atreya_stall_sent', String(n))
+        const n = Number(localStorage.getItem('siddhi_stall_sent') ?? 0) + batch.length
+        localStorage.setItem('siddhi_stall_sent', String(n))
         setSent(n); saveQueue(rest); setQueue(rest)
       }
     } catch {

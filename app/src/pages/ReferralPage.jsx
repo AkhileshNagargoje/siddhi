@@ -53,7 +53,7 @@ export default function ReferralPage() {
         </dl>
 
         <p className="scan-foot">
-          Atreya carries a finding from a mass gathering back to the person's own
+          Siddhi carries a finding from a mass gathering back to the person's own
           health system, instead of it being lost when they travel home.
         </p>
       </div>

@@ -1,4 +1,4 @@
-# Atreya — the problem and the solution
+# Siddhi — the problem and the solution
 
 *In plain language. Written so anyone on the team can read it and explain the project.*
 

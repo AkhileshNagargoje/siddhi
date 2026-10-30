@@ -1,4 +1,4 @@
-# Atreya — statistics & epidemiology Q&A
+# Siddhi — statistics & epidemiology Q&A
 
 The hardest lens. If a judge has a quantitative background, these are the
 questions. Every number below was computed from the actual code, not estimated.

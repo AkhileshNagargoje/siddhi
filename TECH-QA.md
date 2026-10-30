@@ -1,4 +1,4 @@
-# Atreya — technical Q&A prep
+# Siddhi — technical Q&A prep
 
 Grounded in the actual code as of 2026-08-16. Every number here was verified in
 the repo, not remembered. If you are unsure of a detail on stage, say "let me

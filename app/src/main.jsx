@@ -5,7 +5,7 @@ import App from './App.jsx'
 
 /* One-time carry-over from the old project name.
  *
- * The rename moved every localStorage key from siddhi_* to atreya_*. On a
+ * The rename moved every localStorage key from siddhi_* to siddhi_*. On a
  * device that already has the app open, the two that matter are `siddhi_queue`
  * and `siddhi_ref_queue`: patients and referral cards a doctor recorded while
  * offline and that have not reached the server yet. A blind rename orphans
@@ -21,7 +21,7 @@ function carryOverFromOldName() {
     for (let i = 0; i < localStorage.length; i++) {
       const oldKey = localStorage.key(i)
       if (!oldKey || !oldKey.startsWith('siddhi_')) continue
-      const newKey = 'atreya_' + oldKey.slice('siddhi_'.length)
+      const newKey = 'siddhi_' + oldKey.slice('siddhi_'.length)
       if (localStorage.getItem(newKey) === null) {
         localStorage.setItem(newKey, localStorage.getItem(oldKey))
       }

@@ -1,11 +1,11 @@
-# Atreya — everything explained simply
+# Siddhi — everything explained simply
 
 One document. Plain words. Read it once and you can answer any question about
 this project.
 
 ---
 
-# PART 1 — What is Atreya?
+# PART 1 — What is Siddhi?
 
 **A system that spots disease outbreaks at big festivals before they spread.**
 
@@ -54,7 +54,7 @@ assigned to respond.
 Its own data even showed antibiotics being given in up to **31% of visits** — a
 real problem it recorded faithfully and never acted on.
 
-**Atreya is everything that should happen in the ten minutes after the data is
+**Siddhi is everything that should happen in the ten minutes after the data is
 entered.**
 
 ---

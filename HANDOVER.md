@@ -1,4 +1,4 @@
-# Atreya — Complete Handover
+# Siddhi — Complete Handover
 
 **Everything needed to continue this project from a different machine, a
 different account, or with a different assistant.** Nothing here assumes access
@@ -25,12 +25,12 @@ Everything else is in a cloud account you own.
 ### The accounts that matter — losing any one of these hurts
 
 1. **GitHub** — `AkhileshNagargoje` → repo `siddhi` (named before the project was
-   renamed to Atreya; the repo name was never changed, this is cosmetic only).
+   renamed to Siddhi; the repo name was never changed, this is cosmetic only).
 2. **Supabase** — project `ommnjuedmzffiawhkdqi`. Holds every table and every row.
    **This is the one with no backup.** If the account goes, the data goes.
    `db/*.sql` can rebuild the *schema* from scratch, and the simulator can
    regenerate *fake* data — but any real hand-entered clinic rows are gone.
-3. **Cloudflare** — two Workers (`atreya`, `atreya-engine`), the custom domains,
+3. **Cloudflare** — two Workers (`siddhi`, `siddhi-engine`), the custom domains,
    and the DNS for `akhileshnagargoje.in`.
 
 Nothing depends on any AI assistant account. Losing that costs you help, not work.
@@ -441,7 +441,7 @@ Things that cost hours to find. Do not undo them.
   split on the `:` that no longer existed — every "+" in the table was dead.
   Ids are now display-only; the values are held in state.
 - **The service worker will serve dead code from an old domain.** Both renames
-  (Drishti → Siddhi → Atreya) produced ghost errors from cached bundles on
+  (Siddhi → Siddhi → Siddhi) produced ghost errors from cached bundles on
   domains that no longer existed. If you see an error naming an old domain,
   it is a stale SW, not a bug in the code.
 - **`route()` in `App.jsx` lazy-loads every page.** A static import of a new
@@ -494,7 +494,7 @@ Read in this order if you are new:
 | `PROGRESS.md` | Current state, task table. Update it when you finish anything. |
 | `CLAUDE.md` | Instructions for an AI assistant working in this repo |
 | `README.md` | Setup and overview |
-| `ATREYA-EXPLAINED.md` | Full plain-language walkthrough of how everything works |
+| `SIDDHI-EXPLAINED.md` | Full plain-language walkthrough of how everything works |
 | `EXPLAINER.md` | Earlier explainer, simpler language |
 | `FORMULA-EXPLAINED.md` | Every formula, in words and in notation |
 | `HARNESS-EXPLAINER.md` | How the 1,000-festival evaluation works |

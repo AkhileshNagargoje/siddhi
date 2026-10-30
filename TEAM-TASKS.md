@@ -11,8 +11,8 @@ What you make may or may not end up in the final product — that's normal, that
 ## Practicalities
 
 ```bash
-git clone https://github.com/AkhileshNagargoje/atreya.git
-cd atreya/app
+git clone https://github.com/AkhileshNagargoje/siddhi.git
+cd siddhi/app
 npm install
 npm run dev
 ```

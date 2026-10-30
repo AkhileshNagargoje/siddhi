@@ -1,4 +1,4 @@
-# Atreya — backend / systems / database Q&A
+# Siddhi — backend / systems / database Q&A
 
 Every answer here is honest. Where the honest answer is "we didn't do that", it
 says so and then says why that was the right call for a 10-day build. A judge
@@ -266,7 +266,7 @@ detection is blind for its duration — and nobody gets paged about that.
 ### 22. ⚠ "How do you know detection is running right now? Who pages you if it stops?"
 
 **Own it — this is the most important weakness in the system.** **Say:** Nobody.
-We log `ATREYA_CRON_FAILED` with a greppable prefix, which came from a real
+We log `SIDDHI_CRON_FAILED` with a greppable prefix, which came from a real
 problem: traffic generation and detection are *separate cron invocations*, so a
 throw in `scan()` left traffic happily filling the dashboard while detection was
 dead. **The system looks perfectly alive with its core function stopped.** That's

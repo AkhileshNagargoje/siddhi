@@ -1,5 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
+  // Cloudflare service name, NOT the product name. The product is Siddhi;
+  // this string is the deployment identity that owns the live custom domain.
+  // Renaming it creates a second Worker and the route attach fails, so it is
+  // deliberately left alone. Public hostnames (health.*) carry no product name.
   "name": "atreya-engine",
   "main": "src/index.js",
   "compatibility_date": "2026-08-01",

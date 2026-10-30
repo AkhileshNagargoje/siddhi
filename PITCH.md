@@ -1,4 +1,4 @@
-# Atreya — pitch script
+# Siddhi — pitch script
 
 Seven minutes. Every number here is verified; sources at the bottom.
 

@@ -8,29 +8,47 @@ import { ReferralCard } from '../components/ReferralCard'
 import { MorningCard } from '../components/MorningCard'
 import { MyClinic } from '../components/MyClinic'
 
+/* The product was briefly renamed, and these keys carry the name. A phone that
+   recorded patients under the old prefix would otherwise open with an empty
+   queue and those records would never sync — silent data loss on exactly the
+   device that was offline long enough to accumulate a backlog. Runs once,
+   never overwrites a key that already exists, and is safe to delete after the
+   event once no device can still be holding old data. */
+;(function migrateStorageKeys() {
+  try {
+    for (const suffix of ['queue', 'ref_queue', 'synced', 'synced_day', 'morning_day']) {
+      const old = localStorage.getItem('atreya_' + suffix)
+      if (old !== null && localStorage.getItem('siddhi_' + suffix) === null) {
+        localStorage.setItem('siddhi_' + suffix, old)
+      }
+      localStorage.removeItem('atreya_' + suffix)
+    }
+  } catch { /* storage denied — nothing to migrate, nothing to lose */ }
+})()
+
 // Offline-first: every record lands in localStorage first, a background loop
 // pushes it up. Client-generated UUIDs make retries duplicate-proof.
-const QUEUE_KEY = 'atreya_queue'
+const QUEUE_KEY = 'siddhi_queue'
 const loadQueue = () => { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') } catch { return [] } }
 const saveQueue = q => localStorage.setItem(QUEUE_KEY, JSON.stringify(q))
 
 /* Referrals ride their own queue. The card itself never needs the server — the
    QR carries everything — but the health system still wants a record that one
    was issued, so it syncs whenever the network allows. */
-const REF_KEY = 'atreya_ref_queue'
+const REF_KEY = 'siddhi_ref_queue'
 const loadRefs = () => { try { return JSON.parse(localStorage.getItem(REF_KEY) ?? '[]') } catch { return [] } }
 const saveRefs = q => localStorage.setItem(REF_KEY, JSON.stringify(q))
 
 // Counter is scoped to the local calendar day and rolls over on its own.
 const today = () => new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local
 function readSyncedToday() {
-  if (localStorage.getItem('atreya_synced_day') !== today()) return 0
-  return Number(localStorage.getItem('atreya_synced') ?? 0)
+  if (localStorage.getItem('siddhi_synced_day') !== today()) return 0
+  return Number(localStorage.getItem('siddhi_synced') ?? 0)
 }
 function bumpSyncedToday(by) {
   const n = readSyncedToday() + by
-  localStorage.setItem('atreya_synced_day', today())
-  localStorage.setItem('atreya_synced', String(n))
+  localStorage.setItem('siddhi_synced_day', today())
+  localStorage.setItem('siddhi_synced', String(n))
   return n
 }
 
@@ -146,11 +164,11 @@ export default function EntryPage() {
     const u = USERS.find(u => u.pin === pin && u.role === 'worker')
     if (!u) { setPin(''); return }
     setUser(u)
-    if (localStorage.getItem('atreya_morning_day') !== today()) setShowMorning(true)
+    if (localStorage.getItem('siddhi_morning_day') !== today()) setShowMorning(true)
   }
 
   function closeMorning() {
-    localStorage.setItem('atreya_morning_day', today())
+    localStorage.setItem('siddhi_morning_day', today())
     setShowMorning(false)
   }
 

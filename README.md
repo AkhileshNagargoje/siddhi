@@ -1,4 +1,4 @@
-# Atreya
+# Siddhi
 
 **Outbreak early warning for mass gatherings.**
 
@@ -16,7 +16,7 @@ When fourteen people from one sector fall ill across four different clinics and 
 
 The 2015 Harvard *Jana Swasthya* project at the Nashik Kumbh proved health workers will enter data at scale — 2,000+ visits logged on tablets across 30+ clinics on its first day. But it only drew charts: no detection, no alerts, no dispatch. Its own data showed antibiotics prescribed in up to 31% of encounters, recorded and never acted on.
 
-Atreya is everything that should happen in the ten minutes **after** the data is entered.
+Siddhi is everything that should happen in the ten minutes **after** the data is entered.
 
 ## What it does
 
@@ -219,3 +219,29 @@ Tier 1 and Tier 2 complete and deployed, plus the pharmacy corroboration
 signal, the officer-approved public advisory page, and the in-depth analysis
 tab. Roadmap (designed, not built): voice entry, SMS fallback, demand
 forecasting, water-quality fusion, IDSP export.
+
+## Security
+
+**The Supabase key in this repository is not a leak.** It is the *publishable*
+(anon) key, which is designed for browser use and already ships inside the
+frontend bundle — anyone can read it from the deployed site. Publishing it here
+exposes nothing that was not already public.
+
+What protects the data is row-level security, not key secrecy. The public key
+can read, insert and update; **DELETE is revoked on every table**
+(`db/harden.sql`), so the demo cannot be erased by anyone holding the key.
+`db/least-privilege.sql` tightens it further to exactly what the app uses.
+
+What is **not** in this repository, and never should be: the Supabase
+`service_role` key, the database password, and the Cloudflare API token. Git
+history was audited before this repo was made public — none of them appear in
+any commit.
+
+**This is demonstration software.** There is no real authentication: the role
+PINs are hard-coded in `app/src/config/festival.js` and printed on the sign-in
+screens on purpose, because the point of the demo is that anyone can try all
+three roles. Every patient record in the live instance is synthetic. Do not
+point this at real patient data without replacing the auth model first.
+
+Found something genuinely wrong? Open an issue — but please do not file the
+publishable key as a vulnerability.

@@ -1,4 +1,4 @@
-# Atreya — demo rehearsal script
+# Siddhi — demo rehearsal script
 
 Print this. Run it five times. The fifth run is the one that goes on stage.
 
